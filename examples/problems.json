@@ -1,0 +1,22 @@
+[
+    {
+        "title": "全加器设计",
+        "description": "设计一个1位全加器...",
+        "input_description": "输入包括三个信号：a, b和cin...",
+        "output_description": "输出包括两个信号：sum和cout...",
+        "difficulty": "easy",
+        "time_limit": 1,
+        "memory_limit": 128,
+        "is_public": true,
+        "test_cases": [
+            {
+                "testbench_filename": "full_adder_test1.v",
+                "expected_output": "Test passed: all cases correct"
+            },
+            {
+                "testbench_filename": "full_adder_test2.v",
+                "expected_output": "Test passed: boundary conditions verified"
+            }
+        ]
+    }
+]
