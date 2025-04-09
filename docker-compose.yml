@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - verilog-oj-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/verilog_oj
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-default_secret_key_change_in_production}
+    volumes:
+      - ./backend:/app
+      - ./data/media:/app/media
+    networks:
+      - verilog-oj-network
+
+  judge:
+    build: ./backend/judge
+    privileged: true  # 需要特权模式运行评测
+    volumes:
+      - ./backend/judge:/app
+      - ./data/judge:/judge_data
+    depends_on:
+      - backend
+    networks:
+      - verilog-oj-network
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=verilog_oj
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    networks:
+      - verilog-oj-network
+
+networks:
+  verilog-oj-network:
