@@ -1,0 +1,93 @@
+$date
+	Thu Apr 10 16:28:57 2025
+$end
+$version
+	ModelSim Version 2020.4
+$end
+$timescale
+	1ps
+$end
+
+$scope module test_bench $end
+$var reg 1 ! clk $end
+$var reg 1 " rstn $end
+$var reg 1 # refrence_in $end
+$var wire 1 $ your_out $end
+$var wire 1 % refrence_out $end
+$var wire 1 & mismath_out $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+0!
+1"
+0#
+x$
+x%
+0&
+$end
+#10000
+1!
+#20000
+0!
+#30000
+1!
+#40000
+0"
+0!
+0%
+0$
+#50000
+1!
+#60000
+0!
+#70000
+1!
+#80000
+0!
+#90000
+1"
+1!
+#100000
+0!
+#110000
+1!
+#115000
+1#
+#120000
+0!
+#130000
+1!
+1%
+1$
+#140000
+0#
+0!
+#150000
+1!
+#160000
+0!
+#165000
+1#
+#170000
+1!
+0%
+0$
+#180000
+0!
+#190000
+0#
+1!
+#200000
+0!
+#210000
+1!
+#215000
+$dumpoff
+x!
+x"
+x#
+x$
+x%
+x&
+$end
