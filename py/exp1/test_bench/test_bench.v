@@ -4,7 +4,7 @@ reg clk;
 reg rstn;
 reg refrence_in;
 wire your_out, refrence_out;
-wire mismath_out = (refrence_out != your_out);
+wire mismath_out = (refrence_out !== your_out); //强判断，x或z也会判断是否相等
 
 initial clk = 0;
 always #10 clk = ~clk;
@@ -22,7 +22,7 @@ initial begin
     #25 refrence_in = 1;
     #25 refrence_in = 0;
     #25 $dumpoff;
-    $finish();
+    $stop();
 end
 
 
