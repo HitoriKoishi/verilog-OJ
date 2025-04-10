@@ -14,12 +14,12 @@ python后端
 │   │       sim_file_list.f             仿真文件列表
 │   │       waveform.vcd                vcd波形
 │   │
-│   ├───test_bench              仿真文件夹
-│   │       test_bench.v            测试用例
+│   ├───test_bench                  仿真文件夹
+│   │       test_bench.v                测试用例
 │   │
-│   └───test_module             被测文件夹
-│           ref_module.v            标准参考模块
-│           user_module.v           用户上传模块
+│   └───test_module                 被测文件夹
+│           ref_module.v                标准参考模块
+│           user_module.v               用户上传模块
 │
 ├───exp2                        实验2
 |...
