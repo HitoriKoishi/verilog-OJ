@@ -1,17 +1,17 @@
 # Model Technology ModelSim SE-64 vlog 2020.4 Compiler 2020.10 Oct 13 2020
-# Start time: 16:28:56 on Apr 10,2025
+# Start time: 20:07:41 on Apr 10,2025
 # vlog -work work -mfcu -incr -suppress 3485 -suppress 8683 -suppress 2902 -suppress 2083 -f sim_file_list.f 
 # -- Compiling module test_bench
 # -- Compiling module ref_module
-# -- Compiling module user_module
+# -- Compiling module xor_trigger
 # 
 # Top level modules:
 # 	test_bench
-# End time: 16:28:56 on Apr 10,2025, Elapsed time: 0:00:00
+# End time: 20:07:41 on Apr 10,2025, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # ** Warning: (vsim-53) Cannot suppress or change severity level of message number 1.
 # vsim -quiet -c -voptargs=""+acc"" "+nowarn1" -L work test_bench 
-# Start time: 16:28:56 on Apr 10,2025
+# Start time: 20:07:41 on Apr 10,2025
 # ** Note: (vsim-3812) Design is being optimized...
 # //  ModelSim SE-64 2020.4 Oct 13 2020
 # //
@@ -30,6 +30,6 @@
 #    Time: 215 ns  Iteration: 0  Instance: /test_bench
 # Break in Module test_bench at ../test_bench/test_bench.v line 25
 # Stopped at ../test_bench/test_bench.v line 25
-# INFO: Simulation PASSED
-# End time: 16:28:57 on Apr 10,2025, Elapsed time: 0:00:01
+# ** ERROR: Output mismatch with reference
+# End time: 20:07:42 on Apr 10,2025, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
