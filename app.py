@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 # 导入 sim_run 模块
-from backend.sim_run import run_simulation as sim_run_verilog
-from backend.sim_run import ErrorCode
+from backend.run_sim import run_simulation as sim_run_verilog
+from backend.run_sim import ErrorCode
 
 app = Flask(__name__, template_folder='frontend/templates', static_folder='frontend/static')
 app.secret_key = 'verilog-oj-secret-key'
@@ -120,7 +120,7 @@ def run_simulation(problem_id, vsim_timeout=10):
         ErrorCode.ERROR_SIM_RUN_FAIL: "仿真运行错误，请检查代码逻辑",
         ErrorCode.ERROR_SIM_TIMEOUT: "仿真超时，请检查是否有死循环",
         ErrorCode.ERROR_MISMATCH: "输出与参考不匹配，请检查代码逻辑",
-        ErrorCode.ERROR_TCL_NOT_FOUND: "TCL脚本未找到，系统错误",
+        ErrorCode.ERROR_BAT_NOT_FOUND: "BAT脚本未找到，系统错误",
         ErrorCode.ERROR_UNKNOWN: "未知错误，请联系管理员"
     }
     

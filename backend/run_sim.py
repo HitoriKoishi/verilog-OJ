@@ -15,7 +15,8 @@ class ErrorCode(IntEnum):
     ERROR_UNKNOWN       = 7
 
 def run_simulation(expnum: int, timeout = 60) -> int:
-    os.chdir("exp"+str(expnum)+"/sim_project/")
+    current_dir = os.path.dirname(__file__)
+    os.chdir(str(current_dir)+"\\exp"+str(expnum)+"\\sim_project")
     bat_file = Path("run_sim.bat")
 
     if not bat_file.exists():
@@ -45,6 +46,6 @@ print(f"Simulation finished with code: {exit_code.name}({exit_code.value})")
 
 if __name__ == "__main__":
     # 示例调用：实验编号1
-    exit_code = run_simulation(expnum=2)
+    exit_code = run_simulation(expnum=1)
     print(f"Simulation finished with code: {exit_code.name}({exit_code.value})")
     sys.exit(exit_code.value)
