@@ -8,6 +8,9 @@ python后端
 │   sim_run.py
 │
 ├───exp1                        实验1
+│   ├───doc                         文档
+│   │       doc.md                      实验1文档
+│   │       temp_module.v               实验1代码编辑器暂存内容
 │   ├───sim_project                 仿真工程
 │   │       ctrl_phy_sim.tcl            tcl脚本
 │   │       simulation.log              log日志
