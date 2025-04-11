@@ -55,7 +55,7 @@ if {[catch {
 }
 
 #把 -fast去掉就好了？
-when {mismath_out != 0} { set mismatch_detected 1 }
+when {mismatch != 0} { set mismatch_detected 1 }
 
 if {[catch {
     run -all

@@ -185,7 +185,7 @@ def parse_waveform(vcd_path):
                         signal_map['your_out'] = var_code
                     elif var_name == 'refrence_out':
                         signal_map['refrence_out'] = var_code
-                    elif var_name == 'mismath_out':
+                    elif var_name == 'mismatch':
                         signal_map['mismatch'] = var_code
         
         # 第二轮扫描，提取时间-值数据对
