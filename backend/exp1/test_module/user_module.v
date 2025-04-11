@@ -4,7 +4,7 @@ module user_module (
     input in, 
     output reg out
 );
-// ÔÚ´Ë´¦Ìí¼ÓÄúµÄ´úÂë
+// åœ¨æ­¤å¤„æ·»åŠ æ‚¨çš„ä»£ç 
 // ...
 
 endmodule

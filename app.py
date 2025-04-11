@@ -1,17 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import os
-import tempfile
-import subprocess
 import json
-import shutil
 from pathlib import Path
+
+# 导入 sim_run 模块
+from backend.sim_run import run_simulation as sim_run_verilog
+from backend.sim_run import ErrorCode
 
 app = Flask(__name__, template_folder='frontend/templates', static_folder='frontend/static')
 app.secret_key = 'verilog-oj-secret-key'
 
 # 项目根目录
 BASE_DIR = Path(__file__).resolve().parent
-SIM_PROJECT_DIR=Path()
+
 # 题目数据
 PROBLEMS = [
     {
@@ -73,64 +74,72 @@ def submit(problem_id):
     
     try:
         # 保存用户代码到test_module目录
-        user_module_path = BASE_DIR / 'backend' / ('exp' + str(problem_id)) / 'test_module' / 'user_module.v'
-        with open(user_module_path, 'w') as f:
+        user_module_path = BASE_DIR / 'backend' / f'exp{problem_id}' / 'test_module' / 'user_module.v'
+        with open(user_module_path, 'w', encoding='utf-8') as f:
             f.write(code)
         
         # 运行模拟
-        result, log_output = run_simulation()
-        SIM_PROJECT_DIR = BASE_DIR / 'backend' / (str(problem_id)) / 'sim_project' / 'waveform.vcd'
+        result, status_message, log_output = run_simulation(problem_id)
+        
         # 解析波形文件
-        waveform_data = parse_waveform(SIM_PROJECT_DIR)
+        sim_project_dir = BASE_DIR / 'backend' / f'exp{problem_id}' / 'sim_project'
+        waveform_path = sim_project_dir / 'waveform.vcd'
+        waveform_data = parse_waveform(waveform_path)
         
         return jsonify({
             'success': True, 
             'result': result,
+            'message': status_message,
             'log': log_output,
             'waveform': waveform_data
         })
     except Exception as e:
         return jsonify({'success': False, 'message': f'评测异常：{str(e)}'})
 
-def run_simulation():
+def run_simulation(problem_id, vsim_timeout=10):
     """运行Verilog仿真并返回结果"""
-    # 切换到仿真项目目录
-    os.chdir(SIM_PROJECT_DIR)
+    # 调用 backend/sim_run.py 中的 run_simulation 函数
+    error_code = sim_run_verilog(problem_id, vsim_timeout)
     
-    # 运行测试脚本
-    try:
-        if os.name == 'nt':  # Windows
-            process = subprocess.run(['do.bat'], 
-                                    capture_output=True, 
-                                    text=True,
-                                    cwd=SIM_PROJECT_DIR)
-        else:  # Linux/Mac
-            # 确保Python脚本有执行权限
-            test_script = SIM_PROJECT_DIR / 'test.py'
-            os.chmod(test_script, 0o755)
-            process = subprocess.run(['python', 'test.py'], 
-                                    capture_output=True, 
-                                    text=True,
-                                    cwd=SIM_PROJECT_DIR)
-        
-        # 检查输出
-        output = process.stdout + process.stderr
-        if process.returncode == 0:
-            return "通过", output
-        else:
-            return "失败", output
-    except Exception as e:
-        return "错误", str(e)
+    # 读取日志文件
+    log_path = BASE_DIR / 'backend' / f'exp{problem_id}' / 'sim_project' / 'simulation.log'
+    log_output = "日志文件未生成"
+    
+    if log_path.exists():
+        try:
+            with open(log_path, 'r', errors='replace') as f:
+                log_output = f.read()
+        except Exception as e:
+            log_output = f"读取日志文件出错: {str(e)}"
+    
+    # 根据错误码返回结果
+    error_messages = {
+        ErrorCode.NO_ERROR: "仿真成功，结果正确",
+        ErrorCode.ERROR_COMPILE_FAIL: "编译错误，请检查代码语法",
+        ErrorCode.ERROR_SIM_LOAD_FAIL: "仿真启动失败，请检查代码",
+        ErrorCode.ERROR_SIM_RUN_FAIL: "仿真运行错误，请检查代码逻辑",
+        ErrorCode.ERROR_SIM_TIMEOUT: "仿真超时，请检查是否有死循环",
+        ErrorCode.ERROR_MISMATCH: "输出与参考不匹配，请检查代码逻辑",
+        ErrorCode.ERROR_TCL_NOT_FOUND: "TCL脚本未找到，系统错误",
+        ErrorCode.ERROR_UNKNOWN: "未知错误，请联系管理员"
+    }
+    
+    status_message = error_messages.get(error_code, f"未知状态码: {error_code}")
+    
+    if error_code == ErrorCode.NO_ERROR:
+        return "通过", status_message, log_output
+    else:
+        return "失败", status_message, log_output
 
 def parse_waveform(vcd_path):
     """从VCD文件解析波形数据为前端可用的格式"""
-    # 简单实现，实际项目可能需要更复杂的VCD解析
-    # 这里我们直接返回波形的文本内容，前端可以使用WaveDrom等工具渲染
+    if not vcd_path.exists():
+        return {'error': '波形文件不存在，仿真可能失败'}
+    
     try:
-        with open(vcd_path, 'r') as f:
-            lines = f.readlines()[20:200]  # 仅读取一部分，避免文件过大
-        
-        # 解析为简单的时间-值数据对
+        # 存储信号映射关系 (变量名 -> 信号代码)
+        signal_map = {}
+        # 存储解析后的信号数据
         signals = {
             'clk': [],
             'rstn': [],
@@ -140,32 +149,71 @@ def parse_waveform(vcd_path):
             'mismatch': []
         }
         
+        with open(vcd_path, 'r', errors='replace') as f:
+            lines = f.readlines()
+        
+        # 第一轮扫描，建立变量名和信号代码的映射
+        in_vars_section = False
+        for line in lines:
+            line = line.strip()
+            
+            # 变量定义部分开始
+            if line.startswith('$scope'):
+                in_vars_section = True
+                continue
+            
+            # 变量定义部分结束
+            if line.startswith('$upscope') or line.startswith('$enddefinitions'):
+                in_vars_section = False
+                continue
+            
+            # 解析变量定义
+            if in_vars_section and line.startswith('$var'):
+                parts = line.split()
+                if len(parts) >= 5:
+                    var_code = parts[3]  # 信号代码
+                    var_name = parts[4]  # 变量名
+                    
+                    # 匹配我们关心的信号
+                    if var_name == 'clk':
+                        signal_map['clk'] = var_code
+                    elif var_name == 'rstn':
+                        signal_map['rstn'] = var_code
+                    elif var_name == 'refrence_in':
+                        signal_map['refrence_in'] = var_code
+                    elif var_name == 'your_out':
+                        signal_map['your_out'] = var_code
+                    elif var_name == 'refrence_out':
+                        signal_map['refrence_out'] = var_code
+                    elif var_name == 'mismath_out':
+                        signal_map['mismatch'] = var_code
+        
+        # 第二轮扫描，提取时间-值数据对
         current_time = 0
         for line in lines:
             line = line.strip()
+            
+            # 时间戳行
             if line.startswith('#'):
-                current_time = int(line[1:])
-            elif line and len(line) >= 2 and line[0] in "01" and line[1] in "!\"#$%&":
+                try:
+                    current_time = int(line[1:])
+                except ValueError:
+                    continue
+            
+            # 值变化行 (格式: 值 信号代码)
+            elif len(line) >= 2 and line[0] in "01xz" and line[1:] in signal_map.values():
                 value = line[0]
-                signal_code = line[1]
+                signal_code = line[1:]
                 
-                # 映射信号代码到信号名
-                if signal_code == '!':
-                    signals['clk'].append((current_time, value))
-                elif signal_code == '"':
-                    signals['rstn'].append((current_time, value))
-                elif signal_code == '#':
-                    signals['refrence_in'].append((current_time, value))
-                elif signal_code == '$':
-                    signals['your_out'].append((current_time, value))
-                elif signal_code == '%':
-                    signals['refrence_out'].append((current_time, value))
-                elif signal_code == '&':
-                    signals['mismatch'].append((current_time, value))
+                # 反向查找信号名
+                for signal_name, code in signal_map.items():
+                    if code == signal_code:
+                        signals[signal_name].append((current_time, value))
+                        break
         
         return signals
     except Exception as e:
-        return {'error': str(e)}
+        return {'error': f'解析波形文件出错: {str(e)}'}
 
 if __name__ == '__main__':
     app.run(debug=True)
