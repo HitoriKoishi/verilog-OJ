@@ -4,8 +4,9 @@ module xor_trigger (
     input in, 
     output reg out
 );
-always@(posedge clk or negedge rstn) begin
-    if(~rstn) out <= 0;
-	else out <= in | out;
-end
+//在此处添加你的代码
+/* always @(...)begin...
+    end
+*/
+
 endmodule

@@ -26,7 +26,7 @@ initial begin
 end
 
 
-user_module user_module_inst(
+xor_trigger user_module_inst(
     .clk    (clk        ),
     .rstn   (rstn       ),
     .in     (refrence_in),
