@@ -5,7 +5,8 @@ reg rstn;
 reg refrence_in;
 wire your_out, refrence_out;
 wire mismatch = (refrence_out !== your_out); //强判断，x或z也会判断是否相等
-//mismatch信号不可省略，mismatch的逻辑由test_bench决定，tcl脚本识别mismatch信号，如果在仿真过程中不为0则波形不匹配。
+reg ifmismatch = 0;
+reg [63:0] first_mismatch_time = -1;
 
 initial clk = 0;
 always #10 clk = ~clk;
@@ -23,7 +24,17 @@ initial begin
     #25 refrence_in = 1;
     #25 refrence_in = 0;
     #25 $dumpoff; //结束记录波形
-    $stop(); //必须使用stop停止仿真，使用finish会强制关闭进程
+    $display("\n=== Simulation Summary ===");
+    if (ifmismatch) begin
+        $display("** x TEST FAILED! x **");
+        $display("First mismatch at: %0t ps", first_mismatch_time);
+    end else begin
+        $display("** √ TEST PASSED! √ **");
+        $display("No mismatches detected");
+    end
+    $display("Simulation time: %0t ps", $realtime);
+    $display("========================");
+    $stop();
 end
 
 
@@ -39,5 +50,12 @@ ref_module ref_module_inst(
     .in     (refrence_in ),
     .out    (refrence_out)
 );
+
+always @(*) begin
+    if((mismatch !== 1'b0) && (!ifmismatch)) begin
+        ifmismatch <= 1'b1;
+        first_mismatch_time <= $time;
+    end
+end
 
 endmodule //test_bencch
