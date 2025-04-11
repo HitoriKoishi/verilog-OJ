@@ -4,8 +4,7 @@ module user_module (
     input in, 
     output reg out
 );
-always@(posedge clk or negedge rstn) begin
-    if(~rstn) out <= 0;
-	else out <= in ^ out;
-end
+// 在此处添加您的代码
+// ...
+
 endmodule
