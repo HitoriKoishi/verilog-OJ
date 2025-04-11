@@ -1,17 +1,17 @@
 # Model Technology ModelSim SE-64 vlog 2020.4 Compiler 2020.10 Oct 13 2020
-# Start time: 21:44:36 on Apr 09,2025
-# vlog -work work -mfcu -incr -suppress 3485 -suppress 8683 -suppress 2902 -f sim_file_list.f 
+# Start time: 16:28:56 on Apr 10,2025
+# vlog -work work -mfcu -incr -suppress 3485 -suppress 8683 -suppress 2902 -suppress 2083 -f sim_file_list.f 
 # -- Compiling module test_bench
 # -- Compiling module ref_module
 # -- Compiling module user_module
 # 
 # Top level modules:
 # 	test_bench
-# End time: 21:44:36 on Apr 09,2025, Elapsed time: 0:00:00
+# End time: 16:28:56 on Apr 10,2025, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # ** Warning: (vsim-53) Cannot suppress or change severity level of message number 1.
 # vsim -quiet -c -voptargs=""+acc"" "+nowarn1" -L work test_bench 
-# Start time: 21:44:36 on Apr 09,2025
+# Start time: 16:28:56 on Apr 10,2025
 # ** Note: (vsim-3812) Design is being optimized...
 # //  ModelSim SE-64 2020.4 Oct 13 2020
 # //
@@ -26,7 +26,10 @@
 # //  is prohibited from disclosure under the Trade Secrets Act,
 # //  18 U.S.C. Section 1905.
 # //
-# ** Note: $finish    : ../test_bench/test_bench.v(25)
+# ** Note: $stop    : ../test_bench/test_bench.v(25)
 #    Time: 215 ns  Iteration: 0  Instance: /test_bench
-# End time: 21:44:38 on Apr 09,2025, Elapsed time: 0:00:02
+# Break in Module test_bench at ../test_bench/test_bench.v line 25
+# Stopped at ../test_bench/test_bench.v line 25
+# INFO: Simulation PASSED
+# End time: 16:28:57 on Apr 10,2025, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1

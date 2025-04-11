@@ -1,5 +1,5 @@
 $date
-	Wed Apr 09 21:44:38 2025
+	Thu Apr 10 16:28:57 2025
 $end
 $version
 	ModelSim Version 2020.4
@@ -24,7 +24,7 @@ $dumpvars
 0#
 x$
 x%
-x&
+0&
 $end
 #10000
 1!
@@ -37,7 +37,6 @@ $end
 0!
 0%
 0$
-0&
 #50000
 1!
 #60000

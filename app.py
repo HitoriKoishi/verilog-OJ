@@ -6,16 +6,12 @@ import json
 import shutil
 from pathlib import Path
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='frontend/templates', static_folder='frontend/static')
 app.secret_key = 'verilog-oj-secret-key'
 
 # 项目根目录
 BASE_DIR = Path(__file__).resolve().parent
-# 测试模块目录
-TEST_MODULE_DIR = BASE_DIR / 'py' / 'test_module'
-# 仿真项目目录
-SIM_PROJECT_DIR = BASE_DIR / 'py' / 'sim_project'
-
+SIM_PROJECT_DIR=Path()
 # 题目数据
 PROBLEMS = [
     {
@@ -77,15 +73,15 @@ def submit(problem_id):
     
     try:
         # 保存用户代码到test_module目录
-        user_module_path = TEST_MODULE_DIR / 'user_module.v'
+        user_module_path = BASE_DIR / 'backend' / ('exp' + str(problem_id)) / 'test_module' / 'user_module.v'
         with open(user_module_path, 'w') as f:
             f.write(code)
         
         # 运行模拟
         result, log_output = run_simulation()
-        
+        SIM_PROJECT_DIR = BASE_DIR / 'backend' / (str(problem_id)) / 'sim_project' / 'waveform.vcd'
         # 解析波形文件
-        waveform_data = parse_waveform(SIM_PROJECT_DIR / 'waveform.vcd')
+        waveform_data = parse_waveform(SIM_PROJECT_DIR)
         
         return jsonify({
             'success': True, 
