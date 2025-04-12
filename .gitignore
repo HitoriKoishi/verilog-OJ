@@ -1,4 +1,4 @@
-py/sim_project/work
 *.log
 *.vcd
 *.view
+example.db

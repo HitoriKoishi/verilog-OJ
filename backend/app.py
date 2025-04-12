@@ -10,13 +10,14 @@ from threading import Lock
 from enum import IntEnum
 import subprocess
 import sys
+import tempfile
 import shutil
+from run_sim import ErrorCode, run_simulation
 
 simulation_lock = Lock()
 
 # 项目根目录
 BASE_DIR = Path(__file__).resolve().parent
-SUBMISSION_DATA_ROOT = BASE_DIR / "submissions_data"
 
 app = Flask(__name__)
 app.secret_key = 'verilog-oj-secret-key'
@@ -28,6 +29,12 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # 指定登录路由
+
+class SubmissionStatus():
+    QUEUED = 'queued'
+    RUNNING = 'running'
+    SUCCESS = 'success'
+    FAILED = 'failed'
 
 class SimulationResult:
     def __init__(self):
@@ -66,21 +73,11 @@ class Submission(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))       # 用户ID
     problem_id = db.Column(db.Integer, db.ForeignKey('problem.id')) # ProbID
     code = db.Column(db.Text)                                       # 提交代码
-    status = db.Column(db.String(20), default='queued')             # 添加默认状态
+    status = db.Column(db.String(20), default=SubmissionStatus.QUEUED)             # 添加默认状态
     error_code = db.Column(db.String(20), nullable=True)            # 错误码（与ErrorCode对应）
     log_path = db.Column(db.String(200), nullable=True)             # 限制路径长度
     waveform_path = db.Column(db.String(200), nullable=True)        # 限制路径长度
     created_at = db.Column(db.DateTime, default=datetime.now())     # 添加默认时间
-
-class ErrorCode(IntEnum):
-    SUCCESS             = 0
-    ERROR_COMPILE_FAIL  = 1
-    ERROR_SIM_LOAD_FAIL = 2
-    ERROR_SIM_RUN_FAIL  = 3
-    ERROR_SIM_TIMEOUT   = 4
-    ERROR_MISMATCH      = 5
-    ERROR_BAT_NOT_FOUND = 6
-    ERROR_UNKNOWN       = 7
 
 # ---------- 用户加载器 ----------
 @login_manager.user_loader
@@ -191,7 +188,7 @@ def saveDraft(id):
 @app.route('/problems/<int:id>/load', methods=['GET'])
 @login_required
 def loadDraft(id):
-    """保存代码草稿"""
+    """取用户代码草稿"""
     user_id = current_user.id
     # 验证存在性
     if not (User.query.get(user_id)) or not (Problem.query.get(id)):
@@ -229,7 +226,7 @@ def submitSolution(id):
         user_id=user_id,
         problem_id=id,
         code=code,
-        status='queued',  # 初始状态为排队中
+        status=SubmissionStatus.QUEUED,  # 初始状态为排队中
         created_at=datetime.now()
     )
     db.session.add(submission)
@@ -245,28 +242,28 @@ def getSubmission(submission_id):
     if not submission:
         return jsonify({"error": "提交记录不存在"}), 404
     # 最终状态直接返回
-    if submission.status in ['success', 'failed']:
+    if submission.status in [SubmissionStatus.SUCCESS, SubmissionStatus.FAILED]:
         return _format_response(submission)
     # 加锁防止并发执行
     with simulation_lock:
         # 刷新对象状态
         submission = Submission.query.get(submission_id)
-        if submission.status != 'queued':
+        if submission.status != SubmissionStatus.QUEUED:
             return _format_response(submission)
         try:
             # 更新为运行状态
-            submission.status = 'running'
+            submission.status = SubmissionStatus.RUNNING
             db.session.commit()
             # 执行仿真
             sim_result = sim_run_verilog(submission_id)
             # 更新数据库记录
-            submission.status = 'success' if sim_result.error_code == ErrorCode.SUCCESS else 'failed'
+            submission.status = SubmissionStatus.SUCCESS if sim_result.error_code == ErrorCode.SUCCESS else SubmissionStatus.FAILED
             submission.error_code = sim_result.error_code.name
             submission.log_path = sim_result.log_path
             submission.waveform_path = sim_result.waveform_path
         except Exception as e:
             # 错误处理
-            submission.status = 'failed'
+            submission.status = SubmissionStatus.FAILED
             submission.error_code = str(e)
             submission.log_path = ""
             submission.waveform_path = ""
@@ -274,7 +271,6 @@ def getSubmission(submission_id):
         finally:
             db.session.commit()
     return _format_response(submission)
-
 
 def _format_response(submission):
     """统一响应格式化"""
@@ -410,46 +406,47 @@ def getUserSubmissions(user_id):
 def sim_run_verilog(submission_id: int) -> SimulationResult:
     result = SimulationResult()
     submission = Submission.query.get(submission_id)
-    expnum = submission.problem_id
-    project_dir = BASE_DIR / f"exp{submission.problem_id}"
-    sim_project_dir = project_dir / "sim_project"
-    user_module_path = project_dir / "test_module" / "user_module.v"
-    bat_file = sim_project_dir / "run_sim.bat"
-    # 写入用户代码
-    with open(user_module_path, 'w', encoding='utf-8') as f:
-        f.write(submission.code)
-    # 准备目标存储目录
-    save_dir = BASE_DIR / "sub_data"
-    save_dir.mkdir(parents=True, exist_ok=True)
-    try:
-        # 执行仿真过程
-        process = subprocess.run(
-            [str(bat_file)],
-            cwd=sim_project_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            timeout=60,
-            encoding='utf-8',
-            errors='replace'
-        )
-        # 处理生成的文件
-        result.error_code = ErrorCode(process.returncode)
-        # 移动日志文件
-        src_log = sim_project_dir / "simulation.log"
-        src_vcd = sim_project_dir / "waveform.vcd"
-        if src_log.exists():
-            dest_log = save_dir / f"sim_{str(submission_id)}.log"
-            shutil.move(str(src_log), str(dest_log))
-            result.log_path = str(dest_log.relative_to(BASE_DIR))
-        if src_vcd.exists():
-            dest_vcd = save_dir / f"wave_{str(submission_id)}.vcd"
-            shutil.move(str(src_vcd), str(dest_vcd))
-            result.waveform_path = str(dest_vcd.relative_to(BASE_DIR))
-    except Exception as e:
+    if not submission:
         result.error_code = ErrorCode.ERROR_UNKNOWN
-        result.log_path = ""
-        result.waveform_path = ""
+        return result
+    # 获取 problem_id 和对应的 project 目录
+    problem_id = submission.problem_id
+    project_dir = BASE_DIR / f"exp{problem_id}" / "project"
+    if not project_dir.exists():
+        result.error_code = ErrorCode.ERROR_UNKNOWN
+        return result
+    # 创建临时文件夹
+    with tempfile.TemporaryDirectory(dir=BASE_DIR) as temp_dir:
+        temp_dir_path = Path(BASE_DIR/temp_dir)
+        # 将 problem_id 对应的 project 文件夹内容复制到临时文件夹
+        shutil.copytree(project_dir, temp_dir_path, dirs_exist_ok=True)
+        # 创建 user_module.v 文件，将用户代码写入
+        user_module_path = temp_dir_path / "user_module.v"
+        with open(user_module_path, 'w', encoding='utf-8') as f:
+            f.write(submission.code)
+        # 准备目标存储目录
+        save_dir = BASE_DIR / "sub_data"
+        save_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            # 调用 run_simulation 函数执行仿真
+            error_code = run_simulation(temp_dir_path, timeout_sec=60)
+            result.error_code = error_code
+            # 处理生成的文件
+            src_log = temp_dir_path / "simulation.log"
+            src_vcd = temp_dir_path / "waveform.vcd"
+            if src_log.exists():
+                dest_log = save_dir / f"sim_{str(submission_id)}.log"
+                shutil.move(str(src_log), str(dest_log))
+                result.log_path = str(dest_log.relative_to(BASE_DIR))
+            if src_vcd.exists():
+                dest_vcd = save_dir / f"wave_{str(submission_id)}.vcd"
+                shutil.move(str(src_vcd), str(dest_vcd))
+                result.waveform_path = str(dest_vcd.relative_to(BASE_DIR))
+        except Exception as e:
+            result.error_code = ErrorCode.ERROR_UNKNOWN
+            result.log_path = ""
+            result.waveform_path = ""
+    # 临时文件夹会在 with 语句结束时自动删除
     return result
 
 
