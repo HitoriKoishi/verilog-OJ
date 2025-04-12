@@ -13,8 +13,9 @@ python后端
 ## 目录结构
 
 ```
-│   README.md
-│   sim_run.py
+│   README.md                   README
+│   sim_run.py                  仿真py文件
+|   app.py                      后端py文件
 │
 ├───exp1                        实验1
 │   ├───doc                         文档
