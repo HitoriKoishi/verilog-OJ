@@ -1,10 +1,11 @@
-module user_module (
+module xor_trigger (
     input clk,
     input rstn,
     input in, 
     output reg out
 );
-// 在此处添加您的代码
-// ...
-
+always@(posedge clk or negedge rstn) begin
+    if(~rstn) out <= 0;
+    else out <= in ^ out;    
+end
 endmodule
