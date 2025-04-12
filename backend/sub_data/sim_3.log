@@ -1,0 +1,6 @@
+INFO: Start Sim at 18:29:12.36 
+[1/3] Compiling... 
+'iverilog' 不是内部或外部命令，也不是可运行的程序
+或批处理文件。
+ERROR: Compilation failed 
+INFO: End Sim at 18:29:12.37 

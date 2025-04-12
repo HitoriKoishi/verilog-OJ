@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_cors import CORS  # 导入CORS
 import os
 import json
 from pathlib import Path
@@ -20,6 +21,8 @@ simulation_lock = Lock()
 BASE_DIR = Path(__file__).resolve().parent
 
 app = Flask(__name__)
+# 配置CORS，允许跨域请求
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
 app.secret_key = 'verilog-oj-secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'  # 使用 SQLite 数据库
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -401,6 +404,66 @@ def getUserSubmissions(user_id):
         "date": sub.created_at.isoformat(),
         "status": sub.status
     } for sub in submissions])
+
+
+# ---------- 获取用户资料 ----------
+@app.route('/user/profile', methods=['GET'])
+@login_required
+def getUserProfile():
+    """获取当前登录用户的详细信息"""
+    user = User.query.get(current_user.id)
+    if not user:
+        return jsonify({"error": "用户不存在"}), 404
+    
+    return jsonify({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email
+    })
+
+# ---------- 更新用户名 ----------
+@app.route('/user/update_username', methods=['POST'])
+@login_required
+def updateUsername():
+    """更新用户名"""
+    new_username = request.get_json().get('newUsername')
+    
+    if not new_username:
+        return jsonify({"error": "新用户名不能为空"}), 400
+    
+    # 检查用户名是否已存在
+    if User.query.filter(User.username == new_username, User.id != current_user.id).first():
+        return jsonify({"error": "该用户名已被使用"}), 409
+    
+    user = User.query.get(current_user.id)
+    user.username = new_username
+    db.session.commit()
+    
+    return jsonify({"status": "success", "username": new_username})
+
+# ---------- 更新密码 ----------
+@app.route('/user/update_password', methods=['POST'])
+@login_required
+def updatePassword():
+    """更新用户密码"""
+    data = request.get_json()
+    current_password = data.get('currentPassword')
+    new_password = data.get('newPassword')
+    
+    if not current_password or not new_password:
+        return jsonify({"error": "当前密码和新密码不能为空"}), 400
+    
+    user = User.query.get(current_user.id)
+    
+    # 验证当前密码
+    if not user.check_password(current_password):
+        return jsonify({"error": "当前密码不正确"}), 401
+    
+    # 更新密码
+    user.set_password(new_password)
+    db.session.commit()
+    
+    return jsonify({"status": "success"})
 
 
 def sim_run_verilog(submission_id: int) -> SimulationResult:
