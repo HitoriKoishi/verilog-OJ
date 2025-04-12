@@ -1,0 +1,1 @@
+"module xor_trigger (\n    input clk,\n    input rstn,\n    input in, \n    output reg out\n);\nalways@(posedge clk or negedge rstn) begin\n    if(~rstn) out <= 0;\n    else out <= in ^ out;    \nend\nendmodule"

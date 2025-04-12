@@ -1,0 +1,8 @@
+INFO: Start Sim at 18:50:24.01 
+[1/3] Compiling... 
+../test_module/user_module.v:1: error: 'ref_module' has already been declared in this scope.
+../test_module/ref_module.v:1:      : It was declared here as a module.
+../test_module/user_module.v:11: Module ref_module was already declared here: ../test_module/ref_module.v:1
+
+ERROR: Compilation failed 
+INFO: End Sim at 18:50:24.07 

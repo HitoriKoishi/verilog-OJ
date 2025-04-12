@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verilog OnlineJudge</title>
+    <style>
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e0e0e0;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+    <!-- 添加错误处理 -->
+    <script>
+        // 设置超时检测请稍候...</div>
+        setTimeout(function () {
+            if (document.querySelector('.loading-container')) {
+                console.warn('应用加载超时');
+                document.querySelector('.loading-text').textContent = '加载超时，请刷新页面重试';
+            }
+        }, 10000);
+    </script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- 加载指示器，当Vue应用挂载后会被替换 -->
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">应用程序加载中，请稍候...</div>
+        </div>
+    </div>
+    <!-- 确保路径正确 -->
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- 添加备用脚本，检测主脚本是否正常加载 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM已加载，正在等待Vue应用挂载');
+        });
+    </script>
+</body>
+
+</html>
