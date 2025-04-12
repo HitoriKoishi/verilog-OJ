@@ -5,19 +5,18 @@ import os
 import json
 from pathlib import Path
 from datetime import datetime
-import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
 from threading import Lock
+from enum import IntEnum
+import subprocess
+import sys
+import shutil
 
 simulation_lock = Lock()
 
-# 导入 sim_run 模块
-from run_sim import run_simulation as sim_run_verilog
-from run_sim import ErrorCode
-from run_sim import SimulationResult
-
 # 项目根目录
 BASE_DIR = Path(__file__).resolve().parent
+SUBMISSION_DATA_ROOT = BASE_DIR / "submissions_data"
 
 app = Flask(__name__)
 app.secret_key = 'verilog-oj-secret-key'
@@ -29,6 +28,12 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # 指定登录路由
+
+class SimulationResult:
+    def __init__(self):
+        self.error_code = ErrorCode.ERROR_UNKNOWN
+        self.log_path = ""
+        self.waveform_path = ""
 
 class Problem(db.Model):
     id = db.Column(db.Integer, primary_key=True)            # id为exp文件夹后面的数字
@@ -57,15 +62,25 @@ class UserCode(db.Model):
     updated_at = db.Column(db.DateTime)                                                 # 暂存时间
 
 class Submission(db.Model):
-    id = db.Column(db.String(6), primary_key=True)                  # 6位短submitID
+    id = db.Column(db.Integer, primary_key=True)# 32位短submitID
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))       # 用户ID
     problem_id = db.Column(db.Integer, db.ForeignKey('problem.id')) # ProbID
     code = db.Column(db.Text)                                       # 提交代码
     status = db.Column(db.String(20), default='queued')             # 添加默认状态
-    error_code = db.Column(db.String(20))                           # 错误码（与ErrorCode对应）
-    log_path = db.Column(db.String(200))                            # 限制路径长度
-    waveform_path = db.Column(db.String(200))                       # 限制路径长度
+    error_code = db.Column(db.String(20), nullable=True)            # 错误码（与ErrorCode对应）
+    log_path = db.Column(db.String(200), nullable=True)             # 限制路径长度
+    waveform_path = db.Column(db.String(200), nullable=True)        # 限制路径长度
     created_at = db.Column(db.DateTime, default=datetime.now())     # 添加默认时间
+
+class ErrorCode(IntEnum):
+    SUCCESS             = 0
+    ERROR_COMPILE_FAIL  = 1
+    ERROR_SIM_LOAD_FAIL = 2
+    ERROR_SIM_RUN_FAIL  = 3
+    ERROR_SIM_TIMEOUT   = 4
+    ERROR_MISMATCH      = 5
+    ERROR_BAT_NOT_FOUND = 6
+    ERROR_UNKNOWN       = 7
 
 # ---------- 用户加载器 ----------
 @login_manager.user_loader
@@ -74,9 +89,9 @@ def loadUser(user_id):
 
 # ---------- 登录路由 ----------
 @app.route('/login', methods=['POST'])
-def userLogin():
-    username = request.get_json.get('username')
-    password = request.get_json.get('password')
+def loginUser():
+    username = request.get_json().get('username')
+    password = request.get_json().get('password')
     if not username or not password:
         return jsonify({"status": "error", "msg": "需要用户名和密码"}), 400
     user = User.query.filter_by(username=username).first()
@@ -116,9 +131,9 @@ def checkAuth():
 @app.route('/register', methods=['POST'])
 def registerUser():
     """注册接口，支持密码和邮箱"""
-    username = request.get_json.get('username')
-    password = request.get_json.get('password')
-    email = request.get_json.get('email')
+    username = request.get_json().get('username')
+    password = request.get_json().get('password')
+    email = request.get_json().get('email')
     # 验证存在性
     if not username or not password:
         return jsonify({"error": "用户名和密码为必填项"}), 400
@@ -143,12 +158,12 @@ def registerUser():
 
 
 # ---------- 保存代码草稿 ----------
-@app.route('/problems/<int:id>', methods=['POST'])
+@app.route('/problems/<int:id>/save', methods=['POST'])
 @login_required
 def saveDraft(id):
     """保存代码草稿"""
     user_id = current_user.id
-    code = request.get_json.get('code')
+    code = request.get_json().get('code')
     # 验证存在性
     if not (User.query.get(user_id)) or not (Problem.query.get(id)):
         return jsonify({"error": "用户或问题不存在"}), 404
@@ -178,13 +193,12 @@ def saveDraft(id):
 def submitSolution(id):
     """提交代码"""
     user_id = current_user.id
-    code = request.get_json.get('code')
+    code = request.get_json().get('code')
     # 验证存在性
     if not (User.query.get(user_id)) or not (Problem.query.get(id)):
         return jsonify({"error": "用户或问题不存在"}), 404
     # 创建提交记录
     submission = Submission(
-        id=str(uuid.uuid4()),
         user_id=user_id,
         problem_id=id,
         code=code,
@@ -197,7 +211,7 @@ def submitSolution(id):
 
 
 # ---------- 获取提交结果，运行仿真 ----------
-@app.route('/submissions/<submission_id>')
+@app.route('/submissions/<int:submission_id>', methods=['GET'])
 def getSubmission(submission_id):
     """触发仿真执行并返回结果"""
     submission = Submission.query.get(submission_id)
@@ -217,10 +231,7 @@ def getSubmission(submission_id):
             submission.status = 'running'
             db.session.commit()
             # 执行仿真
-            sim_result = sim_run_verilog(
-                expnum=submission.problem_id,
-                submission_id=submission_id
-            )
+            sim_result = sim_run_verilog(submission_id)
             # 更新数据库记录
             submission.status = 'success' if sim_result.error_code == ErrorCode.SUCCESS else 'failed'
             submission.error_code = sim_result.error_code.name
@@ -232,7 +243,7 @@ def getSubmission(submission_id):
             submission.error_code = str(e)
             submission.log_path = ""
             submission.waveform_path = ""
-            app.logger.error(f"Submission {submission_id} failed: {str(e)}", exc_info=True)
+            app.logger.error(f"Submission {str(submission_id)} failed: {str(e)}", exc_info=True)
         finally:
             db.session.commit()
     return _format_response(submission)
@@ -340,7 +351,7 @@ def getProblem(id):
     response_data = {
         "id": problem.id,
         "title": problem.title,
-        "documentation": problem.description,  # 完整文档内容
+        "document": problem.description,  # 完整文档内容
         "difficulty": problem.difficulty,
         "tags": problem.tags.split(',') if problem.tags else [],  # 转换为数组
         "code_template": problem.code_temp  # 代码编辑器初始内容
@@ -363,10 +374,56 @@ def getUserSubmissions(user_id):
     ).filter_by(user_id=user_id).order_by(Submission.created_at.desc()).all()
     # 构建响应数据
     return jsonify([{
-        "uuid": sub.id,
+        "subid": sub.id,
         "date": sub.created_at.isoformat(),
         "status": sub.status
     } for sub in submissions])
+
+
+def sim_run_verilog(submission_id: int) -> SimulationResult:
+    result = SimulationResult()
+    submission = Submission.query.get(submission_id)
+    expnum = submission.problem_id
+    project_dir = BASE_DIR / f"exp{submission.problem_id}"
+    sim_project_dir = project_dir / "sim_project"
+    user_module_path = project_dir / "test_module" / "user_module.v"
+    bat_file = sim_project_dir / "run_sim.bat"
+    # 写入用户代码
+    with open(user_module_path, 'w', encoding='utf-8') as f:
+        f.write(submission.code)
+    # 准备目标存储目录
+    save_dir = BASE_DIR / "sub_data"
+    save_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        # 执行仿真过程
+        process = subprocess.run(
+            [str(bat_file)],
+            cwd=sim_project_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=60,
+            encoding='utf-8',
+            errors='replace'
+        )
+        # 处理生成的文件
+        result.error_code = ErrorCode(process.returncode)
+        # 移动日志文件
+        src_log = sim_project_dir / "simulation.log"
+        src_vcd = sim_project_dir / "waveform.vcd"
+        if src_log.exists():
+            dest_log = save_dir / f"sim_{str(submission_id)}.log"
+            shutil.move(str(src_log), str(dest_log))
+            result.log_path = str(dest_log.relative_to(BASE_DIR))
+        if src_vcd.exists():
+            dest_vcd = save_dir / f"wave_{str(submission_id)}.vcd"
+            shutil.move(str(src_vcd), str(dest_vcd))
+            result.waveform_path = str(dest_vcd.relative_to(BASE_DIR))
+    except Exception as e:
+        result.error_code = ErrorCode.ERROR_UNKNOWN
+        result.log_path = ""
+        result.waveform_path = ""
+    return result
 
 
 if __name__=='__main__':
