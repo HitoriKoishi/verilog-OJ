@@ -157,7 +157,7 @@ def registerUser():
     })
 
 
-# ---------- 保存代码草稿 ----------
+# ---------- 保存用户代码草稿 ----------
 @app.route('/problems/<int:id>/save', methods=['POST'])
 @login_required
 def saveDraft(id):
@@ -185,6 +185,33 @@ def saveDraft(id):
         db.session.add(draft)
     db.session.commit()
     return jsonify({"status": "success"})
+
+
+# ---------- 获取用户代码草稿 ----------
+@app.route('/problems/<int:id>/load', methods=['GET'])
+@login_required
+def loadDraft(id):
+    """保存代码草稿"""
+    user_id = current_user.id
+    # 验证存在性
+    if not (User.query.get(user_id)) or not (Problem.query.get(id)):
+        return jsonify({"error": "用户或问题不存在"}), 404
+    draft = UserCode.query.filter_by(
+        user_id=user_id,
+        problem_id=id
+    ).first()
+    if draft:
+        draft_code = draft.draft_code
+        draft_time = draft.updated_at
+        return jsonify({
+            "status": "success",
+            "draft_code": draft_code,
+            "draft_time": draft_time
+        })
+    else:
+        return jsonify({
+            "status": "failed"
+        })
 
 
 # ---------- 提交代码，创建提交ID ----------
