@@ -1,21 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { problemApi } from '../api';
 
 const router = useRouter();
 
-// 使用静态数据
-// const problems = ref([
-//   { id: 1, title: '简单异或触发器', difficulty: '简单', completed: false },
-//   { id: 2, title: '3输入与非门', difficulty: '简单', completed: false },
-//   { id: 3, title: '三人表决器', difficulty: '中等', completed: false },
-//   { id: 4, title: 'JK触发器', difficulty: '中等', completed: false },
-//   { id: 5, title: '基本D触发器', difficulty: '中等', completed: false },
-//   { id: 6, title: '四bit十进制计数器', difficulty: '困难', completed: false }
-// ]);
-
 const problems = ref([]);
-
 const loading = ref(false);
 const error = ref(null);
 
@@ -29,7 +19,10 @@ const fetchProblems = async () => {
 
     try {
         const response = await problemApi.getProblems();
-        problems.value = response.data;
+        problems.value = response.data.map(problem => ({
+            ...problem,
+            completed: false // 后端未提供completed状态，默认设为false
+        }));
     } catch (err) {
         console.error('获取题目列表失败:', err);
         error.value = err.message || '获取题目失败';
@@ -37,6 +30,10 @@ const fetchProblems = async () => {
         loading.value = false;
     }
 };
+
+onMounted(() => {
+    fetchProblems();
+});
 
 const difficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -61,7 +58,7 @@ const difficultyColor = (difficulty) => {
 
         <div v-else-if="error" class="error">
             <p>加载出错: {{ error }}</p>
-            <button @click="store.dispatch('problems/fetchProblems')">重试</button>
+            <button @click="fetchProblems">重试</button>
         </div>
 
         <table v-else>
