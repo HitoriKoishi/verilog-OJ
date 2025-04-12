@@ -56,7 +56,7 @@ const handleLogout = () => {
                     <div class="user-info">
                         <span>{{ currentUser.username }}</span>
                         <div class="dropdown-menu">
-                            <div class="dropdown-item" @click="navigateTo('/profile')">个人中心</div>
+                            <div class="dropdown-item" @click="navigateTo('/user/profile')">个人中心</div>
                             <div class="dropdown-item" @click="handleLogout">退出登录</div>
                         </div>
                     </div>

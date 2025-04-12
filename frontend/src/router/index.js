@@ -26,7 +26,7 @@ const routes = [
         props: true
     },
     {
-        path: '/profile',
+        path: '/user/profile',
         name: 'UserProfile',
         component: UserProfile,
         meta: {

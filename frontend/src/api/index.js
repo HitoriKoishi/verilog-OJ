@@ -39,27 +39,27 @@ export const problemApi = {
 export const userApi = {
     // 登录
     login(username, password) {
-        return apiClient.post('/login', { username, password });
+        return apiClient.post('/user/login', { username, password });
     },
 
     // 注册
     register(username, password, email) {
-        return apiClient.post('/register', { username, password, email });
+        return apiClient.post('/user/register', { username, password, email });
     },
 
     // 注销
     logout() {
-        return apiClient.post('/logout');
+        return apiClient.post('/user/logout');
     },
 
     // 检查登录状态
     checkAuth() {
-        return apiClient.get('/check_auth');
+        return apiClient.get('/user/check_auth');
     },
 
     // 获取用户提交历史
     getSubmissions(userId) {
-        return apiClient.get(`/users/${userId}/submissions`);
+        return apiClient.get(`/user/${userId}/submissions`);
     }
 };
 
