@@ -5,6 +5,9 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from exts import db
 from pathlib import Path
+from functools import wraps
+from flask import request, jsonify
+from flask_login import current_user
 
 # 项目根目录
 BASE_DIR = Path(__file__).resolve().parent
@@ -72,3 +75,13 @@ class Submission(db.Model):
     log_path = db.Column(db.String(200), nullable=True)             # 限制路径长度
     waveform_path = db.Column(db.String(200), nullable=True)        # 限制路径长度
     created_at = db.Column(db.DateTime, default=datetime.now())     # 添加默认时间
+
+
+def login_required(func):
+    """自定义 login_required 装饰器，检查用户是否已登录"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({"error": "用户未登录"}), 401
+        return func(*args, **kwargs)
+    return wrapper

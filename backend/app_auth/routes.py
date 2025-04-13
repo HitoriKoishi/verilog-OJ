@@ -1,7 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User
+from models import User, login_required
 from exts import db
 
 user_bp = Blueprint('user', __name__)
@@ -33,6 +33,7 @@ def loginUser():
 @login_required
 def logoutUser():
     logout_user()
+    session.clear()  # 清除所有会话数据
     return jsonify({"status": "success"})
 
 # ---------- 登录状态检查 ----------

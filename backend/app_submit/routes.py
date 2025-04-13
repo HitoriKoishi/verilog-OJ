@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_user, logout_user, login_required, current_user
-from models import User, UserCode, Problem, Submission, SubmissionStatus, ErrorCode, SimulationResult
+from flask_login import login_user, logout_user, current_user
+from models import User, UserCode, Problem, Submission, SubmissionStatus, ErrorCode, SimulationResult, login_required
 from threading import Lock
 from exts import db
 import os

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User, UserCode, Problem, Submission, SubmissionStatus
+from models import User, UserCode, Problem, Submission, SubmissionStatus, login_required
 from datetime import datetime
 from exts import db
 

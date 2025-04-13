@@ -1,10 +1,10 @@
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
 from flask_cors import CORS  # 导入CORS
 from models import User, UserCode, ErrorCode, Problem, Submission, SubmissionStatus, SimulationResult
 from exts import db
-from models import BASE_DIR, PROB_DIR
+from models import BASE_DIR, PROB_DIR, login_required
 
 
 
