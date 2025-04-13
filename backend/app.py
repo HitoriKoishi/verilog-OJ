@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+<<<<<<< Updated upstream
 from flask_cors import CORS  # 导入CORS
+=======
+>>>>>>> Stashed changes
 import os
 import json
 from pathlib import Path
@@ -20,8 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent
 SUBMISSION_DATA_ROOT = BASE_DIR / "submissions_data"
 
 app = Flask(__name__)
+<<<<<<< Updated upstream
 # 配置CORS，允许跨域请求
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
+=======
+>>>>>>> Stashed changes
 app.secret_key = 'verilog-oj-secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'  # 使用 SQLite 数据库
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -410,6 +416,7 @@ def getUserSubmissions(user_id):
     } for sub in submissions])
 
 
+<<<<<<< Updated upstream
 # ---------- 获取用户资料 ----------
 @app.route('/user/profile', methods=['GET'])
 @login_required
@@ -470,6 +477,8 @@ def updatePassword():
     return jsonify({"status": "success"})
 
 
+=======
+>>>>>>> Stashed changes
 def sim_run_verilog(submission_id: int) -> SimulationResult:
     result = SimulationResult()
     submission = Submission.query.get(submission_id)

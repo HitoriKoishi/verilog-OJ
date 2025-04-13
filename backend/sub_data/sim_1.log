@@ -1,0 +1,13 @@
+INFO: Start Sim at 2025-04-13T20:16:40.682796
+[1/3] Compiling...
+VCD info: dumpfile waveform.vcd opened for output.
+
+=== Simulation Summary ===
+** x TEST FAILED! x **
+First mismatch at: 40000 ps
+Simulation time: 215000 ps
+========================
+test_bench.v:37: $stop called at 215000 (1ps)
+[2/3] Running simulation (timeout: 60s)...
+[3/3] Checking results...
+ERROR: Output mismatch

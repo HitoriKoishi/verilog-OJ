@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vite.dev/config/
 export default defineConfig({
+<<<<<<< Updated upstream
     plugins: [vue()],
     server: {
         proxy: {
@@ -14,4 +15,7 @@ export default defineConfig({
             }
         }
     }
+=======
+  plugins: [vue()]
+>>>>>>> Stashed changes
 })
