@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # Verilog 在线评测系统
 
 这是一个基于 Vue 3 + Vite 的 Verilog 在线评测系统前端项目。系统允许用户提交 Verilog 代码并自动评测结果。
@@ -78,8 +77,6 @@ python app.py
 
 原始模板信息:
 
-=======
->>>>>>> Stashed changes
 # Vue 3 + Vite
 
 This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.

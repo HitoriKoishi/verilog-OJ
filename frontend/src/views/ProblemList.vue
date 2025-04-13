@@ -1,29 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-<<<<<<< Updated upstream
 import { problemApi } from '../api';
 
 const router = useRouter();
 
 const problems = ref([]);
-=======
-
-const router = useRouter();
-
-// 使用静态数据
-// const problems = ref([
-//   { id: 1, title: '简单异或触发器', difficulty: '简单', completed: false },
-//   { id: 2, title: '3输入与非门', difficulty: '简单', completed: false },
-//   { id: 3, title: '三人表决器', difficulty: '中等', completed: false },
-//   { id: 4, title: 'JK触发器', difficulty: '中等', completed: false },
-//   { id: 5, title: '基本D触发器', difficulty: '中等', completed: false },
-//   { id: 6, title: '四bit十进制计数器', difficulty: '困难', completed: false }
-// ]);
-
-const problems = ref([]);
-
->>>>>>> Stashed changes
 const loading = ref(false);
 const error = ref(null);
 
@@ -37,13 +19,9 @@ const fetchProblems = async () => {
 
     try {
         const response = await problemApi.getProblems();
-<<<<<<< Updated upstream
         problems.value = response.data.map(problem => ({
             ...problem
         }));
-=======
-        problems.value = response.data;
->>>>>>> Stashed changes
     } catch (err) {
         console.error('获取题目列表失败:', err);
         error.value = err.message || '获取题目失败';
@@ -52,13 +30,10 @@ const fetchProblems = async () => {
     }
 };
 
-<<<<<<< Updated upstream
 onMounted(() => {
     fetchProblems();
 });
 
-=======
->>>>>>> Stashed changes
 const difficultyColor = (difficulty) => {
     switch (difficulty) {
         case '简单': return 'green';
@@ -92,11 +67,7 @@ const completedColor = (is_completed) => {
 
         <div v-else-if="error" class="error">
             <p>加载出错: {{ error }}</p>
-<<<<<<< Updated upstream
             <button @click="fetchProblems">重试</button>
-=======
-            <button @click="store.dispatch('problems/fetchProblems')">重试</button>
->>>>>>> Stashed changes
         </div>
 
         <table v-else>
