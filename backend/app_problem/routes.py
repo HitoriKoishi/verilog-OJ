@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import User, UserCode, Problem, Submission, SubmissionStatus, login_required
 from datetime import datetime
 from exts import db
+from app_submit.run_sim import simulation_queue
 
 problem_bp = Blueprint('problem', __name__)
 
@@ -85,6 +86,10 @@ def submitSolution(id):
     )
     db.session.add(submission)
     db.session.commit()
+    # 将 submission_id 加入队列
+    print(f"将提交ID {submission.id} 加入仿真队列")
+    simulation_queue.put(submission.id)
+    print(f"仿真队列大小: {simulation_queue.qsize()}")
     return jsonify({
         "status": "success",
         "submission_id": submission.id
