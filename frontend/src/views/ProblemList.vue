@@ -20,8 +20,7 @@ const fetchProblems = async () => {
     try {
         const response = await problemApi.getProblems();
         problems.value = response.data.map(problem => ({
-            ...problem,
-            completed: false // 后端未提供completed状态，默认设为false
+            ...problem
         }));
     } catch (err) {
         console.error('获取题目列表失败:', err);
@@ -40,6 +39,16 @@ const difficultyColor = (difficulty) => {
         case '简单': return 'green';
         case '中等': return 'orange';
         case '困难': return 'red';
+        default: return 'black';
+    }
+};
+
+const completedColor = (is_completed) => {
+    switch (is_completed) {
+        case '未完成': return 'gray';
+        case '已完成': return 'green';
+        case   '失败': return 'red';
+        case '运行中': return 'gray';
         default: return 'black';
     }
 };
@@ -68,6 +77,7 @@ const difficultyColor = (difficulty) => {
                     <th>题目名称</th>
                     <th>难度</th>
                     <th>状态</th>
+                    <th>通过/提交</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -76,7 +86,8 @@ const difficultyColor = (difficulty) => {
                     <td>{{ problem.id }}</td>
                     <td>{{ problem.title }}</td>
                     <td :style="{ color: difficultyColor(problem.difficulty) }">{{ problem.difficulty }}</td>
-                    <td>{{ problem.completed ? '已完成' : '未完成' }}</td>
+                    <td :style="{ color: completedColor(problem.is_completed)}">{{ problem.is_completed}}</td>
+                    <td>{{`${problem.passed_users_count.toString()} / ${problem.submitted_users_count.toString()}`}}</td>
                     <td>
                         <button @click="navigateToProblem(problem.id)" class="solve-btn">开始解题</button>
                     </td>

@@ -277,8 +277,8 @@
     "title": "string",
     "difficulty": "string",
     "tags": ["string","string",...],
-    "submitted_users_count": 15,
-    "passed_users_count": 20,
+    "submitted_users_count": 20,
+    "passed_users_count": 15,
     **({"is_completed": "未完成"/"已完成"/"失败"/"运行中"} if user_login else {})
   }
   {
