@@ -539,7 +539,85 @@
   404
   ```
 
+## 获取日志
 
+### **URL**
+`GET /submission/<int:id>/log`
+
+### **描述**
+获取指定提交的日志文件内容。
+
+### **参数**
+- 无
+
+### **响应**
+- 成功
+  ```json
+  {
+    "status": "success",
+    "log_content": "log_content"
+  }
+  ```
+
+- 失败
+  ```json
+  {
+    "error": "提交记录不存在"   
+  }
+  404
+  ```
+  ```json
+  {
+    "error": "日志文件不存在"   
+  }
+  404
+  ```
+  ```json
+  {
+    "error": "无法读取日志文件"   
+  }
+  500
+  ```
+
+## 获取波形
+
+### **URL**
+`GET /submission/<int:id>/waveform`
+
+### **描述**
+获取指定提交的波形文件内容
+
+### **参数**
+- 无
+
+### **响应**
+- 成功
+  ```json
+  {
+    "status": "success",
+    "waveform_content": "waveform_content"
+  }
+  ```
+
+- 失败
+  ```json
+  {
+    "error": "提交记录不存在"   
+  }
+  404
+  ```
+  ```json
+  {
+    "error": "波形文件不存在"   
+  }
+  404
+  ```
+  ```json
+  {
+    "error": "无法读取波形文件"   
+  }
+  500
+  ```
 
 
 
