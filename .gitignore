@@ -1,0 +1,5 @@
+*.log
+*.vcd
+*.view
+example.db
+__pycache__

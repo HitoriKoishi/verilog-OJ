@@ -13,33 +13,34 @@ const apiClient = axios.create({
 export const problemApi = {
     // 获取题目列表
     getProblems() {
-        return apiClient.get('/problems');
+        return apiClient.get('/problem');
     },
 
     // 获取题目详情
     getProblem(id) {
-        return apiClient.get(`/problems/${id}`);
+        return apiClient.get(`/problem/${id}`);
     },
 
     // 保存代码草稿
     saveDraft(id, code) {
-        return apiClient.post(`/problems/${id}/save`, { code });
+        return apiClient.post(`/problem/${id}/save`, { code });
     },
 
     // 加载代码草稿
     loadDraft(id) {
-        return apiClient.get(`/problems/${id}/load`);
+        return apiClient.get(`/problem/${id}/load`);
     },
 
     // 提交代码
     submitSolution(id, code) {
-        return apiClient.post(`/problems/${id}/submit`, { code });
+        return apiClient.post(`/problem/${id}/submit`, { code });
     }
 };
 
 export const userApi = {
     // 登录
     login(username, password) {
+<<<<<<< HEAD
         return apiClient.post('/login', { username, password });
 =======
 const api = axios.create({
@@ -79,34 +80,41 @@ export const userApi = {
     login(username, password) {
         return api.post('/auth/login', { username, password });
 >>>>>>> Stashed changes
+=======
+        return apiClient.post('/user/login', { username, password });
+>>>>>>> main
     },
 
     // 注册
     register(username, password, email) {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
         return apiClient.post('/register', { username, password, email });
+=======
+        return apiClient.post('/user/register', { username, password, email });
+>>>>>>> main
     },
 
     // 注销
     logout() {
-        return apiClient.post('/logout');
+        return apiClient.post('/user/logout');
     },
 
     // 检查登录状态
     checkAuth() {
-        return apiClient.get('/check_auth');
+        return apiClient.get('/user/check_auth');
     },
 
     // 获取用户提交历史
     getSubmissions(userId) {
-        return apiClient.get(`/users/${userId}/submissions`);
+        return apiClient.get(`/user/${userId}/submission`);
     }
 };
 
 export const submissionApi = {
     // 获取提交状态
     getSubmission(submissionId) {
-        return apiClient.get(`/submissions/${submissionId}`);
+        return apiClient.get(`/submission/${submissionId}`);
     }
 };
 

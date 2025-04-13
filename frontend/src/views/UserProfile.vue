@@ -53,7 +53,7 @@ const API_URL = 'http://localhost:5000';
 // 获取用户数据
 onMounted(async () => {
     try {
-        const response = await axios.get(`${API_URL}/check_auth`, { withCredentials: true });
+        const response = await axios.get(`${API_URL}/user/check_auth`, { withCredentials: true });
         if (response.data.is_login) {
             // 获取到登录用户信息
             userData.value.username = response.data.user.username;

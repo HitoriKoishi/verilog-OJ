@@ -15,7 +15,7 @@ const routes = [
         component: Home
     },
     {
-        path: '/problems',
+        path: '/problem',
         name: 'ProblemList',
         component: ProblemList
     },
@@ -26,7 +26,7 @@ const routes = [
         props: true
     },
     {
-        path: '/profile',
+        path: '/user/profile',
         name: 'UserProfile',
         component: UserProfile,
         meta: {

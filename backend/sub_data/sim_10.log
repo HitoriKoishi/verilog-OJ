@@ -1,6 +1,0 @@
-INFO: Start Sim at 18:53:07.16 
-[1/3] Compiling... 
-../test_module/user_module.v:1: syntax error
-I give up.
-ERROR: Compilation failed 
-INFO: End Sim at 18:53:07.22 
