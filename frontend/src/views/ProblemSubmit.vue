@@ -1,9 +1,13 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, shallowRef, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { marked } from 'marked'; // 重新引入 marked 用于渲染 Markdown
-
+import { EditorState } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
+// 从 codemirror 主包中导入，而不是从 basic-setup
+import { basicSetup } from 'codemirror';
+import { javascript } from '@codemirror/lang-javascript';
 const route = useRoute();
 const problemId = route.params.id;
 
@@ -11,7 +15,8 @@ const problem = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const verilogCode = ref('');
-
+const editorElement = ref(null);
+const editorView = shallowRef(null);
 // 获取单个题目的详细信息
 const fetchProblemDetail = async () => {
     loading.value = true;
@@ -195,9 +200,90 @@ const loadDraft = async () => {
     }
 };
 
-onMounted(() => {
-    fetchProblemDetail();
-    loadDraft();
+const initCodeMirrorEditor = async () => {
+    console.log('初始化编辑器开始', editorElement.value);
+    if (!editorElement.value) {
+        console.error('编辑器容器元素不存在');
+        return;
+    }
+
+    try {
+        // 确保之前的编辑器实例被销毁
+        if (editorView.value) {
+            editorView.value.destroy();
+        }
+
+        // 清空容器内容，确保没有残留元素
+        editorElement.value.innerHTML = '';
+
+        const startState = EditorState.create({
+            doc: verilogCode.value || '// 在此处编写Verilog代码',
+            extensions: [
+                basicSetup,
+                javascript(), // 作为临时的语法高亮，未来可替换为Verilog语法高亮
+                EditorView.updateListener.of(update => {
+                    if (update.docChanged) {
+                        verilogCode.value = update.state.doc.toString();
+                    }
+                })
+            ]
+        });
+
+        // 创建新的编辑器实例
+        editorView.value = new EditorView({
+            state: startState,
+            parent: editorElement.value
+        });
+
+        console.log('编辑器初始化成功');
+    } catch (err) {
+        console.error('初始化编辑器失败:', err);
+        // 出现错误时添加错误提示
+        editorElement.value.innerHTML = `<div style="color:red; padding:10px;">
+            编辑器加载失败: ${err.message}
+            <br>
+            <button onclick="location.reload()">刷新页面重试</button>
+        </div>`;
+    }
+};
+
+// 更新编辑器内容
+const updateEditorContent = (content) => {
+    if (!editorView.value) return;
+
+    const transaction = editorView.value.state.update({
+        changes: {
+            from: 0,
+            to: editorView.value.state.doc.length,
+            insert: content
+        }
+    });
+
+    editorView.value.dispatch(transaction);
+};
+
+// 清空编辑器内容
+const clearEditor = () => {
+    verilogCode.value = '';
+    if (editorView.value) {
+        updateEditorContent('');
+    }
+};
+
+// 改进 onMounted 逻辑，在DOM渲染完成后再初始化编辑器
+onMounted(async () => {
+    console.log('组件挂载');
+    await fetchProblemDetail();
+    await loadDraft();
+
+    // 使用 nextTick 确保 DOM 已更新，并添加延迟确保渲染完成
+    nextTick(() => {
+        // 添加一点延迟以确保DOM完全渲染
+        setTimeout(() => {
+            console.log('DOM 更新后初始化编辑器');
+            initCodeMirrorEditor();
+        }, 300);
+    });
 });
 
 let autoSaveInterval;
@@ -207,7 +293,18 @@ onMounted(() => {
 
 onUnmounted(() => {
     clearInterval(autoSaveInterval);
+    if (editorView.value) {
+        editorView.value.destroy();
+    }
 });
+
+// 当verilogCode从外部被更新时更新编辑器
+const updateCodeMirror = (code) => {
+    verilogCode.value = code;
+    if (editorView.value) {
+        updateEditorContent(code);
+    }
+};
 </script>
 
 <template>
@@ -242,11 +339,15 @@ onUnmounted(() => {
             <div class="code-editor">
                 <h2>代码编辑器</h2>
                 <div class="editor-controls">
-                    <button @click="loadDraft" class="control-btn">加载草稿</button>
+                    <button @click="loadDraft().then(() => {
+                        if (verilogCode) updateCodeMirror(verilogCode);
+                    })" class="control-btn">加载草稿</button>
                     <button @click="saveDraft" class="control-btn">保存草稿</button>
-                    <button @click="verilogCode = ''" class="control-btn clear-btn">清空</button>
+                    <button @click="clearEditor" class="control-btn clear-btn">清空</button>
                 </div>
-                <textarea v-model="verilogCode" placeholder="请在此输入您的Verilog代码..." rows="15"></textarea>
+
+                <!-- 明确设置ref并添加id以便于调试 -->
+                <div ref="editorElement" id="codemirror-editor" class="codemirror-container"></div>
 
                 <div class="submit-section">
                     <span class="auto-save-info">代码会每分钟自动保存</span>
@@ -375,17 +476,35 @@ onUnmounted(() => {
     background-color: #ffdddd;
 }
 
-textarea {
+.codemirror-container {
     width: 100%;
-    padding: 12px;
-    font-family: 'Consolas', 'Monaco', monospace;
+    height: 500px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    resize: vertical;
+    overflow: hidden;
+    font-family: 'Consolas', 'Monaco', monospace;
     font-size: 14px;
-    line-height: 1.5;
-    height: 500px;
-    tab-size: 4;
+    background-color: #f5f5f5;
+    /* 添加背景色以便于观察容器是否正确渲染 */
+}
+
+.codemirror-container :deep(.cm-editor) {
+    height: 100%;
+    width: 100%;
+}
+
+.codemirror-container :deep(.cm-scroller) {
+    overflow: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.codemirror-container :deep(.cm-content) {
+    font-family: 'Consolas', 'Monaco', monospace;
+    padding: 4px;
+}
+
+.codemirror-container :deep(.cm-line) {
+    padding: 0 4px;
 }
 
 .submit-section {
