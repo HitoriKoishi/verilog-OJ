@@ -1,23 +1,13 @@
 # Verilog 在线评测系统 - 后端
 python后端
 
-仿真环境基于开源仿真软件iverilog，Windows环境，使用bat脚本处理。相比之前使用的modelsim，优点是仿真速度很快，开源轻量；缺点是语法支持不完备。
+仿真环境基于开源仿真软件iverilog，相比之前使用的modelsim，优点是仿真速度很快，开源轻量；缺点是语法支持不完备。
 
 ## 仿真环境搭建
 
-1. https://bleyer.org/icarus/ ，下载 iverilog-v11-20210204-x64_setup.exe
-2. 安装过程中选择加入PATH环境变量，安装完成后打开Terminal，输入``iverilog``检测是否加入PATH
-3. gtkwave可以查看vcd波形，可选择性安装
-4. 打开exp1的sim_project，运行``run_sim.bat``，查看对应simulation.log内容
+python调取的是``backend/iverilog``，一般来说不用再下载了。
 
-## 运行
-
-在主目录中运行``run.bat``即可
-
-## api测试
-
-使用postman进行api测试，[share link](https://alivender.postman.co/workspace/Alivender's-Workspace~b305895e-8693-4540-869f-30f56aa94e34/collection/44001001-c318a4ff-537d-486e-baaf-97ec2b3abc2c?action=share&creator=44001001)
-
+*Linux环境下需要自行下载iverilog，修改model.py里的``IVERILOG``和``VVP``。*
 
 ## 目录结构
 
@@ -27,6 +17,8 @@ python后端
 |   app.py                      后端py文件
 |   exts.py                     数据库引用
 |   models.py                   模块引用
+│
+├───iverilog                    iverilog库
 │
 ├───app_auth
 |       routes.py               用户管理接口

@@ -85,7 +85,10 @@ def submitSolution(id):
     )
     db.session.add(submission)
     db.session.commit()
-    return jsonify({"submission_id": submission.id})
+    return jsonify({
+        "status": "success",
+        "submission_id": submission.id
+        })
 
 
 

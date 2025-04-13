@@ -3,14 +3,14 @@ from flask_login import login_user, logout_user, login_required, current_user
 from models import User, UserCode, Problem, Submission, SubmissionStatus, ErrorCode, SimulationResult
 from threading import Lock
 from exts import db
-from run_sim import sim_run_verilog as sim_run_verilog
+from app_submit.run_sim import sim_run_verilog
 
-submit_bp = Blueprint('submissions', __name__)
+submit_bp = Blueprint('submission', __name__)
 
 simulation_lock = Lock()
 
 # ---------- 获取用户历史提交记录 ----------
-@submit_bp.route('/all', methods=['GET'])
+@submit_bp.route('/', methods=['GET'])
 @login_required
 def getUserSubmissions():
     """获取提交历史，返回用户的历史提交ID，status，日期"""
@@ -26,8 +26,8 @@ def getUserSubmissions():
     ).filter_by(user_id=user_id).order_by(Submission.created_at.desc()).all()
     # 构建响应数据
     return jsonify([{
-        "subid": sub.id,
-        "date": sub.created_at.isoformat(),
+        "submission_id": sub.id,
+        "created_at": sub.created_at.isoformat(),
         "status": sub.status
     } for sub in submissions])
 

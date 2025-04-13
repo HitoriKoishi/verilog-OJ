@@ -7,7 +7,7 @@ const router = useRouter();
 
 const navItems = [
     { name: '首页', path: '/' },
-    { name: '题目列表', path: '/problems' },
+    { name: '题目列表', path: '/problem' },
     { name: '关于我们', path: '/about' },
 ];
 

@@ -19,7 +19,7 @@ const fetchProblemDetail = async () => {
 
     try {
         // 修改请求路径，直接使用后端API路径
-        const response = await axios.get(`http://localhost:5000/problems/${problemId}`, {
+        const response = await axios.get(`http://localhost:5000/problem/${problemId}`, {
             timeout: 10000,
             headers: {
                 'Accept': 'application/json',
@@ -87,7 +87,7 @@ const submitSolution = async () => {
     }
 
     try {
-        const submitResponse = await axios.post(`/api/problems/${problemId}/submit`, {
+        const submitResponse = await axios.post(`/api/problem/${problemId}/submit`, {
             code: verilogCode.value
         }, {
             timeout: 10000,
@@ -117,7 +117,7 @@ const submitSolution = async () => {
 // 轮询检查提交结果
 const checkSubmissionResult = async (submissionId) => {
     try {
-        const resultResponse = await axios.get(`/api/submissions/${submissionId}`, {
+        const resultResponse = await axios.get(`/api/submission/${submissionId}`, {
             headers: {
                 'Accept': 'application/json'
             }
@@ -164,7 +164,7 @@ const saveDraft = async () => {
     }
 
     try {
-        await axios.post(`/api/problems/${problemId}/save`, {
+        await axios.post(`/api/problem/${problemId}/save`, {
             code: verilogCode.value
         }, {
             headers: {
@@ -180,7 +180,7 @@ const saveDraft = async () => {
 // 加载代码草稿
 const loadDraft = async () => {
     try {
-        const response = await axios.get(`/api/problems/${problemId}/load`, {
+        const response = await axios.get(`/api/problem/${problemId}/load`, {
             headers: {
                 'Accept': 'application/json'
             }

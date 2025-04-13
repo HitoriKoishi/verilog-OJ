@@ -9,11 +9,9 @@ from models import User, UserCode, ErrorCode, Problem, Submission, SubmissionSta
 import tempfile
 import shutil
 from exts import db
+from models import BASE_DIR, PROB_DIR
 
 
-# 项目根目录
-BASE_DIR = Path(__file__).resolve().parent
-PROB_DIR = BASE_DIR/"Prob"
 
 def load_config(app):
     CORS(app, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
@@ -38,8 +36,8 @@ from app_auth.routes import user_bp
 from app_problem.routes import problem_bp
 from app_submit.routes import submit_bp
 app.register_blueprint(user_bp, url_prefix='/user')
-app.register_blueprint(problem_bp, url_prefix='/problems')
-app.register_blueprint(submit_bp, url_prefix='/submissions')
+app.register_blueprint(problem_bp, url_prefix='/problem')
+app.register_blueprint(submit_bp, url_prefix='/submission')
 
 # ---------- 更新Prob数据库 ----------
 def updateProblems():
@@ -102,134 +100,6 @@ def updateProblems():
         Problem.query.filter(Problem.id.in_(deleted_ids)).delete(
             synchronize_session=False)
     db.session.commit()
-
-def sim_run_verilog(submission_id: int) -> SimulationResult:
-    result = SimulationResult()
-    submission = Submission.query.get(submission_id)
-    if not submission:
-        result.error_code = ErrorCode.ERROR_UNKNOWN
-        return result
-    # 获取 problem_id 和对应的 project 目录
-    problem_id = submission.problem_id
-    project_dir = PROB_DIR / f"exp{problem_id}" / "project"
-    if not project_dir.exists():
-        result.error_code = ErrorCode.ERROR_UNKNOWN
-        return result
-    # 创建临时文件夹
-    with tempfile.TemporaryDirectory(dir=BASE_DIR) as temp_dir:
-        temp_dir_path = Path(BASE_DIR/temp_dir)
-        # 将 problem_id 对应的 project 文件夹内容复制到临时文件夹
-        shutil.copytree(project_dir, temp_dir_path, dirs_exist_ok=True)
-        # 创建 user_module.v 文件，将用户代码写入
-        user_module_path = temp_dir_path / "user_module.v"
-        with open(user_module_path, 'w', encoding='utf-8') as f:
-            f.write(submission.code)
-        # 准备目标存储目录
-        save_dir = BASE_DIR / "sub_data"
-        save_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            # 调用 run_simulation 函数执行仿真
-            error_code = run_simulation(temp_dir_path, timeout_sec=60)
-            result.error_code = error_code
-            # 处理生成的文件
-            src_log = temp_dir_path / "simulation.log"
-            src_vcd = temp_dir_path / "waveform.vcd"
-            if src_log.exists():
-                dest_log = save_dir / f"sim_{str(submission_id)}.log"
-                shutil.move(str(src_log), str(dest_log))
-                result.log_path = str(dest_log.relative_to(BASE_DIR))
-            if src_vcd.exists():
-                dest_vcd = save_dir / f"wave_{str(submission_id)}.vcd"
-                shutil.move(str(src_vcd), str(dest_vcd))
-                result.waveform_path = str(dest_vcd.relative_to(BASE_DIR))
-        except Exception as e:
-            result.error_code = ErrorCode.ERROR_UNKNOWN
-            result.log_path = ""
-            result.waveform_path = ""
-    # 临时文件夹会在 with 语句结束时自动删除
-    return result
-
-def run_simulation(base_dir: Path, timeout_sec: int = 6) -> ErrorCode:
-    """
-    Python 函数版本的仿真执行逻辑
-    :param base_dir: 仿真项目的根目录
-    :param timeout_sec: 仿真超时时间（秒）
-    :return: ErrorCode 枚举值
-    """
-    # 配置参数
-    tb_module = "test_bench"
-    log_file =  Path(base_dir/"simulation.log")
-    vcd_file =  Path(base_dir/"waveform.vcd")
-    obj_file =  Path(base_dir/"sim_exec")
-    error_code = ErrorCode.SUCCESS
-
-    # 清理旧文件
-    if vcd_file.exists():
-        vcd_file.unlink()
-    if log_file.exists():
-        log_file.unlink()
-
-    # 编译阶段
-    with open(log_file, "a", encoding="utf-8") as log:
-        log.write(f"INFO: Start Sim at {datetime.now().isoformat()}\n")
-        log.write("[1/3] Compiling...\n")
-        try:
-            subprocess.run(
-                ["iverilog", "-o", "sim_exec", "-s", tb_module, "-f", "sim_file_list.f"],
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                check=True,
-                cwd=base_dir
-            )
-        except subprocess.CalledProcessError:
-            log.write("ERROR: Compilation failed\n")
-            return ErrorCode.ERROR_COMPILE_FAIL
-
-    # 仿真阶段（带超时）
-    with open(log_file, "a", encoding="utf-8") as log:
-        log.write(f"[2/3] Running simulation (timeout: {timeout_sec}s)...\n")
-        try:
-            subprocess.run(
-                ["vvp", "-n", "sim_exec"],
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                timeout=timeout_sec,
-                cwd=base_dir
-            )
-        except subprocess.TimeoutExpired:
-            log.write("ERROR: Simulation timeout\n")
-            return ErrorCode.ERROR_SIM_TIMEOUT
-        except subprocess.CalledProcessError:
-            log.write("ERROR: Simulation runtime error\n")
-            return ErrorCode.ERROR_SIM_RUN_FAIL
-
-    # 结果检查
-    with open(log_file, "a", encoding="utf-8") as log:
-        log.write("[3/3] Checking results...\n")
-        try:
-            with open(log_file, "r", encoding="utf-8") as log_content:
-                log_data = log_content.read()
-                if "TEST FAILED" in log_data:
-                    log.write("ERROR: Output mismatch\n")
-                    return ErrorCode.ERROR_MISMATCH
-                if not vcd_file.exists():
-                    log.write("ERROR: VCD file not generated\n")
-                    return ErrorCode.ERROR_SIM_LOAD_FAIL
-                if "TEST PASSED" in log_data:
-                    log.write("INFO: Simulation PASSED\n")
-                    return ErrorCode.SUCCESS
-        except Exception as e:
-            log.write(f"ERROR: Unexpected error during result check: {e}\n")
-            return ErrorCode.ERROR_SIM_RUN_FAIL
-
-    # 清理生成的文件
-    if obj_file.exists():
-        obj_file.unlink()
-
-    with open(log_file, "a", encoding="utf-8") as log:
-        log.write(f"INFO: End Sim at {datetime.now().isoformat()}\n")
-
-    return error_code
 
 if __name__=='__main__':
     app.run()

@@ -11,16 +11,16 @@ const apiClient = axios.create({
 export default {
     // 获取所有题目
     getProblems() {
-        return apiClient.get('/problems');
+        return apiClient.get('/problem');
     },
 
     // 获取单个题目详情
     getProblem(id) {
-        return apiClient.get(`/problems/${id}`);
+        return apiClient.get(`/problem/${id}`);
     },
 
     // 提交解答
     submitSolution(problemId, code) {
-        return apiClient.post('/submissions', { problemId, code });
+        return apiClient.post('/submission', { problemId, code });
     }
 };

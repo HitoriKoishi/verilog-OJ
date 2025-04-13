@@ -12,27 +12,27 @@ const apiClient = axios.create({
 export const problemApi = {
     // 获取题目列表
     getProblems() {
-        return apiClient.get('/problems');
+        return apiClient.get('/problem');
     },
 
     // 获取题目详情
     getProblem(id) {
-        return apiClient.get(`/problems/${id}`);
+        return apiClient.get(`/problem/${id}`);
     },
 
     // 保存代码草稿
     saveDraft(id, code) {
-        return apiClient.post(`/problems/${id}/save`, { code });
+        return apiClient.post(`/problem/${id}/save`, { code });
     },
 
     // 加载代码草稿
     loadDraft(id) {
-        return apiClient.get(`/problems/${id}/load`);
+        return apiClient.get(`/problem/${id}/load`);
     },
 
     // 提交代码
     submitSolution(id, code) {
-        return apiClient.post(`/problems/${id}/submit`, { code });
+        return apiClient.post(`/problem/${id}/submit`, { code });
     }
 };
 
@@ -59,14 +59,14 @@ export const userApi = {
 
     // 获取用户提交历史
     getSubmissions(userId) {
-        return apiClient.get(`/user/${userId}/submissions`);
+        return apiClient.get(`/user/${userId}/submission`);
     }
 };
 
 export const submissionApi = {
     // 获取提交状态
     getSubmission(submissionId) {
-        return apiClient.get(`/submissions/${submissionId}`);
+        return apiClient.get(`/submission/${submissionId}`);
     }
 };
 

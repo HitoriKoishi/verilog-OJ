@@ -4,6 +4,14 @@ from enum import IntEnum
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from exts import db
+from pathlib import Path
+
+# 项目根目录
+BASE_DIR = Path(__file__).resolve().parent
+PROB_DIR = BASE_DIR/"Prob"
+IVERILOG = BASE_DIR/"iverilog"/"bin"/"iverilog.exe"
+VVP = BASE_DIR/"iverilog"/"bin"/"vvp.exe"
+
 
 class ErrorCode(IntEnum):
     SUCCESS             = 0
