@@ -91,37 +91,116 @@ def submitSolution(id):
         })
 
 
-
 # ---------- 获取Prob列表 ----------
 @problem_bp.route('/', methods=['GET'])
 def getProblems():
-    """获取问题列表，返回ID、标题、难度和标签"""
+    """获取问题列表，返回ID、标题、难度、标签以及用户是否完成解答（仅登录用户可见）"""
+    user_id = current_user.id if current_user.is_authenticated else None
     problems = Problem.query.all()
     # 构建响应数据结构
-    problems_list = [{
+    problems_list = []
+    for p in problems:
+        # 获取提交用户数和通过用户数
+        stats = get_problem_statistics(p.id)
+        # 检查用户是否完成解答，仅在用户登录时检查
+        is_completed = get_completion_status(user_id, p.id) if user_id else None
+        problems_list.append({
             "id": p.id,
             "title": p.title,
             "difficulty": p.difficulty,
-            "tags": p.tags.split(',') if p.tags else []  # 将字符串转换为数组
-        }for p in problems]
+            "tags": p.tags.split(',') if p.tags else [],
+            "submitted_users_count": stats["submitted_users_count"],  # 提交用户数
+            "passed_users_count": stats["passed_users_count"],        # 通过用户数
+            **({"is_completed": is_completed} if user_id else {})  # 动态添加字段
+        })
     return jsonify(problems_list)
 
 
 # ---------- 获取单个Prob详情 ----------
 @problem_bp.route('/<int:id>', methods=['GET'])
 def getProblem(id):
-    """获取单个问题详情，返回ID、标题、文档、难度、标签、代码模板"""
+    """获取单个问题详情，返回ID、标题、文档、难度、标签、代码模板以及用户是否完成解答（仅登录用户可见）"""
+    user_id = current_user.id if current_user.is_authenticated else None
     problem = Problem.query.get(id)
     if not problem:
         return jsonify({"error": "Problem not found"}), 404
+    # 检查用户是否完成解答，仅在用户登录时检查
+    is_completed = get_completion_status(user_id, id) if user_id else None
     # 构建响应数据
     response_data = {
         "id": problem.id,
         "title": problem.title,
-        "document": problem.description,  # 完整文档内容
+        "document": problem.description,
         "difficulty": problem.difficulty,
-        "tags": problem.tags.split(',') if problem.tags else [],  # 转换为数组
-        "code_template": problem.code_temp  # 代码编辑器初始内容
+        "tags": problem.tags.split(',') if problem.tags else [],
+        "code_template": problem.code_temp,
+        **({"is_completed": is_completed} if user_id else {})  # 动态添加字段
     }
     return jsonify(response_data)
 
+# ---------- 获取用户对各个问题的完成状态 ----------
+@problem_bp.route('/status', methods=['GET'])
+@login_required
+def getUserCompletionStatus():
+    """获取用户对各个问题的完成状态，仅返回问题ID和完成状态"""
+    user_id = current_user.id
+    # 验证存在性
+    if not User.query.get(user_id):
+        return jsonify({"error": "用户不存在"}), 404
+    problems = Problem.query.all()
+    # 构建响应数据结构
+    completion_status_list = []
+    for p in problems:
+        is_completed = get_completion_status(user_id, p.id)
+        completion_status_list.append({
+            "id": p.id,
+            "completion_status": is_completed
+        })
+    return jsonify(completion_status_list)
+
+def get_completion_status(user_id, problem_id):
+    """
+    获取用户对某个问题的完成状态。
+    :param user_id: 用户ID
+    :param problem_id: 问题ID
+    :return: 完成状态字符串（"已完成"、"失败"、"运行中"、"未完成"）
+    """
+    success_submission = Submission.query.filter_by(
+        user_id=user_id,
+        problem_id=problem_id,
+        status=SubmissionStatus.SUCCESS
+    ).first()
+    if success_submission:
+        return "已完成"
+    latest_submission = Submission.query.filter_by(
+        user_id=user_id,
+        problem_id=problem_id
+    ).order_by(Submission.created_at.desc()).first()
+    if latest_submission:
+        if latest_submission.status == SubmissionStatus.FAILED:
+            return "失败"
+        elif latest_submission.status in [SubmissionStatus.QUEUED, SubmissionStatus.RUNNING]:
+            return "运行中"
+    return "未完成"
+
+def get_problem_statistics(problem_id):
+    """
+    获取某个问题的统计信息。
+    :param problem_id: 问题ID
+    :return: 一个字典，包含提交用户数和通过用户数
+    """
+    # 获取提交了该问题的用户数（去重）
+    submitted_users_count = db.session.query(Submission.user_id).filter_by(
+        problem_id=problem_id
+    ).distinct().count()
+
+    # 获取通过了该问题的用户数（去重）
+    passed_users_count = db.session.query(Submission.user_id).filter_by(
+        problem_id=problem_id,
+        status=SubmissionStatus.SUCCESS
+    ).distinct().count()
+
+    return {
+        "submitted_users_count": submitted_users_count,
+        "passed_users_count": passed_users_count
+    }

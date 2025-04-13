@@ -28,6 +28,7 @@ python调取的是``backend/iverilog``，一般来说不用再下载了。
 │
 ├───app_submit
 |       routes.py               提交管理接口
+|       run_sim.py              仿真脚本
 │
 ├───instance
 |       example.db              数据库

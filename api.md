@@ -50,7 +50,7 @@
 ## 用户注销
 
 ### **URL**
-`POST /user/logout`
+`GET, POST /user/logout`
 
 ### **描述**
 用户注销接口。
@@ -276,7 +276,10 @@
     "id": 1,
     "title": "string",
     "difficulty": "string",
-    "tags": ["string","string",...]
+    "tags": ["string","string",...],
+    "submitted_users_count": 15,
+    "passed_users_count": 20,
+    **({"is_completed": "未完成"/"已完成"/"失败"/"运行中"} if user_login else {})
   }
   {
     ...
@@ -297,13 +300,51 @@
 ### **响应**
 - 成功
   ```json
+  [
+      {
+          "id": 1,
+          "completion_status": "已完成"
+      },
+      {
+          "id": 2,
+          "completion_status": "失败"
+      },
+      {
+          "id": 3,
+          "completion_status": "仿真中"
+      },
+      {
+          "id": 4,
+          "completion_status": "未完成"
+      }
+      {
+        ...
+      }
+  ]
+  ```
+
+## 获取用户对各个问题的完成状态
+
+### **URL**
+`GET /problem/status`
+
+### **描述**
+获取用户对各个问题的完成状态，仅返回问题ID和完成状态
+
+### **参数**
+- 无
+
+### **响应**
+- 成功
+  ```json
   {
     "id": 1,
     "title": "string",
     "document": "md格式文档",
     "difficulty": "string",
     "tags": ["string","string",...],
-    "code_template": "string"
+    "code_template": "string",
+    **({"is_completed": "未完成"/"已完成"/"失败"/"运行中"} if user_login else {})
   }
   ```
 

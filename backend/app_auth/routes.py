@@ -29,7 +29,7 @@ def loginUser():
     })
 
 # ---------- 注销路由 ----------
-@user_bp.route('/logout', methods=['POST'])
+@user_bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logoutUser():
     logout_user()

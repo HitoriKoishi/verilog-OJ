@@ -2,12 +2,7 @@ from flask import Flask, Blueprint, render_template, request, redirect, url_for,
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_cors import CORS  # 导入CORS
-import subprocess
-from datetime import datetime
-from pathlib import Path
 from models import User, UserCode, ErrorCode, Problem, Submission, SubmissionStatus, SimulationResult
-import tempfile
-import shutil
 from exts import db
 from models import BASE_DIR, PROB_DIR
 
@@ -25,8 +20,8 @@ db.init_app(app)
 
 # 初始化登录管理
 login_manager = LoginManager()
-login_manager.init_app(app)
 login_manager.login_view = '/user/login'
+login_manager.init_app(app)
 
 @login_manager.user_loader
 def loaduser(user_id):
