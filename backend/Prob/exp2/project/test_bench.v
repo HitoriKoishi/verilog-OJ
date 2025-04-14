@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
 module test_bench();
     reg a, b, c;
-    wire y;
-    nand_gate_3 nand_gate_3(.a(a), .b(b), .c(c), .y(y));
+    wire r;
+    nand_gate_3 nand_gate_3(.a(a), .b(b), .c(c), .r(r));
     initial begin
             a <= 0; b <= 0; c <= 0;
         #10 a <= 0; b <= 0; c <= 1;

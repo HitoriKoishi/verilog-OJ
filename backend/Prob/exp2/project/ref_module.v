@@ -3,7 +3,7 @@ module nand_gate_3(
     input a,
     input b,
     input c,
-    output y
+    output r
 );
-    assign y = ~(a & b &c);
+    assign r = ~(a & b &c);
 endmodule

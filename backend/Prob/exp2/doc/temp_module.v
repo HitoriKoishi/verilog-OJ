@@ -1,5 +1,5 @@
 
-module three_vote(
+module nand_gate_3(
     input a,
     input b,
     input c,

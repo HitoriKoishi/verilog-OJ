@@ -302,6 +302,31 @@
 ### **响应**
 - 成功
   ```json
+  {
+    "id": 1,
+    "title": "string",
+    "document": "md格式文档",
+    "difficulty": "string",
+    "tags": ["string","string",...],
+    "code_template": "string",
+    **({"is_completed": "未完成"/"已完成"/"失败"/"运行中"} if user_login else {})
+  }
+  ```
+
+## 获取用户对各个问题的完成状态
+
+### **URL**
+`GET /problem/status`
+
+### **描述**
+获取用户对各个问题的完成状态，仅返回问题ID和完成状态
+
+### **参数**
+- 无
+
+### **响应**
+- 成功
+  ```json
   [
       {
           "id": 1,
@@ -323,31 +348,6 @@
         ...
       }
   ]
-  ```
-
-## 获取用户对各个问题的完成状态
-
-### **URL**
-`GET /problem/status`
-
-### **描述**
-获取用户对各个问题的完成状态，仅返回问题ID和完成状态
-
-### **参数**
-- 无
-
-### **响应**
-- 成功
-  ```json
-  {
-    "id": 1,
-    "title": "string",
-    "document": "md格式文档",
-    "difficulty": "string",
-    "tags": ["string","string",...],
-    "code_template": "string",
-    **({"is_completed": "未完成"/"已完成"/"失败"/"运行中"} if user_login else {})
-  }
   ```
 
 
