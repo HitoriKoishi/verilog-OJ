@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, shallowRef, nextTick } from 'vue';
+import message from '../utils/message'  // 导入消息工具
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { marked } from 'marked'; // 重新引入 marked 用于渲染 Markdown
@@ -87,7 +88,7 @@ const fetchProblemDetail = async () => {
 // 提交解答
 const submitSolution = async () => {
     if (!verilogCode.value.trim()) {
-        alert('请输入Verilog代码');
+        message.warning('请输入Verilog代码');
         return;
     }
 
@@ -115,7 +116,7 @@ const submitSolution = async () => {
 
     } catch (err) {
         console.error('提交解答失败:', err);
-        alert('提交失败: ' + (err.response?.data?.error || err.message || '未知错误'));
+        message.error('提交失败: ' + (err.response?.data?.error || err.message || '未知错误'));
     }
 };
 
@@ -139,13 +140,13 @@ const checkSubmissionResult = async (submissionId) => {
         }
 
         if (submissionData.status === 'success') {
-            alert('提交成功！您的代码已通过测试');
+            message.success('提交成功！您的代码已通过测试');
         } else {
             let errorMessage = '提交失败';
             if (submissionData.error_code) {
                 errorMessage += `: ${submissionData.error_code}`;
             }
-            alert(errorMessage);
+            message.error(errorMessage);
         }
 
         if (submissionData.log_path) {
@@ -158,7 +159,7 @@ const checkSubmissionResult = async (submissionId) => {
 
     } catch (err) {
         console.error('获取提交结果失败:', err);
-        alert('获取提交结果失败: ' + (err.response?.data?.error || err.message || '未知错误'));
+        message.error('获取提交结果失败: ' + (err.response?.data?.error || err.message || '未知错误'));
     }
 };
 
