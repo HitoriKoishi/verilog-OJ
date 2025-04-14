@@ -9,6 +9,8 @@ import { EditorView } from '@codemirror/view';
 // 从 codemirror 主包中导入，而不是从 basic-setup
 import { basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
+import { problemApi } from '../api';
+import { submissionApi } from '../api';
 const route = useRoute();
 const problemId = route.params.id;
 
@@ -24,15 +26,7 @@ const fetchProblemDetail = async () => {
     error.value = null;
 
     try {
-        // 修改请求路径，直接使用后端API路径
-        const response = await axios.get(`http://localhost:5000/problem/${problemId}`, {
-            timeout: 10000,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true // 确保发送 cookies
-        });
+        const response = await problemApi.getProblem(problemId);
 
         if (response.status !== 200) {
             throw new Error(`服务器返回错误状态码: ${response.status}`);
@@ -111,25 +105,21 @@ const submitSolution = async () => {
     }
 
     try {
-        const submitResponse = await axios.post(`/api/problem/${problemId}/submit`, {
-            code: verilogCode.value
-        }, {
-            timeout: 10000,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
+        const submitResponse = await problemApi.submitSolution(problemId, verilogCode.value);
 
         if (!submitResponse.data || !submitResponse.data.submission_id) {
             throw new Error('提交失败: 服务器返回无效的提交ID');
         }
 
-        const submissionId = submitResponse.data.submission_id;
-        console.log('提交成功，获取提交ID:', submissionId);
-
+        currentSubmissionId.value = submitResponse.data.submission_id;
+        message.success('代码提交成功，正在评测...');
+        
+        // 自动关闭描述，打开日志
+        descriptionExpanded.value = false;
+        logExpanded.value = true;
+        
         setTimeout(() => {
-            checkSubmissionResult(submissionId);
+            checkSubmissionResult(currentSubmissionId.value);
         }, 1000);
 
     } catch (err) {
@@ -141,40 +131,24 @@ const submitSolution = async () => {
 // 轮询检查提交结果
 const checkSubmissionResult = async (submissionId) => {
     try {
-        const resultResponse = await axios.get(`/api/submission/${submissionId}`, {
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
+        const resultResponse = await submissionApi.getSubmission(submissionId);
         const submissionData = resultResponse.data;
 
         if (submissionData.status === 'queued' || submissionData.status === 'running') {
-            console.log(`提交状态: ${submissionData.status}，继续等待...`);
             setTimeout(() => {
                 checkSubmissionResult(submissionId);
             }, 3000);
             return;
         }
 
+        // 获取日志和波形
+        await fetchLogAndWaveform(submissionId);
+
         if (submissionData.status === 'success') {
             message.success('提交成功！您的代码已通过测试');
         } else {
-            let errorMessage = '提交失败';
-            if (submissionData.error_code) {
-                errorMessage += `: ${submissionData.error_code}`;
-            }
-            message.error(errorMessage);
+            message.error(`提交失败: ${submissionData.error_code}`);
         }
-
-        if (submissionData.log_path) {
-            console.log('日志文件路径:', submissionData.log_path);
-        }
-
-        if (submissionData.waveform_path) {
-            console.log('波形文件路径:', submissionData.waveform_path);
-        }
-
     } catch (err) {
         console.error('获取提交结果失败:', err);
         message.error('获取提交结果失败: ' + (err.response?.data?.error || err.message || '未知错误'));
@@ -184,38 +158,42 @@ const checkSubmissionResult = async (submissionId) => {
 // 保存代码草稿
 const saveDraft = async () => {
     if (!verilogCode.value.trim()) {
+        message.info('草稿为空');
         return;
     }
-
     try {
-        await axios.post(`/api/problem/${problemId}/save`, {
-            code: verilogCode.value
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log('代码草稿已保存');
+        const response = await problemApi.saveDraft(problemId, verilogCode.value);
+        if (response.status === 200) {
+            message.success('代码草稿已保存');
+        }
     } catch (err) {
         console.error('保存代码草稿失败:', err);
+        message.error(err.response?.data?.error || '保存代码草稿失败');
     }
 };
 
 // 加载代码草稿
 const loadDraft = async () => {
     try {
-        const response = await axios.get(`/api/problem/${problemId}/load`, {
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
+        const response = await problemApi.loadDraft(problemId);
 
-        if (response.data.status === 'success' && response.data.draft_code) {
-            verilogCode.value = response.data.draft_code;
-            console.log('已加载之前保存的代码草稿, 保存时间:', response.data.draft_time);
+        if (response.status === 200) {
+            if (response.data.draft_code) {
+                verilogCode.value = response.data.draft_code;
+                updateEditorContent(response.data.draft_code);
+                if (response.data.draft_time) {
+                    message.info(`已加载代码草稿，保存时间: ${response.data.draft_time}`);
+                }
+                return true;
+            } else {
+                message.info('没有找到保存的代码草稿');
+                return false;
+            }
         }
     } catch (err) {
         console.error('加载代码草稿失败:', err);
+        message.error(err.response?.data?.error || '加载代码草稿失败');
+        return false;
     }
 };
 
@@ -269,7 +247,6 @@ const initCodeMirrorEditor = async () => {
 // 更新编辑器内容
 const updateEditorContent = (content) => {
     if (!editorView.value) return;
-
     const transaction = editorView.value.state.update({
         changes: {
             from: 0,
@@ -277,7 +254,6 @@ const updateEditorContent = (content) => {
             insert: content
         }
     });
-
     editorView.value.dispatch(transaction);
 };
 
@@ -324,6 +300,32 @@ const updateCodeMirror = (code) => {
         updateEditorContent(code);
     }
 };
+
+// 添加控制变量
+const descriptionExpanded = ref(true);
+const logExpanded = ref(false);
+const waveformExpanded = ref(false);
+const currentLog = ref('');
+const currentWaveform = ref('');
+const currentSubmissionId = ref(null);
+
+// 获取日志和波形的函数
+const fetchLogAndWaveform = async (submissionId) => {
+    try {
+        const logResponse = await submissionApi.getSubmissionLog(submissionId);
+        if (logResponse.status === 200) {
+            currentLog.value = logResponse.data.log_content;
+        }
+
+        const waveformResponse = await submissionApi.getSubmissionWaveform(submissionId);
+        if (waveformResponse.status === 200) {
+            currentWaveform.value = waveformResponse.data.waveform_content;
+        }
+    } catch (err) {
+        console.error('获取日志或波形失败:', err);
+        message.error(err.response?.data?.error || '获取日志或波形失败');
+    }
+};
 </script>
 
 <template>
@@ -338,39 +340,74 @@ const updateCodeMirror = (code) => {
         </div>
 
         <div v-else-if="problem" class="problem-container">
-            <div class="problem-description">
-                <h1>{{ problem.title }}</h1>
-                <div class="difficulty"
-                    :style="{ color: problem.difficulty === '简单' ? 'green' : (problem.difficulty === '中等' ? 'orange' : 'red') }">
-                    难度: {{ problem.difficulty }}
+            <!-- 左侧面板：题目描述、日志和波形 -->
+            <div class="left-panel">
+                <!-- 描述部分 -->
+                <div class="section description-section">
+                    <div class="section-header" @click="descriptionExpanded = !descriptionExpanded">
+                        <h2>题目描述</h2>
+                        <span class="expand-icon">{{ descriptionExpanded ? '▼' : '▶' }}</span>
+                    </div>
+                    <div v-show="descriptionExpanded" class="section-content problem-description">
+                        <h1>{{ problem.title }}</h1>
+                        <div class="difficulty"
+                            :style="{ color: problem.difficulty === '简单' ? 'green' : (problem.difficulty === '中等' ? 'orange' : 'red') }">
+                            难度: {{ problem.difficulty }}
+                        </div>
+
+                        <div class="tags-container" v-if="problem.tags && problem.tags.length">
+                            <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
+                                {{ tag }}
+                            </span>
+                        </div>
+
+                        <!-- 使用 Markdown 渲染的内容 -->
+                        <div class="markdown-content" v-html="problem.htmlContent"></div>
+                    </div>
                 </div>
 
-                <div class="tags-container" v-if="problem.tags && problem.tags.length">
-                    <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
-                        {{ tag }}
-                    </span>
+                <!-- 日志部分 -->
+                <div class="section log-section">
+                    <div class="section-header" @click="logExpanded = !logExpanded">
+                        <h2>运行日志</h2>
+                        <span class="expand-icon">{{ logExpanded ? '▼' : '▶' }}</span>
+                    </div>
+                    <div v-show="logExpanded" class="section-content log-content">
+                        <pre v-if="currentLog">{{ currentLog }}</pre>
+                        <p v-else>暂无日志</p>
+                    </div>
                 </div>
 
-                <!-- 使用 Markdown 渲染的内容 -->
-                <div class="markdown-content" v-html="problem.htmlContent"></div>
+                <!-- 波形部分 -->
+                <div class="section waveform-section">
+                    <div class="section-header" @click="waveformExpanded = !waveformExpanded">
+                        <h2>波形显示</h2>
+                        <span class="expand-icon">{{ waveformExpanded ? '▼' : '▶' }}</span>
+                    </div>
+                    <div v-show="waveformExpanded" class="section-content waveform-content">
+                        <pre v-if="currentWaveform">{{ currentWaveform }}</pre>
+                        <p v-else>暂无波形数据</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="code-editor">
-                <h2>代码编辑器</h2>
-                <div class="editor-controls">
-                    <button @click="loadDraft().then(() => {
-                        if (verilogCode) updateCodeMirror(verilogCode);
-                    })" class="control-btn">加载草稿</button>
-                    <button @click="saveDraft" class="control-btn">保存草稿</button>
-                    <button @click="clearEditor" class="control-btn clear-btn">清空</button>
-                </div>
+            <!-- 右侧面板：代码编辑器 -->
+            <div class="right-panel">
+                <div class="code-editor">
+                    <h2>代码编辑器</h2>
+                    <div class="editor-controls">
+                        <button @click="loadDraft" class="control-btn">加载草稿</button>
+                        <button @click="saveDraft" class="control-btn">保存草稿</button>
+                        <button @click="clearEditor" class="control-btn clear-btn">清空</button>
+                    </div>
 
-                <!-- 明确设置ref并添加id以便于调试 -->
-                <div ref="editorElement" id="codemirror-editor" class="codemirror-container"></div>
+                    <!-- 明确设置ref并添加id以便于调试 -->
+                    <div ref="editorElement" id="codemirror-editor" class="codemirror-container"></div>
 
-                <div class="submit-section">
-                    <span class="auto-save-info">代码会每分钟自动保存</span>
-                    <button @click="submitSolution" class="submit-btn">提交解答</button>
+                    <div class="submit-section">
+                        <span class="auto-save-info">代码会每分钟自动保存</span>
+                        <button @click="submitSolution" class="submit-btn">提交解答</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -386,8 +423,26 @@ const updateCodeMirror = (code) => {
 
 .problem-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* 修改为两列布局 */
     gap: 20px;
+}
+
+/* 左侧容器 */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: calc(100vh - 100px); /* 设置最大高度，留出顶部和底部空间 */
+    overflow-y: auto; /* 允许滚动 */
+}
+
+/* 右侧容器 */
+.right-panel {
+    position: sticky; /* 使编辑器固定 */
+    top: 20px; /* 距离顶部距离 */
+    height: calc(100vh - 100px); /* 设置高度 */
+    display: flex;
+    flex-direction: column;
 }
 
 .problem-description {
@@ -506,8 +561,10 @@ const updateCodeMirror = (code) => {
 }
 
 .code-editor {
+    flex: 1;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .editor-controls {
@@ -539,8 +596,9 @@ const updateCodeMirror = (code) => {
 }
 
 .codemirror-container {
+    flex: 1;
+    min-height: 0; /* 防止溢出 */
     width: 100%;
-    height: 500px;
     border: 1px solid #ddd;
     border-radius: 4px;
     overflow: hidden;
@@ -607,6 +665,21 @@ const updateCodeMirror = (code) => {
     color: red;
 }
 
+@media (max-width: 1200px) {
+    .problem-container {
+        grid-template-columns: 1fr; /* 在小屏幕上变为单列 */
+    }
+
+    .right-panel {
+        position: static;
+        height: auto;
+    }
+
+    .codemirror-container {
+        height: 500px; /* 在小屏幕上固定高度 */
+    }
+}
+
 @media (max-width: 900px) {
     .problem-container {
         grid-template-columns: 1fr;
@@ -615,6 +688,74 @@ const updateCodeMirror = (code) => {
     .problem-description,
     .code-editor {
         max-height: none;
+    }
+}
+
+.section {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 12px 20px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+
+.section-header:hover {
+    background-color: #e9ecef;
+}
+
+.expand-icon {
+    font-size: 18px;
+    color: #666;
+}
+
+.section-content {
+    padding: 20px;
+    background-color: white;
+}
+
+.log-content,
+.waveform-content {
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    background-color: #f5f5f5;
+    padding: 12px;
+    border-radius: 4px;
+}
+
+pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 调整布局 */
+.problem-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.description-section,
+.log-section,
+.waveform-section {
+    width: 100%;
+}
+
+/* 响应式布局 */
+@media (max-width: 900px) {
+    .section-content {
+        padding: 15px;
     }
 }
 </style>

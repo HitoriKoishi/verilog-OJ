@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
+from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import User, login_required
 from exts import db
 
 user_bp = Blueprint('user', __name__)
-
+CORS(user_bp, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
 
 
 # ---------- 登录路由 ----------

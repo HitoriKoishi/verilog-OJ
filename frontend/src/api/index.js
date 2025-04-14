@@ -12,12 +12,22 @@ const apiClient = axios.create({
 export const problemApi = {
     // 获取题目列表
     getProblems() {
-        return apiClient.get('/problem');
+        return apiClient.get('/problem', {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
     },
 
     // 获取题目详情
     getProblem(id) {
-        return apiClient.get(`/problem/${id}`);
+        return apiClient.get(`/problem/${id}`,{
+            timeout: 10000,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
     },
 
     // 保存代码草稿
@@ -32,7 +42,13 @@ export const problemApi = {
 
     // 提交代码
     submitSolution(id, code) {
-        return apiClient.post(`/problem/${id}/submit`, { code });
+        return apiClient.post(`/problem/${id}/submit`, { code: code },{
+            timeout: 10000,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        },{ withCredentials: true });
     },
 
     getProblemStatus() {
@@ -43,12 +59,19 @@ export const problemApi = {
 export const userApi = {
     // 登录
     login(username, password) {
-        return apiClient.post('/user/login', { username, password });
+        return apiClient.post('/user/login', {
+            username: username,
+            password: password
+        });
     },
 
     // 注册
     register(username, password, email) {
-        return apiClient.post('/user/register', { username, password, email });
+        return apiClient.post('/user/register', { 
+            username: username, 
+            password: password, 
+            email: email
+        });
     },
 
     // 注销

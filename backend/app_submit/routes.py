@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, current_user
+from flask_cors import CORS
 from models import User, UserCode, Problem, Submission, SubmissionStatus, ErrorCode, SimulationResult, login_required
 from threading import Lock
 from exts import db
@@ -7,6 +8,7 @@ import os
 from app_submit.run_sim import sim_run_verilog
 
 submit_bp = Blueprint('submission', __name__)
+CORS(submit_bp, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
 
 simulation_lock = Lock()
 

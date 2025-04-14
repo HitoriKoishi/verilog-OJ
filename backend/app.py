@@ -107,7 +107,7 @@ if __name__=='__main__':
     with app.app_context():
         db.create_all()
         updateProblems()
-    app.run()
+    app.run(host='localhost',port=5000)
 
 @atexit.register
 def cleanup():

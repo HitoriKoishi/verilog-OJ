@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router'
+import { problemApi, userApi } from '../api';
 import axios from 'axios'; // 添加axios导入
 const router = useRouter();
 
@@ -39,20 +40,17 @@ const passwordSubmitting = ref(false);
 const message = ref('');
 const messageType = ref('');
 
-// API基础URL
-const API_URL = 'http://localhost:5000';
-
 // 获取用户数据
 onMounted(async () => {
     try {
-        const response = await axios.get(`${API_URL}/user/check_auth`, { withCredentials: true });
+        const response = await userApi.checkAuth();
         if (response.data.is_login) {
             // 获取到登录用户信息
             userData.value.username = response.data.user.username;
 
             // 如果需要获取更多用户信息（如邮箱），可以再发一个请求
             try {
-                const userDetailsResponse = await axios.get(`${API_URL}/user/profile`, { withCredentials: true });
+                const userDetailsResponse = await userApi.getUserProfile();
                 if (userDetailsResponse.data.email) {
                     userData.value.email = userDetailsResponse.data.email;
                 }
@@ -76,7 +74,7 @@ onMounted(async () => {
 // 获取刷题进度
 const getProgressStatus = async () => {
   try {
-    const progressResponse = await axios.get(`${API_URL}/problem/status`, { withCredentials: true });
+    const progressResponse = await problemApi.getProblemStatus({ withCredentials: true });
     progressData.value = progressResponse.data;
     
     // 计算统计信息
@@ -111,7 +109,7 @@ const updateUsername = async () => {
 
     try {
         // 实际API调用
-        const response = await axios.post(`${API_URL}/user/update_username`, {
+        const response = await userApi.newUsername({
             newUsername: usernameForm.value.newUsername
         }, { withCredentials: true });
 
@@ -148,7 +146,7 @@ const updatePassword = async () => {
 
     try {
         // 实际API调用
-        const response = await axios.post(`${API_URL}/user/update_password`, {
+        const response = await userApi.updatePassword({
             currentPassword: passwordForm.value.currentPassword,
             newPassword: passwordForm.value.newPassword
         }, { withCredentials: true });
