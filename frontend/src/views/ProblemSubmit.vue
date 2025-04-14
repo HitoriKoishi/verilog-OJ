@@ -66,7 +66,25 @@ const fetchProblemDetail = async () => {
                 xhtml: false
             });
 
-            problem.value.htmlContent = marked(problem.value.description);
+            // 移除第一个一级标题，只需提取文档内容中第一个一级标题后的所有内容
+            const lines = problem.value.description.split('\n');
+            let firstH1Index = -1;
+            
+            // 寻找第一个一级标题的位置
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('# ')) {
+                    firstH1Index = i;
+                    break;
+                }
+            }
+            
+            // 如果找到了一级标题，则跳过它
+            if (firstH1Index !== -1) {
+                const contentWithoutFirstH1 = lines.slice(firstH1Index + 1).join('\n');
+                problem.value.htmlContent = marked(contentWithoutFirstH1);
+            } else {
+                problem.value.htmlContent = marked(problem.value.description);
+            }
         } else {
             problem.value.htmlContent = '<p>没有题目描述内容</p>';
         }
@@ -406,6 +424,40 @@ const updateCodeMirror = (code) => {
     border-top: 1px solid #ddd;
     padding-top: 15px;
     margin-top: 15px;
+}
+
+.markdown-content :deep(h1),
+.markdown-content :deep(h2),
+.markdown-content :deep(h3),
+.markdown-content :deep(h4),
+.markdown-content :deep(h5),
+.markdown-content :deep(h6) {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+.markdown-content :deep(p) {
+    text-indent: 2em;
+    margin: 0.5em 0;
+}
+
+/* 列表样式 */
+.markdown-content :deep(ul),
+.markdown-content :deep(ol) {
+    padding-left: 2em;
+    margin: 0.5em 0;
+}
+
+.markdown-content :deep(li) {
+    margin: 0.3em 0;
+}
+
+/* 嵌套列表的缩进 */
+.markdown-content :deep(ul ul),
+.markdown-content :deep(ul ol),
+.markdown-content :deep(ol ul),
+.markdown-content :deep(ol ol) {
+    margin: 0.2em 0;
 }
 
 .markdown-content :deep(pre) {
