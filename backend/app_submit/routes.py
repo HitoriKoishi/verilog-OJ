@@ -8,7 +8,7 @@ import os
 from app_submit.run_sim import sim_run_verilog
 
 submit_bp = Blueprint('submission', __name__)
-CORS(submit_bp, resources=r'/*', supports_credentials=True)
+CORS(submit_bp, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
 
 simulation_lock = Lock()
 

@@ -54,7 +54,6 @@ const hideMessage = () => {
 <style scoped>
 .message-alert {
   position: fixed;
-  top: 20px;
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 24px;
@@ -64,7 +63,8 @@ const hideMessage = () => {
   z-index: 9999;
   cursor: pointer;
   box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 移除 transition，由 message-fade 类控制 */
+  pointer-events: auto;
 }
 
 .message-alert.success {
@@ -76,25 +76,28 @@ const hideMessage = () => {
 }
 
 .message-alert.warning {
-  background-color: #ffea61;
+  background-color: #9e830b;
 }
 
 .message-alert.info {
   background-color: #70b0ff;
 }
 
-.message-fade-enter-active,
-.message-fade-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
+.message-fade-enter-active {
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
 
-.message-fade-enter-from,
-.message-fade-leave-to {
+.message-fade-leave-active {
+  transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+  pointer-events: none;
+}
+
+.message-fade-enter-from {
   opacity: 0;
   transform: translate(-50%, -20px);
 }
 
-.is-leaving {
+.message-fade-leave-to {
   opacity: 0;
   transform: translate(-50%, -20px);
 }

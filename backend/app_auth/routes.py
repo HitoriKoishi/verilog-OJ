@@ -6,7 +6,7 @@ from models import User, login_required
 from exts import db
 
 user_bp = Blueprint('user', __name__)
-CORS(user_bp, resources=r'/*', supports_credentials=True)
+CORS(user_bp, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
 
 
 # ---------- 登录路由 ----------

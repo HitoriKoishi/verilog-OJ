@@ -12,7 +12,7 @@ import atexit
 
 
 def load_config(app):
-    CORS(app, resources=r'/*', supports_credentials=True)
+    CORS(app, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
     app.secret_key = 'verilog-oj-secret-key'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'  # 使用 SQLite 数据库
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -107,7 +107,7 @@ if __name__=='__main__':
     with app.app_context():
         db.create_all()
         updateProblems()
-    app.run(host='0.0.0.0',port=5000)
+    app.run(host='localhost',port=5000)
 
 @atexit.register
 def cleanup():

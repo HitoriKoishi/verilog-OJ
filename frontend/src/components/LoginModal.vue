@@ -68,59 +68,38 @@ const validateForm = () => {
 // 实际登录请求
 const loginRequest = async () => {
     try {
-        const response = await userApi.login({
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include', // 允许发送和接收 cookies
-            body: JSON.stringify({
-                username: username.value,
-                password: password.value
-            })
-        });
+        const response = await userApi.login(username.value,password.value);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.msg || '登录失败');
+        if (response.data.status === "success") {
+            // 登录成功，更新认证状态
+            login(response.data.user);
+            return response.data.user;
+        } else {
+            throw new Error(response.error.message || '登录失败');
         }
-
-        // 登录成功，更新认证状态
-        login(data.user);
-        return data.user;
     } catch (error) {
-        throw new Error(error.message || '登录请求失败');
+        throw new Error(error.response?.data?.message || error.message || '登录请求失败');
     }
 };
 
 // 实际注册请求
 const registerRequest = async () => {
     try {
-        const response = await userApi.register({
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include', // 允许发送和接收 cookies
-            body: JSON.stringify({
-                username: username.value,
-                password: password.value,
-                email: email.value || null // 如果没有提供邮箱，则传null
-            })
-        });
+        const response = await userApi.register(
+            username.value,
+            password.value,
+            email.value || null // 如果没有提供邮箱，则传null
+        );
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || '注册失败');
+        if (response.data.status === "success") {
+            // 注册成功后自动登录
+            login(response.data.user);
+            return response.data.user;
+        } else {
+            throw new Error(response.data.message || '注册失败');
         }
-
-        // 注册成功后自动登录（后端已经处理）
-        login(data.user);
-        return data.user;
     } catch (error) {
-        throw new Error(error.message || '注册请求失败');
+        throw new Error(error.response?.data?.message || error.message || '注册请求失败');
     }
 };
 

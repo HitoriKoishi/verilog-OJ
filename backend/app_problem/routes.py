@@ -9,7 +9,7 @@ from app_submit.run_sim import simulation_queue
 import re
 
 problem_bp = Blueprint('problem', __name__)
-CORS(problem_bp, resources=r'/*', supports_credentials=True)
+CORS(problem_bp, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
 
 
 # ---------- 保存用户代码草稿 ----------
