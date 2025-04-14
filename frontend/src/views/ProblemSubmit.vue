@@ -8,7 +8,8 @@ import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 // 从 codemirror 主包中导入，而不是从 basic-setup
 import { basicSetup } from 'codemirror';
-import { javascript } from '@codemirror/lang-javascript';
+import { StreamLanguage } from '@codemirror/language';
+import { verilog } from '@codemirror/legacy-modes/mode/verilog';
 import { problemApi } from '../api';
 import { submissionApi } from '../api';
 const route = useRoute();
@@ -205,19 +206,30 @@ const initCodeMirrorEditor = async () => {
     }
 
     try {
-        // 确保之前的编辑器实例被销毁
         if (editorView.value) {
             editorView.value.destroy();
         }
 
-        // 清空容器内容，确保没有残留元素
         editorElement.value.innerHTML = '';
 
         const startState = EditorState.create({
             doc: verilogCode.value || '// 在此处编写Verilog代码',
             extensions: [
                 basicSetup,
-                javascript(), // 作为临时的语法高亮，未来可替换为Verilog语法高亮
+                StreamLanguage.define(verilog),  // 使用 StreamLanguage 包装 verilog 模式
+                EditorView.theme({
+                    "&": {
+                        fontSize: "14px",
+                        height: "100%"
+                    },
+                    ".cm-content": {
+                        fontFamily: "'Consolas', 'Monaco', monospace"
+                    },
+                    ".cm-gutters": {
+                        backgroundColor: "#f5f5f5",
+                        borderRight: "1px solid #ddd"
+                    }
+                }),
                 EditorView.updateListener.of(update => {
                     if (update.docChanged) {
                         verilogCode.value = update.state.doc.toString();
@@ -226,7 +238,6 @@ const initCodeMirrorEditor = async () => {
             ]
         });
 
-        // 创建新的编辑器实例
         editorView.value = new EditorView({
             state: startState,
             parent: editorElement.value
@@ -235,7 +246,6 @@ const initCodeMirrorEditor = async () => {
         console.log('编辑器初始化成功');
     } catch (err) {
         console.error('初始化编辑器失败:', err);
-        // 出现错误时添加错误提示
         editorElement.value.innerHTML = `<div style="color:red; padding:10px;">
             编辑器加载失败: ${err.message}
             <br>
@@ -423,8 +433,10 @@ const fetchLogAndWaveform = async (submissionId) => {
 
 .problem-container {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* 修改为两列布局 */
-    gap: 20px;
+    grid-template-columns: 1fr 1fr; /* 两列布局，每列占 50% 宽度 */
+    gap: 20px; /* 列之间的间距 */
+    min-height: calc(100vh - 100px);
+    width: 100%;
 }
 
 /* 左侧容器 */
@@ -432,17 +444,18 @@ const fetchLogAndWaveform = async (submissionId) => {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    max-height: calc(100vh - 100px); /* 设置最大高度，留出顶部和底部空间 */
-    overflow-y: auto; /* 允许滚动 */
+    overflow-y: auto;
+    min-width: 0; /* 防止内容溢出 */
 }
 
 /* 右侧容器 */
 .right-panel {
-    position: sticky; /* 使编辑器固定 */
-    top: 20px; /* 距离顶部距离 */
-    height: calc(100vh - 100px); /* 设置高度 */
     display: flex;
     flex-direction: column;
+    position: sticky; /* 恢复sticky定位 */
+    top: 20px; /* 距离顶部距离 */
+    height: calc(100vh - 100px); /* 设置高度 */
+    min-width: 0; /* 防止内容溢出 */
 }
 
 .problem-description {
@@ -728,19 +741,6 @@ pre {
     margin: 0;
     white-space: pre-wrap;
     word-wrap: break-word;
-}
-
-/* 调整布局 */
-.problem-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.description-section,
-.log-section,
-.waveform-section {
-    width: 100%;
 }
 
 /* 响应式布局 */
