@@ -12,7 +12,7 @@ module test_bench();
     
     // 波形生成
     initial begin
-        $dumpfile("wave.vcd");
+        $dumpfile("waveform.vcd");
         $dumpvars(0, test_bench);
     end
     

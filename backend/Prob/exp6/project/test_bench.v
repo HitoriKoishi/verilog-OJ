@@ -3,13 +3,13 @@
 module test_bench();
     // 时钟和复位信号定义
     reg clk;
-    reg rst;
+    reg rstn;
     wire [3:0] your_out, ref_out;
     
     // 错误检测信号
     wire mismatch = (ref_out !== your_out);
     reg has_mismatch = 0;
-    reg [63:0] first_mismatch_time = -1;
+    reg test_failed = 0;
     
     // 时钟生成
     initial begin
@@ -19,106 +19,74 @@ module test_bench();
     
     // 波形生成
     initial begin
-        $dumpfile("wave.vcd");
+        $dumpfile("waveform.vcd");
         $dumpvars(0, test_bench);
     end
     
     // 测试激励
     initial begin
         // 初始化
-        rst = 0;  // 复位有效
+        rstn = 0;  // 复位有效
         #20;
         
         // 测试用例1：复位测试
-        if (your_out !== 4'b0000) begin
-            $display("TEST FAILED");
-            $display("Reset test failed!");
-            $display("Expected output: 0000");
-            $display("Actual output: %b", your_out);
-            $finish;
-        end
-        
+        $display("Test 1: Reset test");
+        has_mismatch = 0;
         // 释放复位
-        rst = 1;
+        rstn = 1;
         #10;
         
         // 测试用例2：计数测试（0->9）
-        repeat(10) begin
-            if (your_out !== ref_out) begin
-                $display("TEST FAILED");
-                $display("Count test failed at value %d!", ref_out);
-                $display("Expected output: %b", ref_out);
-                $display("Actual output: %b", your_out);
-                $finish;
-            end
-            #10;
-        end
+        $display("Test 2: Count test (0->9)");
+        repeat(10) #10 has_mismatch = 0;
         
         // 测试用例3：溢出测试（9->0）
-        if (your_out !== 4'b0000) begin
-            $display("TEST FAILED");
-            $display("Overflow test failed!");
-            $display("Expected output: 0000");
-            $display("Actual output: %b", your_out);
-            $finish;
-        end
+        $display("Test 3: Overflow test (9->0)");
+        has_mismatch = 0;
         
         // 测试用例4：连续计数测试
-        repeat(20) begin
-            if (your_out !== ref_out) begin
-                $display("TEST FAILED");
-                $display("Continuous count test failed!");
-                $display("Expected output: %b", ref_out);
-                $display("Actual output: %b", your_out);
-                $finish;
-            end
-            #10;
-        end
+        $display("Test 4: Continuous count test (0->9)");
+        repeat(20) #10 has_mismatch = 0;
         
         // 测试用例5：异步复位测试
-        #3 rst = 0;  // 在时钟周期中间复位
-        #2;
-        if (your_out !== 4'b0000) begin
-            $display("TEST FAILED");
-            $display("Async reset test failed!");
-            $display("Expected output: 0000");
-            $display("Actual output: %b", your_out);
-            $finish;
+        $display("Test 5: Async reset test");
+        #3 rstn = 0;  // 在时钟周期中间复位
+        #2 has_mismatch = 0;
+
+        $display("\n=== Simulation Summary ===");
+        if (test_failed) begin
+            $display("** x TEST FAILED! x **");
+        end else begin
+            $display("** √ TEST PASSED! √ **");
+            $display("No mismatches detected");
         end
-        
-        // 所有测试通过
-        $display("TEST PASSED");
-        $display("All test cases passed!");
-        $finish;
-    end
-    
-    // 超时保护
-    initial begin
-        #2000;
-        $display("TEST FAILED");
-        $display("Simulation timeout!");
-        $finish;
+        $display("Simulation time: %0t ps", $time);
+        $display("========================");
+        $finish();
     end
     
     // 错误检测
     always @(*) begin
         if (mismatch && !has_mismatch) begin
             has_mismatch = 1;
-            first_mismatch_time = $time;
+            test_failed = 1;
+            $display("ERROR: Detect mismatch at time %d", $time);
+            $display("Expected output: %b", ref_out);
+            $display("Actual output: %b", your_out);
         end
     end
     
     // 实例化待测试模块
     decimal_counter user_module(
         .clk(clk),
-        .rst(rst),
+        .rstn(rstn),
         .count(your_out)
     );
     
     // 实例化参考模块
     ref_module ref_module(
         .clk(clk),
-        .rst(rst),
+        .rstn(rstn),
         .count(ref_out)
     );
     

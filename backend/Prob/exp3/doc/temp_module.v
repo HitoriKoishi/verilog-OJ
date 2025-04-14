@@ -1,4 +1,4 @@
-module three_vote
+module majority3
 (
     input a,
     input b,

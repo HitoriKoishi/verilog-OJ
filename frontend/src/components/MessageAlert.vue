@@ -68,11 +68,11 @@ const hideMessage = () => {
 }
 
 .message-alert.success {
-  background-color: #359738;
+  background-color: #1eac2a;
 }
 
 .message-alert.error {
-  background-color: #ff6e61;
+  background-color: #d84130;
 }
 
 .message-alert.warning {

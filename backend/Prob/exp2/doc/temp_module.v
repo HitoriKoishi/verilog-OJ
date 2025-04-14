@@ -1,9 +1,9 @@
 
-module nand_gate_3(
+module nand3_gate(
     input a,
     input b,
     input c,
-    output r
+    output y
 );
 //在此处添加你的代码
 

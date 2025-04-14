@@ -1,105 +1,61 @@
 `timescale 1ns/1ps
+module test_bench(); //test_bench模块名不可更改，tcl脚本需要识别
+reg clk;
+reg rstn;
+reg refrence_in;
+wire your_out, refrence_out;
+wire mismatch = (refrence_out !== your_out); //强判断，x或z也会判断是否相等
+reg ifmismatch = 0;
+reg [63:0] first_mismatch_time = -1;
 
-module test_bench();
-    // 时钟和复位信号定义
-    reg clk;
-    reg rstn;
-    reg in;
-    wire your_out, ref_out;
-    
-    // 错误检测信号
-    wire mismatch = (ref_out !== your_out);
-    reg has_mismatch = 0;
-    reg [63:0] first_mismatch_time = -1;
-    
-    // 时钟生成
-    initial begin
-        clk = 0;
-        forever #10 clk = ~clk;
+initial clk = 0;
+always #10 clk = ~clk;
+
+initial begin
+    $dumpfile ("waveform.vcd"); //生成波形文件
+    $dumpvars (0,test_bench.clk,test_bench.rstn,test_bench.refrence_in,test_bench.your_out,test_bench.refrence_out,test_bench.mismatch); //自行按顺序添加需要记录的波形
+    rstn = 1;
+    refrence_in = 0;
+    #30 $dumpon; //开始记录波形
+    #10 rstn = 0;
+    #50 rstn = 1;
+    #25 refrence_in = 1;
+    #25 refrence_in = 0;
+    #25 refrence_in = 1;
+    #25 refrence_in = 0;
+    #25 $dumpoff; //结束记录波形
+    $display("\n=== Simulation Summary ===");
+    if (ifmismatch) begin
+        $display("** x TEST FAILED! x **");
+        $display("First mismatch at: %0t ps", first_mismatch_time);
+    end else begin
+        $display("** √ TEST PASSED! √ **");
+        $display("No mismatches detected");
     end
-    
-    // 波形生成
-    initial begin
-        $dumpfile("wave.vcd");
-        $dumpvars(0, test_bench);
+    $display("Simulation time: %0t ps", $realtime);
+    $display("========================");
+    $stop();
+end
+
+
+xor_trigger user_module_inst(
+    .clk    (clk        ),
+    .rstn   (rstn       ),
+    .in     (refrence_in),
+    .out    (your_out   )
+);
+ref_module ref_module_inst(
+    .clk    (clk         ),
+    .rstn   (rstn        ),
+    .in     (refrence_in ),
+    .out    (refrence_out)
+);
+
+always @(*) begin
+    if((mismatch !== 1'b0) && (!ifmismatch)) begin
+        ifmismatch <= 1'b1;
+        first_mismatch_time <= $time;
     end
-    
-    // 测试激励
-    initial begin
-        // 初始化
-        rstn = 1;
-        in = 0;
-        #30;
-        
-        // 测试用例1：复位测试
-        rstn = 0;
-        #50;
-        if (your_out !== 1'b0) begin
-            $display("TEST FAILED");
-            $display("Reset test failed!");
-            $display("Expected output: 0");
-            $display("Actual output: %b", your_out);
-            $finish;
-        end
-        
-        // 释放复位
-        rstn = 1;
-        #20;
-        
-        // 测试用例2：功能测试
-        // 测试序列：0->1->0->1->0
-        in = 1'b1;
-        #25;
-        in = 1'b0;
-        #25;
-        in = 1'b1;
-        #25;
-        in = 1'b0;
-        #25;
-        
-        // 检查是否有不匹配
-        if (has_mismatch) begin
-            $display("TEST FAILED");
-            $display("First mismatch occurred at %0t ps", first_mismatch_time);
-            $finish;
-        end
-        
-        // 所有测试通过
-        $display("TEST PASSED");
-        $display("All test cases passed!");
-        $finish;
-    end
-    
-    // 超时保护
-    initial begin
-        #10000;
-        $display("TEST FAILED");
-        $display("Simulation timeout!");
-        $finish;
-    end
-    
-    // 错误检测
-    always @(*) begin
-        if (mismatch && !has_mismatch) begin
-            has_mismatch = 1;
-            first_mismatch_time = $time;
-        end
-    end
-    
-    // 实例化待测试模块
-    xor_trigger user_module(
-        .clk    (clk),
-        .rstn   (rstn),
-        .in     (in),
-        .out    (your_out)
-    );
-    
-    // 实例化参考模块
-    ref_module ref_module(
-        .clk    (clk),
-        .rstn   (rstn),
-        .in     (in),
-        .out    (ref_out)
-    );
-    
-endmodule
+end
+
+endmodule //test_bencch

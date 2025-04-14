@@ -1,9 +1,9 @@
 
 module jk_ff(
-    input j,
-    input k,
     input clk,
     input rst,
+    input j,
+    input k,
     output q
 );
 reg q;

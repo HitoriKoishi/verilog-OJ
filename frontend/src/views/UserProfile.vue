@@ -338,7 +338,7 @@ input {
 }
 
 button {
-  background-color: #56b85b;
+  background-color: #1eac2a;
   min-width: 60px;
   padding: 8px 12px;
   border: none;
@@ -359,7 +359,7 @@ button:hover {
 }
 
 button:active {
-    background-color: #56b85b;
+    background-color: #1eac2a;
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -397,17 +397,17 @@ button:disabled {
 .stat-value {
   font-size: 24px;
   font-weight: bold;
-  color: #4caf50;
+  color: #1eac2a;
   margin-bottom: 8px;
 }
 
 /* 状态颜色优化 */
 button.green {
-  background: #4caf50;
+  background: #1eac2a;
 }
 
 button.red {
-  background: #cf4334;
+  background: #d84130;
 }
 
 button.yellow {

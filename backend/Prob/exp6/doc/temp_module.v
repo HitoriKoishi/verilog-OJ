@@ -1,7 +1,7 @@
 
-module counter_10(
+module decimal_counter(
     input clk,
-    input rst,
+    input rstn,
     output [3:0] count
     );
     reg [3:0] q;
