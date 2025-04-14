@@ -3,12 +3,13 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import message from '../utils/message';
 import { useRoute } from 'vue-router';
-import { problemApi, submissionApi } from '../api';
+import { problemApi, submissionApi, aiApi } from '../api';
 import CollapsibleSection from '../components/CollapsibleSection.vue';
 import MarkdownRenderer from '../components/MarkdownRenderer.vue';
 import VerilogEditor from '../components/VerilogEditor.vue';
 import LogViewer from '../components/LogViewer.vue';
 import WaveformViewer from '../components/WaveformViewer.vue';
+import { marked } from 'marked';
 
 const route = useRoute();
 const problemId = route.params.id;
@@ -82,6 +83,10 @@ const submitSolution = async () => {
     logSectionStatus.value = 'default';
 
     try {
+        // 清空AI分析结果
+        aiAnalysisResult.value = '';
+        showAiAnalysis.value = false;
+        
         const submitResponse = await problemApi.submitSolution(problemId, verilogCode.value);
 
         if (!submitResponse.data || !submitResponse.data.submission_id) {
@@ -244,6 +249,40 @@ const fetchLogAndWaveform = async (submissionId) => {
 
 // 添加日志状态控制
 const logSectionStatus = ref('default');
+
+// 添加AI分析相关的状态
+const isAnalyzing = ref(false);
+const aiAnalysisResult = ref('');
+const showAiAnalysis = ref(false);
+
+// 获取AI分析
+const getAiAnalysis = async () => {
+    if (!currentSubmissionId.value) {
+        message.warning('请先提交代码');
+        return;
+    }
+    
+    try {
+        isAnalyzing.value = true;
+        message.info('正在请求AI分析，请稍候...');
+        
+        const response = await aiApi.getAnalysis(currentSubmissionId.value);
+        
+        if (response.data && response.data.analysis) {
+            aiAnalysisResult.value = response.data.analysis;
+            showAiAnalysis.value = true;
+            message.success('AI分析完成');
+        } else {
+            throw new Error('分析结果为空');
+        }
+    } catch (err) {
+        console.error('获取AI分析失败:', err);
+        message.error('获取AI分析失败: ' + (err.response?.data?.error || err.message || '未知错误'));
+        aiAnalysisResult.value = '获取分析失败: ' + (err.response?.data?.error || err.message || '未知错误');
+    } finally {
+        isAnalyzing.value = false;
+    }
+};
 </script>
 
 <template>
@@ -288,7 +327,23 @@ const logSectionStatus = ref('default');
           v-model:isExpanded="logExpanded"
           :status="logSectionStatus"
         >
-          <LogViewer :content="currentLog" />
+          <div>
+            <div v-if="currentSubmissionId && currentLog" class="log-actions">
+              <button 
+                @click="getAiAnalysis" 
+                class="ai-analyze-btn"
+                :disabled="isAnalyzing"
+              >
+                {{ isAnalyzing ? '分析中...' : 'AI智能分析' }}
+              </button>
+            </div>
+            <LogViewer :content="currentLog" />
+            <!-- AI分析结果显示 -->
+            <div v-if="showAiAnalysis && aiAnalysisResult" class="ai-analysis-section">
+              <h3>AI分析结果</h3>
+              <div class="ai-analysis-content" v-html="marked(aiAnalysisResult)"></div>
+            </div>
+          </div>
         </CollapsibleSection>
 
         <!-- 波形部分 -->
@@ -335,30 +390,27 @@ const logSectionStatus = ref('default');
 
 .problem-container {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 两列布局，每列占 50% 宽度 */
-    gap: 20px; /* 列之间的间距 */
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
     min-height: calc(100vh - 100px);
     width: 100%;
 }
 
-/* 左侧容器 */
 .left-panel {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    /* 修改最大高度设置，让其根据内容自动调整 */
-    /* max-height: calc(100vh - 100px); */
-    /* overflow-y: auto; */
+    overflow-y: auto;
+    min-width: 0;
 }
 
-/* 右侧容器 */
 .right-panel {
     display: flex;
     flex-direction: column;
-    position: sticky; /* 恢复sticky定位 */
-    top: 20px; /* 距离顶部距离 */
-    height: calc(100vh - 100px); /* 设置高度 */
-    min-width: 0; /* 防止内容溢出 */
+    position: sticky;
+    top: 20px;
+    height: calc(100vh - 100px);
+    min-width: 0;
 }
 
 .difficulty {
@@ -525,5 +577,67 @@ pre {
         border-color: #2d2d2d;
         color: #e0e0e0;
     }
+}
+
+/* 添加AI分析相关样式 */
+.log-actions {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ai-analyze-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.ai-analyze-btn:hover {
+    background-color: #0056b3;
+}
+
+.ai-analyze-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.ai-analysis-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px dashed #ccc;
+}
+
+.ai-analysis-section h3 {
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.ai-analysis-content {
+    background-color: #f0f7ff;
+    padding: 15px;
+    border-radius: 4px;
+    white-space: normal;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.5;
+}
+
+.ai-analysis-content :deep(pre) {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.ai-analysis-content :deep(code) {
+    font-family: 'Consolas', 'Monaco', monospace;
+    background-color: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.9em;
 }
 </style>

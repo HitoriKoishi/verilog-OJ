@@ -33,9 +33,11 @@ def loaduser(user_id):
 from app_auth.routes import user_bp
 from app_problem.routes import problem_bp
 from app_submit.routes import submit_bp
+from app_ai.routes import ai_bp  # 导入AI分析模块蓝图
 app.register_blueprint(user_bp, url_prefix='/user')
 app.register_blueprint(problem_bp, url_prefix='/problem')
 app.register_blueprint(submit_bp, url_prefix='/submission')
+app.register_blueprint(ai_bp, url_prefix='/ai')  # 注册AI分析模块蓝图
 
 # 启动后台线程并传递 app 实例
 simulation_thread = threading.Thread(target=simulation_worker, args=(app,), daemon=True)

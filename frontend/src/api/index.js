@@ -128,8 +128,21 @@ export const submissionApi = {
     }
 };
 
+export const aiApi = {
+    // 获取AI分析结果
+    getAnalysis(submissionId) {
+        return apiClient.get(`/ai/analyze/${submissionId}`, {
+            timeout: 30000,  // 由于AI分析可能需要较长时间，设置较长的超时
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+    }
+};
+
 export default {
     problem: problemApi,
     user: userApi,
-    submission: submissionApi
+    submission: submissionApi,
+    ai: aiApi
 };
