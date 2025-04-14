@@ -5,6 +5,9 @@ from flask_cors import CORS  # 导入CORS
 from models import User, UserCode, ErrorCode, Problem, Submission, SubmissionStatus, SimulationResult
 from exts import db
 from models import BASE_DIR, PROB_DIR, login_required
+from app_submit.run_sim import simulation_queue, simulation_worker
+import threading
+import atexit
 
 
 
@@ -33,6 +36,10 @@ from app_submit.routes import submit_bp
 app.register_blueprint(user_bp, url_prefix='/user')
 app.register_blueprint(problem_bp, url_prefix='/problem')
 app.register_blueprint(submit_bp, url_prefix='/submission')
+
+# 启动后台线程并传递 app 实例
+simulation_thread = threading.Thread(target=simulation_worker, args=(app,), daemon=True)
+simulation_thread.start()
 
 # ---------- 更新Prob数据库 ----------
 def updateProblems():
@@ -102,3 +109,9 @@ if __name__=='__main__':
 with app.app_context():
     db.create_all()
     updateProblems()
+
+@atexit.register
+def cleanup():
+    """清理后台线程"""
+    simulation_queue.put(None)  # 向队列发送结束信号
+    simulation_thread.join()

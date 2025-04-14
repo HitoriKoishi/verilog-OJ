@@ -1,13 +1,47 @@
 # Verilog 在线评测系统 - 后端
 python后端
 
+后端基于Flask，判题模块采用Queue做队列，实现异步处理。
+
 仿真环境基于开源仿真软件iverilog，相比之前使用的modelsim，优点是仿真速度很快，开源轻量；缺点是语法支持不完备。
+
+## [返回](../README.md)
 
 ## 仿真环境搭建
 
 python调取的是``backend/iverilog``，一般来说不用再下载了。
 
 *Linux环境下需要自行下载iverilog，修改model.py里的``IVERILOG``和``VVP``。*
+
+## 运行环境搭建
+
+- Python >= 3.8
+- Flask
+- Flask-SQLAlchemy
+- Flask-Login
+- Flask-CORS
+- 适用于 Verilog 仿真的环境：
+  - Icarus Verilog (iverilog) 或其他 Verilog 编译器
+  - GTKWave (可选，用于查看波形)
+
+## 安装与运行
+
+```bash
+# 进入后端项目目录
+cd backend
+
+# 创建并激活虚拟环境（可选）
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# 或
+venv\Scripts\activate  # Windows
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 运行服务器
+python app.py
+```
 
 ## 目录结构
 
@@ -41,9 +75,9 @@ python调取的是``backend/iverilog``，一般来说不用再下载了。
     ├───exp1                        实验1
     │   ├───doc                         文档
     │   │       doc.md                      实验1文档
+    │   │       example.png                 doc.md使用的静态资源
     │   │       temp_module.v               实验1代码编辑器暂存内容
     │   └───project                     仿真工程
-    │           ctrl_phy_sim.bat            bat脚本
     │           sim_file_list.f             编译文件列表
     │           test_bench.v                测试用例
     │           ref_module.v                标准参考模块
@@ -67,20 +101,25 @@ python调取的是``backend/iverilog``，一般来说不用再下载了。
 
 仿真会在``backend``内的一个临时文件夹里进行，运行完毕后转移日志和波形文件，随后删除。
 
+如果想修改或加入题目，需要修改对应的exp文件夹，随后重启后端。暂时不支持修改难度和标签。
+
 ### doc.md
+作为题目详情页左侧的文档显示。``doc.md``的**第一个一级标题内容**会作为题目显示在题目列表界面上。
+
+doc.md使用的静态资源（如图片，波形）放在同级目录下，后端会自动处理目录。
 
 ### temp_module.v
-temp_module.v 是用户打开题目后代码编辑器内暂存的内容
+temp_module.v 是用户第一次打开题目后，代码编辑器内初始暂存的内容。
 
 ### sim_file_list.f
-需要iverilog编译的文件列表，以sim_project作为根目录。不可以使用通配符，注意文件最后留一行
+需要iverilog编译的文件列表，以``project``作为根目录。不可以使用通配符，注意文件最后留一行。
 
 ### test_bench
-1. 模块名必须为test_bench();不可更改
-2. 需要使用$dump系统函数生成vcd波形
-3. 注意控制仿真时间，减小波形文件大小
-4. 使用$display函数可以打印在log日志上
-5. bat脚本通过判断log日志中的"TEST FAILED"或"TEST PASSED"字符串确认仿真结果，因此需要test_bench判断仿真是否通过并display输出结果。
+1. 模块名必须为``module test_bench();``不可更改；
+2. 需要使用$dump系统函数生成vcd波形；
+3. 注意控制仿真时间，减小波形文件大小；
+4. 使用``$display``函数可以将内容打印在log日志上；
+5. python脚本通过判断log日志中的``TEST FAILED``或``TEST PASSED``字符串确认仿真结果，因此需要test_bench判断仿真是否通过并display输出结果。
 
 ### ref_module.v
-参考模块，提供该题目的标准答案
+参考模块，提供该题目的标准答案。

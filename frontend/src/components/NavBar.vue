@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router';
 import { ref, computed, inject } from 'vue';
 import LoginModal from './LoginModal.vue';
+import axios from 'axios'; // 引入axios用于发送HTTP请求
 
 const router = useRouter();
 
@@ -34,9 +35,22 @@ const closeLoginModal = () => {
     showLoginModal.value = false;
 };
 
-const handleLogout = () => {
-    logout();
-    router.push('/');
+const handleLogout = async () => {
+    try {
+        // 调用后端登出API
+        const response = await axios.post('/api/user/logout');
+
+        if (response.data.status === 'success') {
+            // 后端注销成功后，执行前端登出逻辑
+            logout();
+            router.push('/');
+        }
+    } catch (error) {
+        console.error('登出失败:', error);
+        // 即使请求失败，也尝试在前端执行登出
+        logout();
+        router.push('/');
+    }
 };
 </script>
 

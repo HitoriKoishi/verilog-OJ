@@ -2,27 +2,16 @@
 
 这是一个基于 Vue 3 + Vite 的 Verilog 在线评测系统前端项目。系统允许用户提交 Verilog 代码并自动评测结果。
 
+## [返回](../README.md)
+
 ## 环境要求
 
-### 前端环境
 - Node.js >= 14.0.0
 - npm >= 6.0.0 或 yarn >= 1.22.0
 - Vue 3
 - Vite
 
-### 后端环境
-- Python >= 3.8
-- Flask
-- Flask-SQLAlchemy
-- Flask-Login
-- Flask-CORS
-- 适用于 Verilog 仿真的环境：
-  - Icarus Verilog (iverilog) 或其他 Verilog 编译器
-  - GTKWave (可选，用于查看波形)
-
 ## 安装与运行
-
-### 前端
 
 ```bash
 # 进入前端项目目录
@@ -44,25 +33,6 @@ npm run build
 yarn build
 ```
 
-### 后端
-
-```bash
-# 进入后端项目目录
-cd backend
-
-# 创建并激活虚拟环境（可选）
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# 或
-venv\Scripts\activate  # Windows
-
-# 安装依赖
-pip install -r requirements.txt
-
-# 运行服务器
-python app.py
-```
-
 ## 主要功能
 
 - 用户注册与登录
@@ -73,12 +43,31 @@ python app.py
 - 查看历史提交记录
 - 实时评测结果反馈
 
----
+项目结构
 
-原始模板信息:
+```
+frontend/
+├── public/            # 静态资源
+├── src/
+│   ├── api/           # API 请求接口
+│   ├── assets/        # 项目资源文件
+│   ├── components/    # 通用组件
+│   │   ├── NavBar.vue         # 导航栏组件
+│   │   └── LoginModal.vue     # 登录模态框
+│   ├── views/         # 页面视图
+│   │   ├── Home.vue           # 首页
+│   │   ├── ProblemSubmit.vue  # 题目提交页面
+│   │   ├── ProblemList.vue    # 题目列表界面
+│   │   └── UserProfile.vue    # 个人信息界面
+│   ├── App.vue        # 根组件
+│   └── main.js        # 入口文件
+└── index.html         # 入口界面
+```
 
-# Vue 3 + Vite
+API 接口
+前端通过 Axios 与后端 API 进行交互，主要接口包括：
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
-
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+用户相关：登录、注册、登出、检查登录状态
+题目相关：获取题目列表、获取题目详情
+代码相关：保存草稿、加载草稿、提交代码
+提交相关：获取提交结果、获取波形文件

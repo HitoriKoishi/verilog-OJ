@@ -1,13 +1,58 @@
 from models import Submission
 from models import ErrorCode, SimulationResult
 from models import SubmissionStatus
+from flask import current_app
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 from datetime import datetime
 from models import BASE_DIR, PROB_DIR, IVERILOG, VVP
+from queue import Queue
+from exts import db
 
+# 创建任务队列
+simulation_queue = Queue()
+
+def simulation_worker(app):
+    """后台线程：从队列中获取任务并执行仿真"""
+    with app.app_context():  # 手动激活应用上下文
+        while True:
+            try:
+                print("等待仿真任务...")
+                # 从队列中获取 submission_id
+                submission_id = simulation_queue.get()
+                if submission_id is None:
+                    break  # 退出线程
+                # 获取 submission 对象
+                submission = Submission.query.get(submission_id)
+                if not submission:
+                    continue
+                # 更新状态为 RUNNING
+                submission.status = SubmissionStatus.RUNNING
+                db.session.commit()
+                print(f"开始仿真任务: {submission_id}")
+                # 执行仿真
+                try:
+                    sim_result = sim_run_verilog(submission_id)
+                    submission.status = SubmissionStatus.SUCCESS if sim_result.error_code == ErrorCode.SUCCESS else SubmissionStatus.FAILED
+                    submission.error_code = sim_result.error_code.name
+                    submission.log_path = sim_result.log_path
+                    submission.waveform_path = sim_result.waveform_path
+                except Exception as e:
+                    # 仿真失败
+                    submission.status = SubmissionStatus.FAILED
+                    submission.error_code = str(e)
+                    submission.log_path = ""
+                    submission.waveform_path = ""
+                    print(f"仿真任务异常: {e}")
+                finally:
+                    db.session.commit()
+                    print(f"仿真任务完成: {submission_id}, 状态: {submission.status}")
+            except Exception as e:
+                print(f"仿真任务执行失败: {e}")
+            finally:
+                simulation_queue.task_done()
 
 def sim_run_verilog(submission_id: int) -> SimulationResult:
     result = SimulationResult()

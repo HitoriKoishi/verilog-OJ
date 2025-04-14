@@ -32,42 +32,17 @@ def getUserSubmissions():
         "status": sub.status
     } for sub in submissions])
 
+
 # ---------- 获取提交结果，运行仿真 ----------
 @submit_bp.route('/<int:submission_id>', methods=['GET'])
 def getSubmission(submission_id):
-    """触发仿真执行并返回结果"""
+    """获取仿真结果"""
     submission = Submission.query.get(submission_id)
     if not submission:
         return jsonify({"error": "提交记录不存在"}), 404
-    # 最终状态直接返回
-    if submission.status in [SubmissionStatus.SUCCESS, SubmissionStatus.FAILED]:
-        return _format_response(submission)
-    # 加锁防止并发执行
-    with simulation_lock:
-        # 刷新对象状态
-        submission = Submission.query.get(submission_id)
-        if submission.status != SubmissionStatus.QUEUED:
-            return _format_response(submission)
-        try:
-            # 更新为运行状态
-            submission.status = SubmissionStatus.RUNNING
-            db.session.commit()
-            # 执行仿真
-            sim_result = sim_run_verilog(submission_id)
-            # 更新数据库记录
-            submission.status = SubmissionStatus.SUCCESS if sim_result.error_code == ErrorCode.SUCCESS else SubmissionStatus.FAILED
-            submission.error_code = sim_result.error_code.name
-            submission.log_path = sim_result.log_path
-            submission.waveform_path = sim_result.waveform_path
-        except Exception as e:
-            # 错误处理
-            submission.status = SubmissionStatus.FAILED
-            submission.error_code = str(e)
-            submission.log_path = ""
-            submission.waveform_path = ""
-        finally:
-            db.session.commit()
+    # 返回仿真结果
     return _format_response(submission)
+
 
 # ---------- 获取日志文件内容 ----------
 @submit_bp.route('/<int:submission_id>/log', methods=['GET'])

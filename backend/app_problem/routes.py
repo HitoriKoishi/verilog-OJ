@@ -1,9 +1,11 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, url_for, send_from_directory
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import User, UserCode, Problem, Submission, SubmissionStatus, login_required
 from datetime import datetime
 from exts import db
+from app_submit.run_sim import simulation_queue
+import re
 
 problem_bp = Blueprint('problem', __name__)
 
@@ -85,6 +87,10 @@ def submitSolution(id):
     )
     db.session.add(submission)
     db.session.commit()
+    # 将 submission_id 加入队列
+    print(f"将提交ID {submission.id} 加入仿真队列")
+    simulation_queue.put(submission.id)
+    print(f"仿真队列大小: {simulation_queue.qsize()}")
     return jsonify({
         "status": "success",
         "submission_id": submission.id
@@ -124,13 +130,21 @@ def getProblem(id):
     problem = Problem.query.get(id)
     if not problem:
         return jsonify({"error": "Problem not found"}), 404
+    # 获取文档内容
+    doc_content = problem.description
+    # 替换相对路径为绝对路径
+    def replace_relative_paths(match):
+        relative_path = match.group(2)  # 获取图片的相对路径
+        absolute_url = url_for('problem.serve_prob_static', filename=f'exp{id}/doc/{relative_path}', _external=True)
+        return f'![{match.group(1)}]({absolute_url})'
+    doc_content = re.sub(r'!\[(.*?)\]\((.*?)\)', replace_relative_paths, doc_content)
     # 检查用户是否完成解答，仅在用户登录时检查
     is_completed = get_completion_status(user_id, id) if user_id else None
     # 构建响应数据
     response_data = {
         "id": problem.id,
         "title": problem.title,
-        "document": problem.description,
+        "document": doc_content,
         "difficulty": problem.difficulty,
         "tags": problem.tags.split(',') if problem.tags else [],
         "code_template": problem.code_temp,
@@ -205,3 +219,8 @@ def get_problem_statistics(problem_id):
         "passed_users_count": passed_users_count
     }
 
+
+@problem_bp.route('/static/Prob/<path:filename>')
+def serve_prob_static(filename):
+    """提供 Prob 文件夹中的静态资源"""
+    return send_from_directory('Prob', filename)
