@@ -139,13 +139,20 @@ def getProblem(id):
     doc_content = problem.description
     # 替换相对路径为绝对路径
     def replace_relative_paths(match):
-        relative_path = match.group(2)  # 获取图片的相对路径
-        # 只处理没有完整URL的相对路径
+        captured_path = match.group(2)  # 获取括号内捕获的完整路径
+        # 提取路径中的文件名部分
+        relative_path = os.path.basename(captured_path)
+        
+        # 只处理没有完整URL的相对路径 (现在relative_path应该是纯文件名)
         if not relative_path.startswith(('http://', 'https://', '/')):
+            # 使用提取的文件名构建URL
             absolute_url = url_for('problem.serve_prob_static', filename=f'exp{id}/doc/{relative_path}', _external=True)
-            # print(f"转换图片路径: {relative_path} -> {absolute_url}")
+            # print(f"[Problem ID: {id}] 修正后生成图片URL: {absolute_url} (原始捕获: {captured_path}, 提取文件名: {relative_path})")
             return f'![{match.group(1)}]({absolute_url})'
-        return match.group(0)  # 如果是完整URL或绝对路径，保持不变
+        # print(f"[Problem ID: {id}] 保持原始URL/路径: {captured_path}")
+        return match.group(0)
+    
+    # 修正正则表达式，使用 r'!\\[(.*?)\\]\\((.*?)\\)' 来匹配 ![alt](path)
     doc_content = re.sub(r'!\[(.*?)\]\((.*?)\)', replace_relative_paths, doc_content)
     # 检查用户是否完成解答，仅在用户登录时检查
     is_completed = get_completion_status(user_id, id) if user_id else None
@@ -233,7 +240,6 @@ def get_problem_statistics(problem_id):
 def serve_prob_static(filename):
     """提供 Prob 文件夹中的静态资源"""
     # print(f"请求静态资源：{filename}")
-    # 检查文件是否存在，如果不存在则尝试一些常见的文件名替换
     # 构建完整路径
     full_path = os.path.join('Prob', filename)
     if os.path.exists(full_path):
@@ -254,4 +260,5 @@ def serve_prob_static(filename):
                         return send_from_directory('Prob', alt_name)
     
     # 如果没有找到任何替代文件，返回404
+    print(f"文件未找到，返回 404: {full_path}") # 添加日志
     abort(404)
