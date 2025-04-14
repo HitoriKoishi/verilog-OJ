@@ -18,7 +18,7 @@ python调取的是``backend/iverilog``，一般来说不用再下载了。
 - Python >= 3.8
 - Flask
 - Flask-SQLAlchemy
-- Flask-Login
+- Flask-Login 
 - Flask-CORS
 - 适用于 Verilog 仿真的环境：
   - Icarus Verilog (iverilog) 或其他 Verilog 编译器

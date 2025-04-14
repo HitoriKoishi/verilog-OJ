@@ -1,9 +1,10 @@
-
-module nand_gate_3(
-    input a,
-    input b,
-    input c,
-    output r
+module ref_module(
+    input wire a,
+    input wire b,
+    input wire c,
+    output wire y
 );
-    assign r = ~(a & b &c);
+    // 使用assign语句实现三输入与非门
+    assign y = ~(a & b & c);
+    
 endmodule

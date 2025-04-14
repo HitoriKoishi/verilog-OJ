@@ -3,3 +3,5 @@
 *.view
 example.db
 __pycache__
+/backend/Prob/_temporaryStorage/
+/backend/venv/

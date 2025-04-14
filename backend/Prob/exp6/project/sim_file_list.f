@@ -1,3 +1,8 @@
-../test_bench/test_bench.v
-../test_module/ref_module.v
-../test_module/user_module.v
+// 标准答案模块
+ref_module.v
+
+// 测试文件
+test_bench.v
+
+// 用户模块（由评测系统自动添加）
+user_module.v
