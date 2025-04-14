@@ -33,6 +33,10 @@ export const problemApi = {
     // 提交代码
     submitSolution(id, code) {
         return apiClient.post(`/problem/${id}/submit`, { code });
+    },
+
+    getProblemStatus() {
+        return apiClient.get('/problem/status');
     }
 };
 
@@ -60,6 +64,23 @@ export const userApi = {
     // 获取用户提交历史
     getSubmissions(userId) {
         return apiClient.get(`/user/${userId}/submission`);
+    },
+    // 获取用户资料
+    getUserProfile() {
+        return apiClient.get('/user/profile');
+    },
+
+    // 更新用户名
+    updateUsername(newUsername) {
+        return apiClient.post('/user/update_username', { newUsername });
+    },
+
+    // 更新密码
+    updatePassword(currentPassword, newPassword) {
+        return apiClient.post('/user/update_password', {
+            currentPassword,
+            newPassword
+        });
     }
 };
 
@@ -67,6 +88,20 @@ export const submissionApi = {
     // 获取提交状态
     getSubmission(submissionId) {
         return apiClient.get(`/submission/${submissionId}`);
+    },
+    // 获取日志
+    getSubmissionLog(submissionId) {
+        return apiClient.get(`/submission/${submissionId}/log`);
+    },
+
+    // 获取波形
+    getSubmissionWaveform(submissionId) {
+        return apiClient.get(`/submission/${submissionId}/waveform`);
+    },
+
+    // 获取用户历史提交记录
+    getUserSubmissions() {
+        return apiClient.get('/submission');
     }
 };
 
