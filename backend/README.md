@@ -45,6 +45,7 @@ python调取的是``backend/iverilog``，一般来说不用再下载了。
     ├───exp1                        实验1
     │   ├───doc                         文档
     │   │       doc.md                      实验1文档
+    │   │       example.png                 doc.md使用的静态资源
     │   │       temp_module.v               实验1代码编辑器暂存内容
     │   └───project                     仿真工程
     │           sim_file_list.f             编译文件列表
@@ -74,6 +75,8 @@ python调取的是``backend/iverilog``，一般来说不用再下载了。
 
 ### doc.md
 作为题目详情页左侧的文档显示。``doc.md``的**第一个一级标题内容**会作为题目显示在题目列表界面上。
+
+doc.md使用的静态资源（如图片，波形）放在同级目录下，后端会自动处理目录。
 
 ### temp_module.v
 temp_module.v 是用户第一次打开题目后，代码编辑器内初始暂存的内容。
