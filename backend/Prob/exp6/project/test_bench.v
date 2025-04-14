@@ -37,8 +37,21 @@ module test_bench();
         #10;
         
         // 测试用例2：计数测试（0->9）
+<<<<<<< HEAD
         $display("Test 2: Count test (0->9)");
         repeat(10) #10 has_mismatch = 0;
+=======
+        repeat(9) begin
+            if (your_out !== ref_out) begin
+                $display("TEST FAILED");
+                $display("Count test failed at value %d!", ref_out);
+                $display("Expected output: %b", ref_out);
+                $display("Actual output: %b", your_out);
+                $finish;
+            end
+            #10;
+        end
+>>>>>>> a5808a0 (fix: 修复题目模型名与test_bench中的不匹配的问题)
         
         // 测试用例3：溢出测试（9->0）
         $display("Test 3: Overflow test (9->0)");

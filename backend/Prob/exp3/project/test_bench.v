@@ -114,7 +114,7 @@ module test_bench();
     end
     
     // 实例化待测试模块
-    majority3 user_module(
+    three_vote user_module(
         .a(a),
         .b(b),
         .c(c),

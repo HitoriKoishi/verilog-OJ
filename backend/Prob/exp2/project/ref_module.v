@@ -6,5 +6,5 @@ module ref_module(
 );
     // 使用assign语句实现三输入与非门
     assign y = ~(a & b & c);
-    
+
 endmodule
