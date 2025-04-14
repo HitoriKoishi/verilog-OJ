@@ -13,6 +13,36 @@ python调取的是``backend/iverilog``，一般来说不用再下载了。
 
 *Linux环境下需要自行下载iverilog，修改model.py里的``IVERILOG``和``VVP``。*
 
+## 运行环境搭建
+
+- Python >= 3.8
+- Flask
+- Flask-SQLAlchemy
+- Flask-Login
+- Flask-CORS
+- 适用于 Verilog 仿真的环境：
+  - Icarus Verilog (iverilog) 或其他 Verilog 编译器
+  - GTKWave (可选，用于查看波形)
+
+## 安装与运行
+
+```bash
+# 进入后端项目目录
+cd backend
+
+# 创建并激活虚拟环境（可选）
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# 或
+venv\Scripts\activate  # Windows
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 运行服务器
+python app.py
+```
+
 ## 目录结构
 
 ```
