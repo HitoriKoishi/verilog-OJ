@@ -104,11 +104,10 @@ def updateProblems():
     db.session.commit()
 
 if __name__=='__main__':
+    with app.app_context():
+        db.create_all()
+        updateProblems()
     app.run()
-
-with app.app_context():
-    db.create_all()
-    updateProblems()
 
 @atexit.register
 def cleanup():
