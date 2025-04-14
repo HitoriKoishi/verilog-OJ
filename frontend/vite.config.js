@@ -8,7 +8,7 @@ export default defineConfig({
         proxy: {
             // 将所有API请求代理到Flask后端
             '/api': {
-                target: 'http://localhost:5000',
+                target: 'http://0.0.0.0:5000',
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, '')
             }

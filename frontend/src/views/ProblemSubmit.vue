@@ -9,6 +9,7 @@ import { EditorView } from '@codemirror/view';
 // 从 codemirror 主包中导入，而不是从 basic-setup
 import { basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
+import { problemApi } from '../api';
 const route = useRoute();
 const problemId = route.params.id;
 
@@ -24,15 +25,7 @@ const fetchProblemDetail = async () => {
     error.value = null;
 
     try {
-        // 修改请求路径，直接使用后端API路径
-        const response = await axios.get(`http://localhost:5000/problem/${problemId}`, {
-            timeout: 10000,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true // 确保发送 cookies
-        });
+        const response = await problemApi.getProblem(problemId);
 
         if (response.status !== 200) {
             throw new Error(`服务器返回错误状态码: ${response.status}`);
@@ -111,29 +104,21 @@ const submitSolution = async () => {
     }
 
     try {
-        const submitResponse = await axios.post(`/api/problem/${problemId}/submit`, {
-            code: verilogCode.value
-        }, {
-            timeout: 10000,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
+        const submitResponse = await problemApi.submitSolution(problemId, verilogCode.value);
 
         if (!submitResponse.data || !submitResponse.data.submission_id) {
             throw new Error('提交失败: 服务器返回无效的提交ID');
         }
 
         const submissionId = submitResponse.data.submission_id;
-        console.log('提交成功，获取提交ID:', submissionId);
+        message.log('提交成功，获取提交ID:', submissionId);
 
         setTimeout(() => {
             checkSubmissionResult(submissionId);
         }, 1000);
 
     } catch (err) {
-        console.error('提交解答失败:', err);
+        message.error('提交解答失败:', err);
         message.error('提交失败: ' + (err.response?.data?.error || err.message || '未知错误'));
     }
 };
@@ -188,34 +173,24 @@ const saveDraft = async () => {
     }
 
     try {
-        await axios.post(`/api/problem/${problemId}/save`, {
-            code: verilogCode.value
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log('代码草稿已保存');
+        await problemApi.saveDraft(problemId, verilogCode.value);
+        message.log('代码草稿已保存');
     } catch (err) {
-        console.error('保存代码草稿失败:', err);
+        message.error('保存代码草稿失败:', err);
     }
 };
 
 // 加载代码草稿
 const loadDraft = async () => {
     try {
-        const response = await axios.get(`/api/problem/${problemId}/load`, {
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
+        const response = await problemApi.loadDraft(problemId);
 
         if (response.data.status === 'success' && response.data.draft_code) {
             verilogCode.value = response.data.draft_code;
-            console.log('已加载之前保存的代码草稿, 保存时间:', response.data.draft_time);
+            message.log('已加载之前保存的代码草稿, 保存时间:', response.data.draft_time);
         }
     } catch (err) {
-        console.error('加载代码草稿失败:', err);
+        message.error('加载代码草稿失败:', err);
     }
 };
 

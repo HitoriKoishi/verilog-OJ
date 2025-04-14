@@ -17,22 +17,44 @@ export const problemApi = {
 
     // 获取题目详情
     getProblem(id) {
-        return apiClient.get(`/problem/${id}`);
+        return apiClient.get(`/problem/${id}`,{
+            timeout: 10000,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
     },
 
     // 保存代码草稿
     saveDraft(id, code) {
-        return apiClient.post(`/problem/${id}/save`, { code });
+        return apiClient.post(`/problem/${id}/save`, { code: code },{
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     },
 
     // 加载代码草稿
     loadDraft(id) {
-        return apiClient.get(`/problem/${id}/load`);
+        return apiClient.get(`/problem/${id}/load`,
+            {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            },
+            { withCredentials: true });
     },
 
     // 提交代码
     submitSolution(id, code) {
-        return apiClient.post(`/problem/${id}/submit`, { code });
+        return apiClient.post(`/problem/${id}/submit`, { code: code },{
+            timeout: 10000,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        },{ withCredentials: true });
     },
 
     getProblemStatus() {

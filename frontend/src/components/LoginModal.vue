@@ -1,5 +1,6 @@
 <script setup>
 import { ref, inject, watch } from 'vue';
+import { userApi } from '../api';
 
 const props = defineProps({
     isRegistering: {
@@ -67,7 +68,7 @@ const validateForm = () => {
 // 实际登录请求
 const loginRequest = async () => {
     try {
-        const response = await fetch('http://localhost:5000/user/login', {
+        const response = await userApi.login({
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -96,7 +97,7 @@ const loginRequest = async () => {
 // 实际注册请求
 const registerRequest = async () => {
     try {
-        const response = await fetch('http://localhost:5000/user/register', {
+        const response = await userApi.register({
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

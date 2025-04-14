@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, url_for, send_from_directory
 from flask_login import login_user, logout_user, login_required, current_user
+from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import User, UserCode, Problem, Submission, SubmissionStatus, login_required
 from datetime import datetime
@@ -8,6 +9,7 @@ from app_submit.run_sim import simulation_queue
 import re
 
 problem_bp = Blueprint('problem', __name__)
+CORS(problem_bp, resources=r'/*', supports_credentials=True)
 
 
 # ---------- 保存用户代码草稿 ----------
