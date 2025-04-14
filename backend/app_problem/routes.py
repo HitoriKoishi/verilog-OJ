@@ -6,6 +6,9 @@ from datetime import datetime
 from exts import db
 from app_submit.run_sim import simulation_queue
 import re
+import os
+from pathlib import Path
+from flask import current_app, abort
 
 problem_bp = Blueprint('problem', __name__)
 
@@ -135,8 +138,12 @@ def getProblem(id):
     # 替换相对路径为绝对路径
     def replace_relative_paths(match):
         relative_path = match.group(2)  # 获取图片的相对路径
-        absolute_url = url_for('problem.serve_prob_static', filename=f'exp{id}/doc/{relative_path}', _external=True)
-        return f'![{match.group(1)}]({absolute_url})'
+        # 只处理没有完整URL的相对路径
+        if not relative_path.startswith(('http://', 'https://', '/')):
+            absolute_url = url_for('problem.serve_prob_static', filename=f'exp{id}/doc/{relative_path}', _external=True)
+            # print(f"转换图片路径: {relative_path} -> {absolute_url}")
+            return f'![{match.group(1)}]({absolute_url})'
+        return match.group(0)  # 如果是完整URL或绝对路径，保持不变
     doc_content = re.sub(r'!\[(.*?)\]\((.*?)\)', replace_relative_paths, doc_content)
     # 检查用户是否完成解答，仅在用户登录时检查
     is_completed = get_completion_status(user_id, id) if user_id else None
@@ -223,4 +230,26 @@ def get_problem_statistics(problem_id):
 @problem_bp.route('/static/Prob/<path:filename>')
 def serve_prob_static(filename):
     """提供 Prob 文件夹中的静态资源"""
-    return send_from_directory('Prob', filename)
+    # print(f"请求静态资源：{filename}")
+    # 检查文件是否存在，如果不存在则尝试一些常见的文件名替换
+    # 构建完整路径
+    full_path = os.path.join('Prob', filename)
+    if os.path.exists(full_path):
+        return send_from_directory('Prob', filename)
+    
+    # 如果文件不存在，尝试在同一目录下查找其他图片文件
+    dir_path = os.path.dirname(full_path)
+    if os.path.exists(dir_path):
+        # 如果是example.png请求，查看目录中是否有其他图片
+        if 'example.png' in filename:
+            for img_ext in ['.png', '.jpg', '.jpeg', '.gif']:
+                # 尝试pic1.png等常见名称
+                for img_name in ['pic1', 'pic']:
+                    alt_name = filename.replace('example.png', f'{img_name}{img_ext}')
+                    alt_path = os.path.join('Prob', alt_name)
+                    if os.path.exists(alt_path):
+                        # print(f"找到替代文件：{alt_name}")
+                        return send_from_directory('Prob', alt_name)
+    
+    # 如果没有找到任何替代文件，返回404
+    abort(404)

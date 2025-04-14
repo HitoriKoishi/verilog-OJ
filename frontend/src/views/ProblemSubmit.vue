@@ -426,6 +426,15 @@ const updateCodeMirror = (code) => {
     margin-top: 15px;
 }
 
+/* 添加图片样式控制 */
+.markdown-content :deep(img) {
+    max-width: 90%;  /* 图片最大宽度为容器的90% */
+    height: auto;    /* 保持图片比例 */
+    display: block;  /* 块级显示使居中生效 */
+    margin: 15px auto; /* 上下15px边距，左右自动居中 */
+    border-radius: 4px; /* 圆角边框 */
+}
+
 .markdown-content :deep(h1),
 .markdown-content :deep(h2),
 .markdown-content :deep(h3),

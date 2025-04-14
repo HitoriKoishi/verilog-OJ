@@ -6,6 +6,8 @@
 ## 实验内容
 使用Verilog HDL设计一个三输入与非门，实现(A·B·C)'的逻辑功能。
 
+![pic1](\backend\Prob\exp2\doc\pic1.png)
+
 ## 设计要求
 1. 模块名称：`nand3_gate`
 2. 端口定义：
