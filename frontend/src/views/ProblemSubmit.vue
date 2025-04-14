@@ -444,8 +444,14 @@ const fetchLogAndWaveform = async (submissionId) => {
     display: flex;
     flex-direction: column;
     gap: 20px;
+<<<<<<< HEAD
     overflow-y: auto;
     min-width: 0; /* 防止内容溢出 */
+=======
+    /* 修改最大高度设置，让其根据内容自动调整 */
+    /* max-height: calc(100vh - 100px); */
+    /* overflow-y: auto; */
+>>>>>>> 7a9af38a4d1372c5090e6fc9cb8a81135626393e
 }
 
 /* 右侧容器 */
@@ -462,8 +468,9 @@ const fetchLogAndWaveform = async (submissionId) => {
     padding: 20px;
     background-color: #f8f9fa;
     border-radius: 8px;
-    max-height: 800px;
-    overflow-y: auto;
+    /* 移除最大高度限制，允许内容完全展开 */
+    /* max-height: 800px; */
+    /* overflow-y: auto; */
 }
 
 .difficulty {
@@ -492,6 +499,15 @@ const fetchLogAndWaveform = async (submissionId) => {
     border-top: 1px solid #ddd;
     padding-top: 15px;
     margin-top: 15px;
+}
+
+/* 添加图片样式控制 */
+.markdown-content :deep(img) {
+    max-width: 60%;  /* 图片最大宽度为容器的90% */
+    height: auto;    /* 保持图片比例 */
+    display: block;  /* 块级显示使居中生效 */
+    margin: 15px auto; /* 上下15px边距，左右自动居中 */
+    border-radius: 4px; /* 圆角边框 */
 }
 
 .markdown-content :deep(h1),
@@ -724,6 +740,7 @@ const fetchLogAndWaveform = async (submissionId) => {
 .section-content {
     padding: 20px;
     background-color: white;
+    /* 针对日志和波形区域保留滚动，但题目描述不需要 */
 }
 
 .log-content,
