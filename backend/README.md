@@ -20,6 +20,7 @@ python调取的是``backend/iverilog``，一般来说不用再下载了。
 - Flask-SQLAlchemy
 - Flask-Login 
 - Flask-CORS
+- OpenAI >= 1.73.0 (用于AI代码分析)
 - 适用于 Verilog 仿真的环境：
   - Icarus Verilog (iverilog) 或其他 Verilog 编译器
   - GTKWave (可选，用于查看波形)
@@ -51,6 +52,7 @@ python app.py
 |   app.py                      后端py文件
 |   exts.py                     数据库引用
 |   models.py                   模块引用
+|   api_keys.txt                用于储存api key的文件，不会被同步到github
 │
 ├───iverilog                    iverilog库
 │
@@ -63,6 +65,12 @@ python app.py
 ├───app_submit
 |       routes.py               提交管理接口
 |       run_sim.py              仿真脚本
+│
+├───app_ai
+|       routes.py               AI分析接口
+|       config.py               AI配置文件
+|       prompt.py               prompt文件
+|       deepseek_api            AI分析实现
 │
 ├───instance
 |       example.db              数据库
