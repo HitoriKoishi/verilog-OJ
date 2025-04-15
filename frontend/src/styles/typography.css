@@ -15,12 +15,12 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.75rem; }
-h4 { font-size: 1.5rem; }
-h5 { font-size: 1.25rem; }
-h6 { font-size: 1rem; }
+h1 { font-size: 2rem; }    /* 32px */
+h2 { font-size: 1.75rem; } /* 28px */
+h3 { font-size: 1.5rem; }  /* 24px */
+h4 { font-size: 1.25rem; } /* 20px */
+h5 { font-size: 1.125rem; }/* 18px */
+h6 { font-size: 1rem; }    /* 16px */
 
 /* 文本工具类 */
 .text-xs { font-size: 0.75rem; }
@@ -97,10 +97,6 @@ h6 { font-size: 1rem; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-.line-clamp-1 { -webkit-line-clamp: 1; }
-.line-clamp-2 { -webkit-line-clamp: 2; }
-.line-clamp-3 { -webkit-line-clamp: 3; }
 
 /* 链接样式 */
 a {

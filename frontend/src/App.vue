@@ -168,12 +168,6 @@ body {
     margin: 0 auto;
 }
 
-h1,
-h2,
-h3 {
-    margin-bottom: var(--spacing-md);
-}
-
 a {
     text-decoration: none;
     color: var(--primary-color);

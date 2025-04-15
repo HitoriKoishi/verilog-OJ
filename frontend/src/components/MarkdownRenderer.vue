@@ -73,6 +73,31 @@ const renderedContent = computed(() => {
   margin-bottom: var(--spacing-sm);
   color: var(--text-primary);
   font-weight: 600;
+  line-height: 1.4;
+}
+
+.markdown-content :deep(h1) {
+  font-size: 2rem;    /* 32px */
+}
+
+.markdown-content :deep(h2) {
+  font-size: 1.75rem; /* 28px */
+}
+
+.markdown-content :deep(h3) {
+  font-size: 1.5rem;  /* 24px */
+}
+
+.markdown-content :deep(h4) {
+  font-size: 1.25rem; /* 20px */
+}
+
+.markdown-content :deep(h5) {
+  font-size: 1.125rem;/* 18px */
+}
+
+.markdown-content :deep(h6) {
+  font-size: 1rem;    /* 16px */
 }
 
 .markdown-content :deep(p) {
