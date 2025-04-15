@@ -1,0 +1,225 @@
+/* 基础按钮样式 */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  gap: var(--spacing-xs);
+  min-height: 38px;
+}
+
+/* 主要按钮 */
+.button-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.button-primary:active {
+  transform: translateY(0);
+}
+
+/* 次要按钮 */
+.button-secondary {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.button-secondary:hover {
+  background-color: var(--border-color);
+  transform: translateY(-1px);
+}
+
+/* 危险按钮 */
+.button-danger {
+  background-color: var(--error-color);
+  color: white;
+}
+
+.button-danger:hover {
+  background-color: color-mix(in srgb, var(--error-color) 90%, black);
+  transform: translateY(-1px);
+}
+
+/* 成功按钮 */
+.button-success {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.button-success:hover {
+  background-color: color-mix(in srgb, var(--success-color) 90%, black);
+  transform: translateY(-1px);
+}
+
+/* 警告按钮 */
+.button-warning {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.button-warning:hover {
+  background-color: color-mix(in srgb, var(--warning-color) 90%, black);
+  transform: translateY(-1px);
+}
+
+/* 信息按钮 */
+.button-info {
+  background-color: var(--info-color);
+  color: white;
+}
+
+.button-info:hover {
+  background-color: color-mix(in srgb, var(--info-color) 90%, black);
+  transform: translateY(-1px);
+}
+
+/* 链接按钮 */
+.button-link {
+  background: none;
+  color: var(--primary-color);
+  padding: 0;
+  font-weight: normal;
+}
+
+.button-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* 按钮尺寸 */
+.button-xs {
+  padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
+  font-size: 0.75rem;
+  min-height: 24px;
+}
+
+.button-sm {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.875rem;
+  min-height: 32px;
+}
+
+.button-lg {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 1.125rem;
+  min-height: 44px;
+}
+
+/* 块级按钮 */
+.button-block {
+  display: flex;
+  width: 100%;
+}
+
+/* 圆形按钮 */
+.button-circle {
+  border-radius: 50%;
+  padding: 0;
+  width: 38px;
+  height: 38px;
+}
+
+.button-circle.button-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.button-circle.button-lg {
+  width: 44px;
+  height: 44px;
+}
+
+/* 禁用状态 */
+.button:disabled,
+.button.disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 加载状态 */
+.button.loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.button.loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin: -8px 0 0 -8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* 带图标的按钮 */
+.button .icon {
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* 按钮组 */
+.button-group {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.button-group .button {
+  border-radius: 0;
+}
+
+.button-group .button:first-child {
+  border-top-left-radius: var(--radius-sm);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.button-group .button:last-child {
+  border-top-right-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .button-lg {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+}
+
+/* 暗色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .button-secondary {
+    background-color: var(--surface-color);
+    border-color: var(--border-color);
+  }
+  
+  .button-secondary:hover {
+    background-color: color-mix(in srgb, var(--surface-color) 80%, white);
+  }
+}

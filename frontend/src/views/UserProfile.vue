@@ -90,10 +90,10 @@ const getProgressStatus = async () => {
 
 // 根据完成状态返回按钮的样式
 function getButtonClass(completion_status) {
-    if (completion_status === '已完成') return 'green';
-    if (completion_status === '失败') return 'red';
-    if (completion_status === '运行中') return 'yellow';
-    return 'gray';
+    if (completion_status === '已完成') return 'button-success';
+    if (completion_status === '失败') return 'button-error';
+    if (completion_status === '运行中') return 'button-warning';
+    return 'button-disabled';
 }
 
 // 修改用户名
@@ -173,52 +173,52 @@ const goToProblem = (problemId) => {
 </script>
 
 <template>
-    <div class="user-profile">
-        <h1>个人中心</h1>
+    <div class="user-profile container">
+        <h1 class="text-primary">个人中心</h1>
 
         <div class="profile-container">
             <!-- 用户基本信息 -->
-            <div class="user-info">
-                <h2>账户信息</h2>
+            <div class="user-info card">
+                <h2 class="text-primary">账户信息</h2>
                 <div class="info-item">
-                    <span class="label">用户名:</span>
-                    <span class="value">{{ userData.username }}</span>
+                    <span class="label text-secondary">用户名:</span>
+                    <span class="value text-primary">{{ userData.username }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="label">邮箱:</span>
-                    <span class="value">{{ userData.email }}</span>
+                    <span class="label text-secondary">邮箱:</span>
+                    <span class="value text-primary">{{ userData.email }}</span>
                 </div>
             </div>
 
             <!-- 消息提示 -->
-            <div v-if="message" :class="['message', messageType]">
+            <div v-if="message" :class="['message', messageType, 'card']">
                 {{ message }}
             </div>
 
             <!-- 统计信息 -->
-            <div class="progress-section">
-              <h2>进度</h2>
-              <!-- 添加统计卡片 -->
+            <div class="progress-section card">
+              <h2 class="text-primary">进度</h2>
+              <!-- 统计卡片 -->
               <div class="stats-container">
                 <div class="stat-card">
-                  <div class="stat-value">{{ progressStats.passed }}</div>
-                  <div class="stat-label">已通过</div>
+                  <div class="stat-value text-success">{{ progressStats.passed }}</div>
+                  <div class="stat-label text-secondary">已通过</div>
                 </div>
                 <div class="stat-card">
-                  <div class="stat-value">{{ progressStats.submitted }}</div>
-                  <div class="stat-label">已提交</div>
+                  <div class="stat-value text-info">{{ progressStats.submitted }}</div>
+                  <div class="stat-label text-secondary">已提交</div>
                 </div>
                 <div class="stat-card">
-                  <div class="stat-value">{{ progressStats.total }}</div>
-                  <div class="stat-label">总题数</div>
+                  <div class="stat-value text-primary">{{ progressStats.total }}</div>
+                  <div class="stat-label text-secondary">总题数</div>
                 </div>
               </div>
-              <!-- 问题按钮 -->
+              <!-- 问题按钮列表 -->
               <div class="problem-buttons">
                 <button
                   v-for="problem in progressData"
                   :key="problem.id"
-                  :class="getButtonClass(problem.completion_status)"
+                  :class="['button', getButtonClass(problem.completion_status)]"
                   @click="goToProblem(problem.id)"
                   :title="`查看题目 ${problem.id}`"
                 >
@@ -228,44 +228,60 @@ const goToProblem = (problemId) => {
             </div>
 
             <!-- 修改用户名 -->
-            <div class="account-section">
-                <h2>修改用户名</h2>
-                <form @submit.prevent="updateUsername">
+            <div class="account-section card">
+                <h2 class="text-primary">修改用户名</h2>
+                <form @submit.prevent="updateUsername" class="form">
                     <div class="form-group">
-                        <label for="newUsername">新用户名</label>
-                        <input id="newUsername" v-model="usernameForm.newUsername" type="text" placeholder="输入新用户名"
-                            required />
+                        <label for="newUsername" class="text-secondary">新用户名</label>
+                        <input id="newUsername" 
+                               v-model="usernameForm.newUsername" 
+                               type="text" 
+                               class="input"
+                               placeholder="输入新用户名"
+                               required />
                     </div>
 
-                    <button type="submit" :disabled="usernameSubmitting">
+                    <button type="submit" class="button" :disabled="usernameSubmitting">
                         {{ usernameSubmitting ? '提交中...' : '更新用户名' }}
                     </button>
                 </form>
             </div>
 
             <!-- 修改密码 -->
-            <div class="account-section">
-                <h2>修改密码</h2>
-                <form @submit.prevent="updatePassword">
+            <div class="account-section card">
+                <h2 class="text-primary">修改密码</h2>
+                <form @submit.prevent="updatePassword" class="form">
                     <div class="form-group">
-                        <label for="currentPassword">当前密码</label>
-                        <input id="currentPassword" v-model="passwordForm.currentPassword" type="password"
-                            placeholder="输入当前密码" required />
+                        <label for="currentPassword" class="text-secondary">当前密码</label>
+                        <input id="currentPassword" 
+                               v-model="passwordForm.currentPassword" 
+                               type="password"
+                               class="input"
+                               placeholder="输入当前密码" 
+                               required />
                     </div>
 
                     <div class="form-group">
-                        <label for="newPassword">新密码</label>
-                        <input id="newPassword" v-model="passwordForm.newPassword" type="password" placeholder="输入新密码"
-                            required />
+                        <label for="newPassword" class="text-secondary">新密码</label>
+                        <input id="newPassword" 
+                               v-model="passwordForm.newPassword" 
+                               type="password"
+                               class="input"
+                               placeholder="输入新密码"
+                               required />
                     </div>
 
                     <div class="form-group">
-                        <label for="confirmPassword">确认新密码</label>
-                        <input id="confirmPassword" v-model="passwordForm.confirmPassword" type="password"
-                            placeholder="再次输入新密码" required />
+                        <label for="confirmPassword" class="text-secondary">确认新密码</label>
+                        <input id="confirmPassword" 
+                               v-model="passwordForm.confirmPassword" 
+                               type="password"
+                               class="input"
+                               placeholder="再次输入新密码"
+                               required />
                     </div>
 
-                    <button type="submit" :disabled="passwordSubmitting">
+                    <button type="submit" class="button" :disabled="passwordSubmitting">
                         {{ passwordSubmitting ? '提交中...' : '更新密码' }}
                     </button>
                 </form>
@@ -276,187 +292,133 @@ const goToProblem = (problemId) => {
 
 <style scoped>
 .user-profile {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
+    padding: var(--spacing-lg);
 }
 
 h1 {
-    margin-bottom: 30px;
+    margin-bottom: var(--spacing-xl);
     text-align: center;
-}
-
-h2 {
-    margin-bottom: 20px;
-    color: #333;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
 }
 
 .profile-container {
     display: flex;
     flex-direction: column;
-    gap: 30px;
-}
-
-.user-info,
-.account-section {
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    gap: var(--spacing-lg);
 }
 
 .info-item {
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-sm);
     display: flex;
 }
 
 .label {
-    font-weight: bold;
+    font-weight: 500;
     width: 100px;
 }
 
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
 .form-group {
-    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
 }
 
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
+.button-success {
+  background-color: var(--success-color);
 }
 
-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+.button-error {
+  background-color: var(--error-color);
 }
 
-button {
-  background-color: #1eac2a;
-  min-width: 60px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: white;
+.button-warning {
+  background-color: var(--warning-color);
 }
 
-/* 悬停效果 */
-button:hover {
-  background-color: #45a049;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-button:active {
-    background-color: #1eac2a;
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* 禁用状态 */
-button:disabled {
-  background-color: #cccccc;
-  opacity: 0.7;
+.button-disabled {
+  background-color: var(--text-disabled);
   cursor: not-allowed;
-  filter: grayscale(0.3);
-}
-
-.problem-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px; /* 添加按钮间距 */
 }
 
 /* 统计卡片样式 */
 .stats-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
 }
 
 .stat-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
+  background: var(--background-color);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-md);
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: bold;
-  color: #1eac2a;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-xs);
 }
 
-/* 状态颜色优化 */
-button.green {
-  background: #1eac2a;
+.problem-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-lg);
 }
 
-button.red {
-  background: #d84130;
-}
-
-button.yellow {
-  background: #f39c12;
-}
-
-button.gray {
-  background: #95a5a6;
+.problem-buttons button {
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
 }
 
 .message {
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 20px;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-md);
 }
 
-.success {
-    background-color: #dff0d8;
-    color: #3c763d;
-    border: 1px solid #d6e9c6;
+.message.success {
+    background-color: color-mix(in srgb, var(--success-color) 10%, transparent);
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
 }
 
-.error {
-    background-color: #f2dede;
-    color: #a94442;
-    border: 1px solid #ebccd1;
+.message.error {
+    background-color: color-mix(in srgb, var(--error-color) 10%, transparent);
+    color: var(--error-color);
+    border: 1px solid var(--error-color);
 }
 
 @media (max-width: 768px) {
     .user-profile {
-        padding: 10px;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    button {
-        width: 100%;
+        padding: var(--spacing-md);
     }
 
     .stats-container {
-      grid-template-columns: 1fr;
+        grid-template-columns: 1fr;
     }
     
     .stat-card {
-      padding: 15px;
+        padding: var(--spacing-sm);
     }
     
     .stat-value {
-      font-size: 20px;
+        font-size: 1.25rem;
     }
 }
 </style>

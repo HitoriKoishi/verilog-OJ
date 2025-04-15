@@ -17,7 +17,10 @@ const convertVcdToWaveDrom = (vcdContent) => {
   try {
     const vcd = vcdParser.parse(vcdContent);
     const waves = {
-      signal: []
+      signal: [],
+      config: {
+        hscale: 2
+      }
     };
 
     // 遍历 VCD 中的信号
@@ -88,9 +91,11 @@ onMounted(() => {
 
 <template>
   <div class="waveform-viewer">
-    <div v-if="vcdContent" ref="waveformElement" class="waveform-container"></div>
-    <div v-else class="no-waveform">
-      暂无波形数据
+    <div v-if="vcdContent" ref="waveformElement" class="waveform-container card">
+      <!-- 波形将在此处渲染 -->
+    </div>
+    <div v-else class="no-waveform card">
+      <span class="text-secondary">暂无波形数据</span>
     </div>
   </div>
 </template>
@@ -102,18 +107,69 @@ onMounted(() => {
 }
 
 .waveform-container {
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 6px;
+  padding: var(--spacing-lg);
+  background-color: var(--background-color);
   min-height: 200px;
 }
 
 .no-waveform {
   text-align: center;
-  padding: 40px;
-  color: #666;
-  background: #f5f5f5;
-  border-radius: 6px;
+  padding: var(--spacing-xl);
+  background-color: var(--surface-color);
+}
+
+/* 波形样式定制 */
+:deep(.WaveDrom) {
+  background-color: var(--background-color);
+}
+
+:deep(.WaveDrom text) {
+  fill: var(--text-primary);
+  font-family: var(--font-family-code);
+}
+
+:deep(.WaveDrom path) {
+  stroke: var(--text-secondary);
+}
+
+:deep(.WaveDrom .h1) {
+  fill: var(--success-color);
+}
+
+:deep(.WaveDrom .h0) {
+  fill: var(--error-color);
+}
+
+:deep(.WaveDrom .grid) {
+  stroke: var(--border-color);
+  stroke-width: 0.5;
+}
+
+:deep(.WaveDrom .time) {
+  fill: var(--text-secondary);
+  font-size: 12px;
+}
+
+:deep(.WaveDrom .signal) {
+  fill: var(--text-primary);
+  font-size: 14px;
+}
+
+/* 支持滚动 */
+:deep(.WaveDrom svg) {
+  max-width: none;
+  overflow-x: auto;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .waveform-container {
+    padding: var(--spacing-md);
+  }
+  
+  :deep(.WaveDrom text) {
+    font-size: 12px;
+  }
 }
 
 /* 暗色主题支持 */

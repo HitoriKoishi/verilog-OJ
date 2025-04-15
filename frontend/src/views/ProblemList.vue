@@ -55,22 +55,22 @@ const completedColor = (is_completed) => {
 </script>
 
 <template>
-    <div class="problem-list">
-        <h1>题目列表</h1>
+    <div class="problem-list container">
+        <h1 class="text-primary">题目列表</h1>
         <div class="filters">
             <!-- 这里可以添加筛选器，如难度筛选等 -->
         </div>
 
-        <div v-if="loading" class="loading">
+        <div v-if="loading" class="loading text-secondary flex items-center justify-center">
             加载中...
         </div>
 
-        <div v-else-if="error" class="error">
-            <p>加载出错: {{ error }}</p>
-            <button @click="fetchProblems">重试</button>
+        <div v-else-if="error" class="error card">
+            <p class="text-error">加载出错: {{ error }}</p>
+            <button @click="fetchProblems" class="button">重试</button>
         </div>
 
-        <table v-else>
+        <table v-else class="problem-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -84,12 +84,12 @@ const completedColor = (is_completed) => {
             <tbody>
                 <tr v-for="problem in problems" :key="problem.id" class="problem-item">
                     <td>{{ problem.id }}</td>
-                    <td>{{ problem.title }}</td>
+                    <td class="text-primary">{{ problem.title }}</td>
                     <td :style="{ color: difficultyColor(problem.difficulty) }">{{ problem.difficulty }}</td>
                     <td :style="{ color: completedColor(problem.is_completed)}">{{ problem.is_completed}}</td>
-                    <td>{{`${problem.passed_users_count.toString()} / ${problem.submitted_users_count.toString()}`}}</td>
+                    <td class="text-secondary">{{`${problem.passed_users_count.toString()} / ${problem.submitted_users_count.toString()}`}}</td>
                     <td>
-                        <button @click="navigateToProblem(problem.id)" class="solve-btn">开始解题</button>
+                        <button @click="navigateToProblem(problem.id)" class="button">开始解题</button>
                     </td>
                 </tr>
             </tbody>
@@ -99,66 +99,81 @@ const completedColor = (is_completed) => {
 
 <style scoped>
 .problem-list {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    padding: var(--spacing-lg);
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-xl);
 }
 
-table {
+.problem-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: var(--spacing-lg);
+    background-color: var(--background-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 th,
 td {
-    padding: 12px 15px;
+    padding: var(--spacing-md);
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
 }
 
 thead {
-    background-color: #f2f2f2;
+    background-color: var(--surface-color);
+    border-bottom: 2px solid var(--border-color);
+}
+
+th {
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 .problem-item {
     cursor: pointer;
+    transition: background-color var(--transition-fast);
 }
 
 .problem-item:hover {
-    background-color: #f5f5f5;
-}
-
-.solve-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.solve-btn:hover {
-    background-color: #45a049;
+    background-color: var(--surface-color);
 }
 
 .loading,
 .error {
-    padding: 20px;
+    padding: var(--spacing-xl);
     text-align: center;
 }
 
 .error {
-    color: red;
+    margin-top: var(--spacing-lg);
 }
 
 .error button {
-    margin-top: 10px;
-    background-color: #f44336;
-    color: white;
+    margin-top: var(--spacing-md);
+    background-color: var(--error-color);
+}
+
+.error button:hover {
+    background-color: color-mix(in srgb, var(--error-color) 80%, black);
+}
+
+@media (max-width: 768px) {
+    .problem-table {
+        font-size: 0.9em;
+    }
+
+    th,
+    td {
+        padding: var(--spacing-sm);
+    }
+
+    .button {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.9em;
+    }
 }
 </style>

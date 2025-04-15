@@ -350,6 +350,34 @@
   ]
   ```
 
+## 获取用户对单个问题的提交历史
+
+### **URL**
+`GET /problem/<int:id>/submit_history`
+
+### **描述**
+获取用户对单个问题的提交历史，返回问题ID，提交时间，完成状态
+
+### **参数**
+- 无
+
+### **响应**
+- 成功
+  ```json
+  [
+      {
+          "submission_id": 123,
+          "created_at": "2024-04-15 10:30:00",
+          "status": "success"
+      },
+      {
+          "submission_id": 122,
+          "created_at": "2024-04-15 10:20:00",
+          "status": "failed"
+      }
+  ]
+  ```
+
 
 ## 保存用户代码草稿
 

@@ -13,32 +13,30 @@ const props = defineProps({
   duration: {
     type: Number,
     default: 3000
-  },
-  onClose: {
-    type: Function,
-    default: () => {}
   }
-})
+});
 
-const visible = ref(false)
-const isLeaving = ref(false)
+const visible = ref(false);
+const isLeaving = ref(false);
+
+const emit = defineEmits(['close']);
 
 onMounted(() => {
-  visible.value = true
+  visible.value = true;
   if (props.duration > 0) {
     setTimeout(() => {
-      hideMessage()
-    }, props.duration)
+      hideMessage();
+    }, props.duration);
   }
-})
+});
 
 const hideMessage = () => {
-  isLeaving.value = true
+  isLeaving.value = true;
   setTimeout(() => {
-    visible.value = false
-    props.onClose()
-  }, 300)
-}
+    visible.value = false;
+    emit('close');
+  }, 300);
+};
 </script>
 
 <template>
@@ -56,49 +54,54 @@ const hideMessage = () => {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  padding: 12px 24px;
-  border-radius: 4px;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-sm);
   color: white;
-  font-size: 14px;
-  z-index: 9999;
+  font-size: 0.875rem;
+  z-index: var(--z-tooltip);
   cursor: pointer;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-  /* 移除 transition，由 message-fade 类控制 */
+  box-shadow: var(--shadow-md);
   pointer-events: auto;
+  transition: all var(--transition-normal);
 }
 
 .message-alert.success {
-  background-color: #1eac2a;
+  background-color: var(--success-color);
 }
 
 .message-alert.error {
-  background-color: #d84130;
+  background-color: var(--error-color);
 }
 
 .message-alert.warning {
-  background-color: #9e830b;
+  background-color: var(--warning-color);
 }
 
 .message-alert.info {
-  background-color: #70b0ff;
+  background-color: var(--info-color);
 }
 
-.message-fade-enter-active {
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-}
-
+.message-fade-enter-active,
 .message-fade-leave-active {
-  transition: opacity 0.3s ease-in, transform 0.3s ease-in;
-  pointer-events: none;
+  transition: 
+    opacity var(--transition-normal),
+    transform var(--transition-normal);
 }
 
-.message-fade-enter-from {
-  opacity: 0;
-  transform: translate(-50%, -20px);
-}
-
+.message-fade-enter-from,
 .message-fade-leave-to {
   opacity: 0;
   transform: translate(-50%, -20px);
+}
+
+.is-leaving {
+  opacity: 0;
+  transform: translate(-50%, -20px);
+}
+
+.message-content {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1.4;
 }
 </style>

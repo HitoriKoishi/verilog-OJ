@@ -41,125 +41,86 @@ const formattedLog = computed(() => {
 <template>
   <div class="log-viewer">
     <pre v-if="content" v-html="formattedLog" class="log-content"></pre>
-    <p v-else class="log-empty">暂无日志</p>
+    <p v-else class="log-empty text-secondary">暂无日志</p>
   </div>
 </template>
 
 <style scoped>
 .log-viewer {
   width: 100%;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: var(--font-family-code);
   font-size: 14px;
 }
 
 .log-content {
-  background-color: #1e1e1e;
-  font-family: 'Consolas', 'Monaco', monospace;
-  color: #d4d4d4;
-  padding: 16px;
-  border-radius: 6px;
+  background-color: var(--background-color);
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--text-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 400px;
   overflow-y: auto;
+  border: 1px solid var(--border-color);
 }
 
 .log-empty {
   text-align: center;
-  padding: 40px;
-  color: #666;
-  background: #f5f5f500;
-  border-radius: 6px;
+  padding: var(--spacing-lg);
+  background-color: var(--surface-color);
+  border-radius: var(--radius-md);
+  margin: 0;
 }
 
 :deep(.log-error) {
-  color: #ff6464;
+  color: var(--error-color);
   font-weight: 500;
   display: block;
   padding: 2px 0;
 }
 
 :deep(.log-info) {
-  color: #64b5f6;
+  color: var(--info-color);
   display: block;
   padding: 2px 0;
 }
 
 :deep(.log-success) {
-  color: #81c784;
+  color: var(--success-color);
   font-weight: 500;
   display: block;
   padding: 2px 0;
 }
 
 :deep(.log-warning) {
-  color: #ffb74d;
+  color: var(--warning-color);
   display: block;
   padding: 2px 0;
 }
 
 :deep(.log-timestamp) {
-  color: #9e9e9e;
+  color: var(--text-secondary);
 }
 
-/* 滚动条样式 */
+/* 滚动条样式继承自主题 */
 .log-content::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 .log-content::-webkit-scrollbar-track {
-  background: #2e2e2e;
-  border-radius: 4px;
+  background: var(--surface-color);
+  border-radius: var(--radius-sm);
 }
 
 .log-content::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 4px;
+  background: var(--border-color);
+  border-radius: var(--radius-sm);
 }
 
 .log-content::-webkit-scrollbar-thumb:hover {
-  background: #666;
-}
-
-/* 暗色主题支持 */
-@media (prefers-color-scheme: light) {
-  .log-content {
-    background-color: #f8f8f800;
-    color: #333;
-  }
-
-  :deep(.log-error) {
-    color: #d32f2f;
-  }
-
-  :deep(.log-info) {
-    color: #1976d2;
-  }
-
-  :deep(.log-success) {
-    color: #388e3c;
-  }
-
-  :deep(.log-warning) {
-    color: #f57c00;
-  }
-
-  :deep(.log-timestamp) {
-    color: #616161;
-  }
-
-  .log-content::-webkit-scrollbar-track {
-    background: #eee;
-  }
-
-  .log-content::-webkit-scrollbar-thumb {
-    background: #ccc;
-  }
-
-  .log-content::-webkit-scrollbar-thumb:hover {
-    background: #bbb;
-  }
+  background: var(--text-disabled);
 }
 </style>

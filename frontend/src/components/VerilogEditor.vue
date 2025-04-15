@@ -123,41 +123,90 @@ onUnmounted(() => {
 
 .editor-container {
   flex: 1;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--background-color);
+  font-family: var(--font-family-code);
 }
 
 .editor-container :deep(.cm-editor) {
   height: 100%;
   width: 100%;
+  background-color: var(--background-color);
 }
 
 .editor-container :deep(.cm-scroller) {
-  overflow: auto;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: var(--font-family-code);
 }
 
 .editor-container :deep(.cm-content) {
-  font-family: 'Consolas', 'Monaco', monospace;
-  padding: 4px;
+  padding: var(--spacing-xs);
+  color: var(--text-primary);
 }
 
 .editor-container :deep(.cm-line) {
-  padding: 0 4px;
+  padding: 0 var(--spacing-xs);
+}
+
+.editor-container :deep(.cm-gutters) {
+  background-color: var(--surface-color);
+  border-right: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.editor-container :deep(.cm-activeLineGutter) {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+}
+
+.editor-container :deep(.cm-selectionBackground) {
+  background-color: var(--primary-color);
+  opacity: 0.2;
+}
+
+.editor-container :deep(.cm-focused) {
+  outline: none;
+}
+
+.editor-container :deep(.cm-cursor) {
+  border-left-color: var(--primary-color);
 }
 
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
-  .editor-container {
-    border-color: #2d2d2d;
-    background-color: #1a1a1a;
+  .editor-container :deep(.cm-editor) {
+    background-color: var(--background-color);
   }
 
   .editor-container :deep(.cm-gutters) {
-    background-color: #1a1a1a;
-    border-color: #2d2d2d;
+    background-color: var(--surface-color);
+    border-right-color: var(--border-color);
   }
+
+  .editor-container :deep(.cm-selectionBackground) {
+    background-color: var(--primary-color);
+    opacity: 0.3;
+  }
+}
+
+/* 滚动条样式 */
+.editor-container :deep(.cm-scroller::-webkit-scrollbar) {
+  width: 8px;
+  height: 8px;
+}
+
+.editor-container :deep(.cm-scroller::-webkit-scrollbar-track) {
+  background: var(--surface-color);
+  border-radius: var(--radius-sm);
+}
+
+.editor-container :deep(.cm-scroller::-webkit-scrollbar-thumb) {
+  background: var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.editor-container :deep(.cm-scroller::-webkit-scrollbar-thumb:hover) {
+  background: var(--text-disabled);
 }
 </style>

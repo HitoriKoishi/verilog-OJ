@@ -1,5 +1,6 @@
 <script setup>
-// 移除原有的编辑器相关导入
+// 添加导入
+import SubmitHistory from '../components/SubmitHistory.vue';
 import { ref, onMounted, onUnmounted } from 'vue';
 import message from '../utils/message';
 import { useRoute } from 'vue-router';
@@ -18,6 +19,7 @@ const loading = ref(true);
 const error = ref(null);
 const verilogCode = ref('');
 const editorRef = ref(null);
+const historyRef = ref(null);
 
 // 获取单个题目的详细信息
 const fetchProblemDetail = async () => {
@@ -69,6 +71,7 @@ const toggleSections = async () => {
     
     // 打开日志部分
     logExpanded.value = true;
+    waveformExpanded.value = true;
 };
 
 // 提交解答
@@ -97,6 +100,10 @@ const submitSolution = async () => {
         setTimeout(() => {
             checkSubmissionResult(currentSubmissionId.value);
         }, 1000);
+
+        if (historyRef.value) {
+            historyRef.value.refresh();
+        }
 
     } catch (err) {
         console.error('提交解答失败:', err);
@@ -244,6 +251,31 @@ const fetchLogAndWaveform = async (submissionId) => {
 
 // 添加日志状态控制
 const logSectionStatus = ref('default');
+
+// 处理历史记录选择
+const handleHistorySelect = async (submissionId) => {
+  try {
+    // 打开日志和波形面板
+    toggleSections();
+    
+    // 获取并显示日志和波形
+    await fetchLogAndWaveform(submissionId);
+    
+    // 设置当前提交ID
+    currentSubmissionId.value = submissionId;
+    
+    // 获取提交状态并更新日志状态
+    const resultResponse = await submissionApi.getSubmission(submissionId);
+    const submissionData = resultResponse.data;
+    
+    // 更新日志状态颜色
+    logSectionStatus.value = submissionData.status === 'success' ? 'success' : 'error';
+    
+  } catch (err) {
+    console.error('获取历史提交详情失败:', err);
+    message.error('获取历史提交详情失败: ' + (err.response?.data?.error || err.message || '未知错误'));
+  }
+};
 </script>
 
 <template>
@@ -320,6 +352,8 @@ const logSectionStatus = ref('default');
             <span class="auto-save-info">代码会每分钟自动保存</span>
             <button @click="submitSolution" class="submit-btn">提交解答</button>
           </div>
+          
+          <SubmitHistory ref="historyRef" :problem-id="problemId" @select-submission="handleHistorySelect" />
         </div>
       </div>
     </div>
@@ -328,7 +362,7 @@ const logSectionStatus = ref('default');
 
 <style scoped>
 .problem-submit {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -357,7 +391,7 @@ const logSectionStatus = ref('default');
     flex-direction: column;
     position: sticky; /* 恢复sticky定位 */
     top: 20px; /* 距离顶部距离 */
-    height: calc(100vh - 100px); /* 设置高度 */
+    height: calc(125vh - 125px); /* 设置高度 */
     min-width: 0; /* 防止内容溢出 */
 }
 
@@ -387,6 +421,7 @@ const logSectionStatus = ref('default');
     display: flex;
     flex-direction: column;
     height: 100%;
+    gap: 20px;
 }
 
 .editor-controls {
@@ -525,5 +560,10 @@ pre {
         border-color: #2d2d2d;
         color: #e0e0e0;
     }
+}
+
+/* 添加平滑滚动效果 */
+html {
+  scroll-behavior: smooth;
 }
 </style>

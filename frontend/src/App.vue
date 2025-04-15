@@ -62,16 +62,16 @@ onMounted(() => {
     <NavBar />
     <main class="main-content">
       <!-- 加载状态 -->
-      <div v-if="isLoading" class="loading-container">
+      <div v-if="isLoading" class="loading-container flex flex-col items-center">
         <div class="loading-spinner"></div>
-        <p>页面加载中...</p>
+        <p class="text-secondary">页面加载中...</p>
       </div>
 
       <!-- 错误状态 -->
-      <div v-else-if="hasError" class="error-container">
-        <h2>加载出错</h2>
-        <p>{{ errorMessage }}</p>
-        <button @click="window.location.reload()">重新加载</button>
+      <div v-else-if="hasError" class="error-container card">
+        <h2 class="text-primary">加载出错</h2>
+        <p class="text-secondary">{{ errorMessage }}</p>
+        <button class="button" @click="window.location.reload()">重新加载</button>
       </div>
 
       <!-- 正常内容（包含过渡） -->
@@ -98,18 +98,18 @@ onMounted(() => {
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family-base);
   line-height: 1.6;
-  color: #333;
-  background-color: #f5f5f5; /* 添加背景色 */
-  overflow-x: hidden; /* 防止整个页面出现水平滚动条 */
+  color: var(--text-primary);
+  background-color: var(--surface-color);
+  overflow-x: hidden;
 }
 
-/* 修改主容器样式，确保内容不会溢出 */
 .app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--surface-color);
   overflow-x: hidden; /* 防止水平滚动 */
 }
 
@@ -118,37 +118,34 @@ body {
   position: relative;
   /* display: flex; */
   flex-direction: column;
-  padding: 20px;
+  padding: var(--spacing-lg);
   min-height: 100px;
-  max-width: 1400px;
   width: 90%;
+  max-width: var(--container-xl);
   margin: 0 auto;
-  overflow: hidden; /* 防止内容溢出 */
 }
 
-/* 添加布局稳定层 */
 .content-wrapper {
   position: relative;
-  min-height: 400px; /* 与加载容器高度保持一致 */
+  min-height: 400px;
 }
 
-/* 优化加载容器 */
 .loading-container {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
+  z-index: var(--z-fixed);
+  gap: var(--spacing-md);
 }
 
 .loading-spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
+  border: 4px solid var(--border-color);
   border-radius: 50%;
-  border-top: 4px solid #4CAF50;
+  border-top: 4px solid var(--primary-color);
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
-  margin-bottom: 10px;
 }
 
 @keyframes spin {
@@ -156,85 +153,63 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* 错误提示样式 */
 .error-container {
   text-align: center;
-  padding: 40px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   max-width: 500px;
   margin: 0 auto;
 }
 
-.error-container button {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
 h1, h2, h3 {
-  margin-bottom: 15px;
-}
-
-* {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
+  margin-bottom: var(--spacing-md);
 }
 
 a {
   text-decoration: none;
-  background-color: transparent;
+  color: var(--primary-color);
+  transition: color var(--transition-fast);
 }
 
-a:active, a:hover {
-  outline-width: 0;
+a:hover {
+  color: var(--primary-hover);
 }
 
+/* 响应式布局 */
 @media screen and (max-width: 1200px) {
-  .content-app {
-    margin-top: 160px;
-    padding: 0 2%;
+  .main-content {
+    width: 95%;
+    padding: var(--spacing-md);
   }
 }
 
-@media screen and (min-width: 1200px) {
-  .content-app {
-    margin-top: 80px;
-    padding: 0 2%;
+@media screen and (max-width: 768px) {
+  .main-content {
+    width: 100%;
+    padding: var(--spacing-sm);
   }
 }
 
-/* 新的过渡动画 */
+/* 路由过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
   transition: 
-    opacity 0.3s ease,
-    transform 0.3s ease;
+    opacity var(--transition-normal),
+    transform var(--transition-normal);
 }
 
 .fade-enter-from {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(var(--spacing-sm));
 }
 
 .fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(calc(var(--spacing-sm) * -1));
 }
 
 .route-content {
-  padding: 20px;
-  /* background: rgba(255, 255, 255, 0.486); */
-  border-radius: 8px;
-  /* box-shadow: 0 2px 12px rgba(0,0,0,0.08); */
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
   margin: 0 auto;
-  max-width: 1000px;
+  max-width: var(--container-xl);
 }
-
 </style>

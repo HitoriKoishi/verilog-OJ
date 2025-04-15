@@ -45,7 +45,7 @@ const leave = (element) => {
 <template>
   <div class="section" :class="[`status-${status}`]">
     <div class="section-header" @click="toggleExpand">
-      <h2>{{ title }}</h2>
+      <h2 class="text-primary">{{ title }}</h2>
       <span class="expand-icon" :class="{ 'is-expanded': isExpanded }">▶</span>
     </div>
     <transition 
@@ -65,72 +65,70 @@ const leave = (element) => {
 
 <style scoped>
 .section {
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  margin-bottom: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.6s ease;
+  background-color: var(--background-color);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-normal);
 }
 
 /* 默认状态 */
 .section.status-default {
-  border-color: #e0e0e0;
+  border-color: var(--border-color);
 }
 
 /* 成功状态 */
 .section.status-success {
-  border-color: #74e678;
-  box-shadow: #4caf50 0 0 3px;
+  border-color: var(--success-color);
   animation: borderPulseSuccess 2s ease-out;
 }
 
 /* 失败状态 */
 .section.status-error {
-  border-color: #fd695e;
-  box-shadow: #f44336 0 0 3px;
+  border-color: var(--error-color);
   animation: borderPulseError 2s ease-out;
 }
 
 @keyframes borderPulseSuccess {
-  0% { border-color: #e0e0e0; }
-  50% { border-color: #4caf50; }
-  100% { border-color: #4caf50; }
+  0% { border-color: var(--border-color); }
+  50% { border-color: var(--success-color); }
+  100% { border-color: var(--success-color); }
 }
 
 @keyframes borderPulseError {
-  0% { border-color: #e0e0e0; }
-  50% { border-color: #f44336; }
-  100% { border-color: #f44336; }
+  0% { border-color: var(--border-color); }
+  50% { border-color: var(--error-color); }
+  100% { border-color: var(--error-color); }
 }
 
 .section-header {
-  padding: 12px 20px;
-  background-color: #ffffff;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--background-color);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
   user-select: none;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--transition-fast);
 }
 
 .section-header:hover {
-  background-color: #fafafa;
+  background-color: var(--surface-color);
 }
 
 .section-header h2 {
   margin: 0;
   font-size: 1.1em;
-  color: #333;
+  font-weight: 500;
 }
 
 .expand-icon {
   font-size: 16px;
-  color: #888;
-  transition: transform 0.3s ease;
+  color: var(--text-secondary);
+  transition: transform var(--transition-normal);
 }
 
 .expand-icon.is-expanded {
@@ -139,66 +137,68 @@ const leave = (element) => {
 
 .section-content {
   overflow: hidden;
-  transition: height 0.3s ease-in-out;
+  transition: height var(--transition-normal);
   background-color: transparent;
 }
 
 .section-inner {
-  padding: 20px;
+  padding: var(--spacing-md);
 }
 
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
   .section {
-    border-color: #2d2d2d;
-    background-color: #1a1a1a;
+    border-color: var(--border-color-dark);
+    background-color: var(--background-color-dark);
   }
 
   .section.status-default {
-    border-color: #2d2d2d;
+    border-color: var(--border-color-dark);
   }
   
   .section.status-success {
-    border-color: #43a047;
+    border-color: var(--success-color-dark);
   }
   
   .section.status-error {
-    border-color: #e53935;
+    border-color: var(--error-color-dark);
   }
 
   @keyframes borderPulseSuccess {
-    0% { border-color: #2d2d2d; }
-    50% { border-color: #43a047; }
-    100% { border-color: #43a047; }
+    0% { border-color: var(--border-color-dark); }
+    50% { border-color: var(--success-color-dark); }
+    100% { border-color: var(--success-color-dark); }
   }
 
   @keyframes borderPulseError {
-    0% { border-color: #2d2d2d; }
-    50% { border-color: #e53935; }
-    100% { border-color: #e53935; }
+    0% { border-color: var(--border-color-dark); }
+    50% { border-color: var(--error-color-dark); }
+    100% { border-color: var(--error-color-dark); }
   }
 
   .section-header {
-    background-color: #1a1a1a;
-    border-bottom-color: #2d2d2d;
+    background-color: var(--background-color-dark);
+    border-bottom-color: var(--border-color-dark);
   }
 
   .section-header:hover {
-    background-color: #242424;
+    border-color: var(--border-color-dark);
+    background-color: var(--surface-color-dark);
   }
 
   .section-header h2 {
-    color: #e0e0e0;
+    border-color: var(--border-color-dark);
+    color: var(--text-primary-dark);
   }
 
   .expand-icon {
-    color: #666;
+    color: var(--text-secondary-dark);
   }
 }
 
 @media (max-width: 900px) {
   .section-inner {
-    padding: 15px;
+    padding: var(--spacing-sm);
   }
 }
 </style>

@@ -51,9 +51,15 @@ export const problemApi = {
         },{ withCredentials: true });
     },
 
+    // 获取题目状态
     getProblemStatus() {
         return apiClient.get('/problem/status');
-    }
+    },
+
+    // 获取用户单一问题提交历史
+    getProblemSubmitHistory(id) {
+        return apiClient.get(`/problem/${id}/submit_history`);
+    },
 };
 
 export const userApi = {

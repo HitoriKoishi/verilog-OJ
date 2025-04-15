@@ -137,199 +137,169 @@ const handleOverlayClick = (e) => {
 </script>
 
 <template>
-    <div class="modal-overlay" @click="handleOverlayClick">
-        <div class="modal-container" @click.stop>
-            <div class="modal-header">
-                <h2>{{ mode === 'login' ? '用户登录' : '用户注册' }}</h2>
-                <button class="close-button" @click="closeModal">&times;</button>
-            </div>
+  <div class="modal-overlay" @click="handleOverlayClick">
+    <div class="modal-content card" @click.stop>
+      <div class="modal-header">
+        <h2 class="text-primary">{{ mode === 'login' ? '用户登录' : '用户注册' }}</h2>
+        <button class="close-button" @click="closeModal">&times;</button>
+      </div>
 
-            <div class="modal-body">
-                <div v-if="errorMessage" class="error-message">
-                    {{ errorMessage }}
-                </div>
-
-                <div class="form-group">
-                    <label for="username">用户名</label>
-                    <input type="text" id="username" v-model="username" placeholder="请输入用户名" :disabled="isSubmitting">
-                </div>
-
-                <div class="form-group">
-                    <label for="password">密码</label>
-                    <input type="password" id="password" v-model="password" placeholder="请输入密码"
-                        :disabled="isSubmitting">
-                </div>
-
-                <template v-if="mode === 'register'">
-                    <div class="form-group">
-                        <label for="confirmPassword">确认密码</label>
-                        <input type="password" id="confirmPassword" v-model="confirmPassword" placeholder="请再次输入密码"
-                            :disabled="isSubmitting">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">邮箱（选填）</label>
-                        <input type="email" id="email" v-model="email" placeholder="请输入邮箱" :disabled="isSubmitting">
-                    </div>
-                </template>
-            </div>
-
-            <div class="modal-footer">
-                <button class="submit-button" @click="handleSubmit" :disabled="isSubmitting">
-                    {{ isSubmitting ? '处理中...' : (mode === 'login' ? '登录' : '注册') }}
-                </button>
-
-                <p class="toggle-mode">
-                    {{ mode === 'login' ? '还没有账号？' : '已有账号？' }}
-                    <a href="#" @click.prevent="toggleMode">
-                        {{ mode === 'login' ? '立即注册' : '立即登录' }}
-                    </a>
-                </p>
-            </div>
+      <form @submit.prevent="handleSubmit" class="modal-form">
+        <div class="form-group">
+          <label for="username">用户名</label>
+          <input
+            id="username"
+            v-model="username"
+            type="text"
+            class="input"
+            required
+            :placeholder="mode === 'register' ? '请设置用户名' : '请输入用户名'"
+          />
         </div>
+
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input
+            id="password"
+            v-model="password"
+            type="password"
+            class="input"
+            required
+            :placeholder="mode === 'register' ? '请设置密码' : '请输入密码'"
+          />
+        </div>
+
+        <div v-if="mode === 'register'" class="form-group">
+          <label for="confirmPassword">确认密码</label>
+          <input
+            id="confirmPassword"
+            v-model="confirmPassword"
+            type="password"
+            class="input"
+            required
+            placeholder="请再次输入密码"
+          />
+        </div>
+
+        <div v-if="mode === 'register'" class="form-group">
+          <label for="email">邮箱（选填）</label>
+          <input
+            id="email"
+            v-model="email"
+            type="email"
+            class="input"
+            placeholder="请输入邮箱"
+          />
+        </div>
+
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="button" :disabled="isSubmitting">
+            {{ isSubmitting ? '处理中...' : (mode === 'login' ? '登录' : '注册') }}
+          </button>
+          <button type="button" class="button button-secondary" @click="toggleMode">
+            {{ mode === 'login' ? '还没有账号？立即注册' : '已有账号？立即登录' }}
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </template>
 
 <style scoped>
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
 }
 
-.modal-container {
-    background-color: white;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.modal-content {
+  width: 90%;
+  max-width: 400px;
+  margin: var(--spacing-md);
+  background-color: var(--background-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-    margin: 0;
-    color: #333;
-    font-size: 1.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
 }
 
 .close-button {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #777;
-    line-height: 1;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: var(--spacing-xs);
+  transition: color var(--transition-fast);
 }
 
 .close-button:hover {
-    color: #333;
+  color: var(--text-primary);
 }
 
-.modal-body {
-    padding: 20px;
-}
-
-.error-message {
-    background-color: #ffebee;
-    color: #d32f2f;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    font-size: 14px;
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .form-group {
-    margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-    color: #333;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-    transition: border 0.2s;
+.button-secondary {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
-.form-group input:focus {
-    border-color: #4CAF50;
-    outline: none;
+.button-secondary:hover {
+  background-color: var(--border-color);
+  transform: translateY(-1px);
 }
 
-.modal-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #eee;
-    text-align: center;
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
 }
 
-.submit-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color 0.2s;
+.error-message {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-color);
 }
 
-.submit-button:hover {
-    background-color: #45a049;
-}
-
-.submit-button:disabled {
-    background-color: #9e9e9e;
-    cursor: not-allowed;
-}
-
-.toggle-mode {
-    margin-top: 15px;
-    font-size: 14px;
-    color: #666;
-}
-
-.toggle-mode a {
-    color: #4CAF50;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.toggle-mode a:hover {
-    text-decoration: underline;
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    padding: var(--spacing-md);
+  }
 }
 </style>

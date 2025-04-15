@@ -1,10 +1,19 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-// 导入路由配置
 import router from './router'
 
-// 创建应用并使用路由
+// 导入样式文件
+import './styles/theme.css'
+import './styles/layout.css'
+import './styles/typography.css'
+import './styles/buttons.css'
+import './styles/forms.css'
+import './styles/cards.css'
+import './styles/animations.css'
+import './styles/loading.css'
+import './style.css'
+
 const app = createApp(App)
-app.use(router) // 使用路由
-app.mount('#app') // 挂载应用
+app.use(router)
+app.mount('#app')
 

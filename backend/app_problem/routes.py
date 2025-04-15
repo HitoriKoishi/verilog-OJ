@@ -188,6 +188,34 @@ def getUserCompletionStatus():
         })
     return jsonify(completion_status_list)
 
+# ---------- 获取用户对特定问题的提交记录 ----------
+@problem_bp.route('/<int:id>/submit_history', methods=['GET'])
+@login_required
+def getSubmissionHistory(id):
+    """获取用户对特定问题的提交记录"""
+    user_id = current_user.id
+    
+    # 验证用户和问题是否存在
+    if not (User.query.get(user_id)) or not (Problem.query.get(id)):
+        return jsonify({"error": "用户或问题不存在"}), 404
+    
+    # 查询该用户对特定问题的所有提交记录
+    submissions = Submission.query.filter_by(
+        user_id=user_id,
+        problem_id=id
+    ).order_by(Submission.created_at.desc()).all()
+    
+    # 构建响应数据结构
+    submission_history = []
+    for submission in submissions:
+        submission_history.append({
+            "submission_id": submission.id,
+            "created_at": submission.created_at,
+            "status": submission.status
+        })
+    
+    return jsonify(submission_history)
+
 def get_completion_status(user_id, problem_id):
     """
     获取用户对某个问题的完成状态。
