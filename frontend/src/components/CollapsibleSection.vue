@@ -7,6 +7,10 @@ const props = defineProps({
   isExpanded: {
     type: Boolean,
     default: false
+  },
+  status: {
+    type: String,
+    default: 'default',  // 可选值: 'default', 'success', 'error'
   }
 });
 
@@ -39,7 +43,7 @@ const leave = (element) => {
 </script>
 
 <template>
-  <div class="section">
+  <div class="section" :class="[`status-${status}`]">
     <div class="section-header" @click="toggleExpand">
       <h2>{{ title }}</h2>
       <span class="expand-icon" :class="{ 'is-expanded': isExpanded }">▶</span>
@@ -67,6 +71,38 @@ const leave = (element) => {
   overflow: hidden;
   background-color: #ffffff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.6s ease;
+}
+
+/* 默认状态 */
+.section.status-default {
+  border-color: #e0e0e0;
+}
+
+/* 成功状态 */
+.section.status-success {
+  border-color: #74e678;
+  box-shadow: #4caf50 0 0 3px;
+  animation: borderPulseSuccess 2s ease-out;
+}
+
+/* 失败状态 */
+.section.status-error {
+  border-color: #fd695e;
+  box-shadow: #f44336 0 0 3px;
+  animation: borderPulseError 2s ease-out;
+}
+
+@keyframes borderPulseSuccess {
+  0% { border-color: #e0e0e0; }
+  50% { border-color: #4caf50; }
+  100% { border-color: #4caf50; }
+}
+
+@keyframes borderPulseError {
+  0% { border-color: #e0e0e0; }
+  50% { border-color: #f44336; }
+  100% { border-color: #f44336; }
 }
 
 .section-header {
@@ -116,6 +152,30 @@ const leave = (element) => {
   .section {
     border-color: #2d2d2d;
     background-color: #1a1a1a;
+  }
+
+  .section.status-default {
+    border-color: #2d2d2d;
+  }
+  
+  .section.status-success {
+    border-color: #43a047;
+  }
+  
+  .section.status-error {
+    border-color: #e53935;
+  }
+
+  @keyframes borderPulseSuccess {
+    0% { border-color: #2d2d2d; }
+    50% { border-color: #43a047; }
+    100% { border-color: #43a047; }
+  }
+
+  @keyframes borderPulseError {
+    0% { border-color: #2d2d2d; }
+    50% { border-color: #e53935; }
+    100% { border-color: #e53935; }
   }
 
   .section-header {

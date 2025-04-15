@@ -7,6 +7,7 @@ import { problemApi, submissionApi } from '../api';
 import CollapsibleSection from '../components/CollapsibleSection.vue';
 import MarkdownRenderer from '../components/MarkdownRenderer.vue';
 import VerilogEditor from '../components/VerilogEditor.vue';
+import LogViewer from '../components/LogViewer.vue';
 
 const route = useRoute();
 const problemId = route.params.id;
@@ -57,12 +58,27 @@ const fetchProblemDetail = async () => {
     }
 };
 
+// 添加一个新的动画控制函数
+const toggleSections = async () => {
+    // 先关闭描述部分
+    descriptionExpanded.value = false;
+    
+    // 等待一小段时间后打开日志部分，确保动画能够顺序执行
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // 打开日志部分
+    logExpanded.value = true;
+};
+
 // 提交解答
 const submitSolution = async () => {
     if (!verilogCode.value.trim()) {
         message.warning('请输入Verilog代码');
         return;
     }
+
+    // 重置状态
+    logSectionStatus.value = 'default';
 
     try {
         const submitResponse = await problemApi.submitSolution(problemId, verilogCode.value);
@@ -74,9 +90,8 @@ const submitSolution = async () => {
         currentSubmissionId.value = submitResponse.data.submission_id;
         message.success('代码提交成功，正在评测...');
         
-        // 自动关闭描述，打开日志
-        descriptionExpanded.value = false;
-        logExpanded.value = true;
+        // 使用新的动画控制函数
+        await toggleSections();
         
         setTimeout(() => {
             checkSubmissionResult(currentSubmissionId.value);
@@ -104,13 +119,17 @@ const checkSubmissionResult = async (submissionId) => {
         // 获取日志和波形
         await fetchLogAndWaveform(submissionId);
 
+        // 更新日志状态
         if (submissionData.status === 'success') {
+            logSectionStatus.value = 'success';
             message.success('提交成功！您的代码已通过测试');
         } else {
+            logSectionStatus.value = 'error';
             message.error(`提交失败: ${submissionData.error_code}`);
         }
     } catch (err) {
         console.error('获取提交结果失败:', err);
+        logSectionStatus.value = 'error';
         message.error('获取提交结果失败: ' + (err.response?.data?.error || err.message || '未知错误'));
     }
 };
@@ -221,6 +240,9 @@ const fetchLogAndWaveform = async (submissionId) => {
         message.error(err.response?.data?.error || '获取日志或波形失败');
     }
 };
+
+// 添加日志状态控制
+const logSectionStatus = ref('default');
 </script>
 
 <template>
@@ -263,11 +285,9 @@ const fetchLogAndWaveform = async (submissionId) => {
         <CollapsibleSection 
           title="运行日志" 
           v-model:isExpanded="logExpanded"
+          :status="logSectionStatus"
         >
-          <div class="log-content">
-            <pre v-if="currentLog">{{ currentLog }}</pre>
-            <p v-else>暂无日志</p>
-          </div>
+          <LogViewer :content="currentLog" />
         </CollapsibleSection>
 
         <!-- 波形部分 -->
@@ -482,7 +502,6 @@ pre {
 }
 
 .problem-description,
-.log-content,
 .waveform-content {
     background-color: #ffffff;
     border-radius: 4px;
@@ -493,7 +512,6 @@ pre {
 }
 
 /* 日志和波形特有的样式 */
-.log-content,
 .waveform-content {
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 14px;
@@ -504,7 +522,6 @@ pre {
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
     .problem-description,
-    .log-content,
     .waveform-content {
         background-color: #1a1a1a;
         border-color: #2d2d2d;

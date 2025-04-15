@@ -123,7 +123,7 @@ onUnmounted(() => {
 
 .editor-container {
   flex: 1;
-  border: 1px solid #e0e0e0; /* 修改为1px细边框，使用更浅的颜色 */
+  border: 1px solid #ddd;
   border-radius: 4px;
   overflow: hidden;
   background-color: #ffffff;
