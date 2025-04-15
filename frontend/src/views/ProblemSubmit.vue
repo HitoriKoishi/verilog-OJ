@@ -1,12 +1,7 @@
 <script setup>
-<<<<<<< HEAD
 // 添加导入
 import SubmitHistory from '../components/SubmitHistory.vue';
 import { ref, onMounted, onUnmounted } from 'vue';
-=======
-// 移除原有的编辑器相关导入
-import { ref, onMounted, onUnmounted, watch } from 'vue';
->>>>>>> cbc304e1a2b84945a856000a8eb7201a3af09e13
 import message from '../utils/message';
 import { useRoute } from 'vue-router';
 import { problemApi, submissionApi, aiApi } from '../api';

@@ -90,20 +90,11 @@ onMounted(() => {
 </script>
 
 <template>
-<<<<<<< HEAD
-  <div class="waveform-viewer">
-    <div v-if="vcdContent" ref="waveformElement" class="waveform-container card">
-      <!-- 波形将在此处渲染 -->
-    </div>
-    <div v-else class="no-waveform card">
-      <span class="text-secondary">暂无波形数据</span>
-=======
     <div class="waveform-viewer">
         <div v-if="vcdContent" ref="waveformElement" class="waveform-container"></div>
         <div v-else class="no-waveform">
             暂无波形数据
         </div>
->>>>>>> cbc304e1a2b84945a856000a8eb7201a3af09e13
     </div>
 </template>
 
@@ -114,7 +105,6 @@ onMounted(() => {
 }
 
 .waveform-container {
-<<<<<<< HEAD
   padding: var(--spacing-lg);
   background-color: var(--background-color);
   min-height: 200px;
@@ -178,20 +168,6 @@ onMounted(() => {
   :deep(.WaveDrom text) {
     font-size: 12px;
   }
-=======
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 6px;
-    min-height: 200px;
-}
-
-.no-waveform {
-    text-align: center;
-    padding: 40px;
-    color: #666;
-    background: #f5f5f5;
-    border-radius: 6px;
->>>>>>> cbc304e1a2b84945a856000a8eb7201a3af09e13
 }
 
 /* 暗色主题支持 */
