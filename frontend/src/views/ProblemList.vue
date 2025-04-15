@@ -47,7 +47,7 @@ const completedColor = (is_completed) => {
     switch (is_completed) {
         case '未完成': return 'gray';
         case '已完成': return 'green';
-        case   '失败': return 'red';
+        case '失败': return 'red';
         case '运行中': return 'gray';
         default: return 'black';
     }
@@ -86,8 +86,9 @@ const completedColor = (is_completed) => {
                     <td>{{ problem.id }}</td>
                     <td>{{ problem.title }}</td>
                     <td :style="{ color: difficultyColor(problem.difficulty) }">{{ problem.difficulty }}</td>
-                    <td :style="{ color: completedColor(problem.is_completed)}">{{ problem.is_completed}}</td>
-                    <td>{{`${problem.passed_users_count.toString()} / ${problem.submitted_users_count.toString()}`}}</td>
+                    <td :style="{ color: completedColor(problem.is_completed) }">{{ problem.is_completed }}</td>
+                    <td>{{ `${problem.passed_users_count.toString()} / ${problem.submitted_users_count.toString()}` }}
+                    </td>
                     <td>
                         <button @click="navigateToProblem(problem.id)" class="solve-btn">开始解题</button>
                     </td>
