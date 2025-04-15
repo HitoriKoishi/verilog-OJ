@@ -236,6 +236,31 @@ const fetchLogAndWaveform = async (submissionId) => {
 // 添加日志状态控制
 const logSectionStatus = ref('default');
 
+// 处理历史记录选择
+const handleHistorySelect = async (submissionId) => {
+  try {
+    // 打开日志和波形面板
+    toggleSections();
+    
+    // 获取并显示日志和波形
+    await fetchLogAndWaveform(submissionId);
+    
+    // 设置当前提交ID
+    currentSubmissionId.value = submissionId;
+    
+    // 获取提交状态并更新日志状态
+    const resultResponse = await submissionApi.getSubmission(submissionId);
+    const submissionData = resultResponse.data;
+    
+    // 更新日志状态颜色
+    logSectionStatus.value = submissionData.status === 'success' ? 'success' : 'error';
+    
+  } catch (err) {
+    console.error('获取历史提交详情失败:', err);
+    message.error('获取历史提交详情失败: ' + (err.response?.data?.error || err.message || '未知错误'));
+  }
+};
+
 // 添加AI分析相关的状态
 const isAnalyzing = ref(false);
 const aiAnalysisResult = ref('');
@@ -288,26 +313,24 @@ const getAiAnalysis = async () => {
             <div class="flex flex-col gap-lg">
                 <!-- 描述部分 -->
                 <CollapsibleSection title="题目描述" v-model:isExpanded="descriptionExpanded">
-                    <div class="card">
-                        <div class="card-body">
-                            <h1 class="card-title">{{ problem.title }}</h1>
-                            <div class="difficulty text-lg mb-sm"
-                                :class="{
-                                    'text-success': problem.difficulty === '简单',
-                                    'text-warning': problem.difficulty === '中等',
-                                    'text-error': problem.difficulty === '困难'
-                                }">
-                                难度: {{ problem.difficulty }}
-                            </div>
-
-                            <div v-if="problem.tags && problem.tags.length" class="flex flex-wrap gap-xs mb-md">
-                                <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
-                                    {{ tag }}
-                                </span>
-                            </div>
-
-                            <MarkdownRenderer :content="problem.description" class="text-base" />
+                    <div class="card-body">
+                        <h1 class="title">{{ problem.title }}</h1>
+                        <div class="difficulty text-lg mb-sm"
+                            :class="{
+                                'text-success': problem.difficulty === '简单',
+                                'text-warning': problem.difficulty === '中等',
+                                'text-error': problem.difficulty === '困难'
+                            }">
+                            <b>难度: {{ problem.difficulty }}</b>
                         </div>
+
+                        <div v-if="problem.tags && problem.tags.length" class="flex flex-wrap gap-xs mb-md">
+                            <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
+                                {{ tag }}
+                            </span>
+                        </div>
+
+                        <MarkdownRenderer :content="problem.description" class="text-base" />
                     </div>
                 </CollapsibleSection>
 
@@ -364,6 +387,7 @@ const getAiAnalysis = async () => {
                         </div>
                     </div>
                 </div>
+                <SubmitHistory ref="historyRef" :problem-id="problemId" @select-submission="handleHistorySelect" />
             </div>
         </div>
     </div>

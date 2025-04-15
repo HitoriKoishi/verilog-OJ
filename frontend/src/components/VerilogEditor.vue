@@ -1,25 +1,20 @@
 <script setup>
-import { ref, onMounted, onUnmounted, shallowRef, watch } from 'vue';
+import { ref, onMounted, onUnmounted, shallowRef } from 'vue';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { StreamLanguage } from '@codemirror/language';
 import { verilog } from '@codemirror/legacy-modes/mode/verilog';
 
-
 const props = defineProps({
-    modelValue: {
-        type: String,
-        default: ''
-    },
-    placeholder: {
-        type: String,
-        default: '// 在此处编写Verilog代码'
-    },
-    isDarkMode: {
-        type: Boolean,
-        default: false
-    }
+  modelValue: {
+    type: String,
+    default: ''
+  },
+  placeholder: {
+    type: String,
+    default: '// 在此处编写Verilog代码'
+  }
 });
 
 const emit = defineEmits(['update:modelValue', 'change']);
@@ -28,174 +23,190 @@ const editorElement = ref(null);
 const editorView = shallowRef(null);
 
 const updateEditorContent = (content) => {
-    if (!editorView.value) return;
-    const transaction = editorView.value.state.update({
-        changes: {
-            from: 0,
-            to: editorView.value.state.doc.length,
-            insert: content
-        }
-    });
-    editorView.value.dispatch(transaction);
-};
-
-const getThemeExtension = (isDark) => {
-    return EditorView.theme({
-        "&": {
-            fontSize: "14px",
-            height: "100%"
-        },
-        ".cm-content": {
-            fontFamily: "'Consolas', 'Monaco', monospace",
-            color: isDark ? "#e0e0e0" : "inherit"
-        },
-        ".cm-gutters": {
-            backgroundColor: isDark ? "#1e1e1e" : "#f5f5f5",
-            borderRight: `1px solid ${isDark ? "#333" : "#ddd"}`,
-            color: isDark ? "#aaa" : "inherit"
-        },
-        "&.cm-focused": {
-            outline: "none"
-        },
-        ".cm-line": {
-            color: isDark ? "#e0e0e0" : "inherit"
-        },
-        ".cm-activeLine": {
-            backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)"
-        },
-        ".cm-activeLineGutter": {
-            backgroundColor: isDark ? "#252525" : "#f0f0f0"
-        },
-        ".cm-selectionMatch": {
-            backgroundColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"
-        },
-        // 语法高亮颜色
-        ".cm-keyword": { color: isDark ? "#cc99cd" : "#708" },
-        ".cm-number": { color: isDark ? "#f08d49" : "#164" },
-        ".cm-comment": { color: isDark ? "#999" : "#940" },
-        ".cm-string": { color: isDark ? "#7ec699" : "#a11" },
-        ".cm-property": { color: isDark ? "#66d9ef" : "#00c" },
-        ".cm-atom": { color: isDark ? "#f08d49" : "#219" },
-        ".cm-variable": { color: isDark ? "#e0e0e0" : "#00c" },
-        ".cm-def": { color: isDark ? "#fd971f" : "#00f" }
-    });
+  if (!editorView.value) return;
+  const transaction = editorView.value.state.update({
+    changes: {
+      from: 0,
+      to: editorView.value.state.doc.length,
+      insert: content
+    }
+  });
+  editorView.value.dispatch(transaction);
 };
 
 const initEditor = async () => {
-    if (!editorElement.value) {
-        console.error('编辑器容器元素不存在');
-        return;
+  if (!editorElement.value) {
+    console.error('编辑器容器元素不存在');
+    return;
+  }
+
+  try {
+    if (editorView.value) {
+      editorView.value.destroy();
     }
 
-    try {
-        if (editorView.value) {
-            editorView.value.destroy();
-        }
+    editorElement.value.innerHTML = '';
 
-        editorElement.value.innerHTML = '';
+    const startState = EditorState.create({
+      doc: props.modelValue || props.placeholder,
+      extensions: [
+        basicSetup,
+        StreamLanguage.define(verilog),
+        EditorView.theme({
+          "&": {
+            fontSize: "14px",
+            height: "100%"
+          },
+          ".cm-content": {
+            fontFamily: "'Consolas', 'Monaco', monospace"
+          },
+          ".cm-gutters": {
+            backgroundColor: "#f5f5f5",
+            borderRight: "1px solid #ddd"
+          }
+        }),
+        EditorView.updateListener.of(update => {
+          if (update.docChanged) {
+            const content = update.state.doc.toString();
+            emit('update:modelValue', content);
+            emit('change', content);
+          }
+        })
+      ]
+    });
 
-        const startState = EditorState.create({
-            doc: props.modelValue || props.placeholder,
-            extensions: [
-                basicSetup,
-                StreamLanguage.define(verilog),
-                getThemeExtension(props.isDarkMode),
-                EditorView.updateListener.of(update => {
-                    if (update.docChanged) {
-                        const content = update.state.doc.toString();
-                        emit('update:modelValue', content);
-                        emit('change', content);
-                    }
-                })
-            ]
-        });
+    editorView.value = new EditorView({
+      state: startState,
+      parent: editorElement.value
+    });
 
-        editorView.value = new EditorView({
-            state: startState,
-            parent: editorElement.value
-        });
-
-    } catch (err) {
-        console.error('初始化编辑器失败:', err);
-        editorElement.value.innerHTML = `<div style="color:red; padding:10px;">
+  } catch (err) {
+    console.error('初始化编辑器失败:', err);
+    editorElement.value.innerHTML = `<div style="color:red; padding:10px;">
       编辑器加载失败: ${err.message}
       <br>
       <button onclick="location.reload()">刷新页面重试</button>
     </div>`;
-    }
+  }
 };
-
-// 监听暗色模式变化并重新初始化编辑器
-watch(() => props.isDarkMode, () => {
-    initEditor();
-});
 
 // 对外暴露的方法
 defineExpose({
-    updateContent: updateEditorContent,
-    clearContent: () => updateEditorContent('')
+  updateContent: updateEditorContent,
+  clearContent: () => updateEditorContent('')
 });
 
 onMounted(() => {
-    initEditor();
+  initEditor();
 });
 
 onUnmounted(() => {
-    if (editorView.value) {
-        editorView.value.destroy();
-    }
+  if (editorView.value) {
+    editorView.value.destroy();
+  }
 });
 </script>
 
 <template>
-    <div class="verilog-editor" :class="{ 'dark-theme': isDarkMode }">
-        <div ref="editorElement" class="editor-container"></div>
-    </div>
+  <div class="verilog-editor">
+    <div ref="editorElement" class="editor-container"></div>
+  </div>
 </template>
 
 <style scoped>
 .verilog-editor {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .editor-container {
-    flex: 1;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
-    background-color: #ffffff;
+  flex: 1;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--background-color);
+  font-family: var(--font-family-code);
 }
 
 .editor-container :deep(.cm-editor) {
-    height: 100%;
-    width: 100%;
+  height: 100%;
+  width: 100%;
+  background-color: var(--background-color);
 }
 
 .editor-container :deep(.cm-scroller) {
-    overflow: auto;
-    font-family: 'Consolas', 'Monaco', monospace;
+  font-family: var(--font-family-code);
 }
 
 .editor-container :deep(.cm-content) {
-    font-family: 'Consolas', 'Monaco', monospace;
-    padding: 4px;
+  padding: var(--spacing-xs);
+  color: var(--text-primary);
 }
 
 .editor-container :deep(.cm-line) {
-    padding: 0 4px;
+  padding: 0 var(--spacing-xs);
 }
 
-/* 暗色主题样式 */
-.dark-theme .editor-container {
-    border-color: #333;
-    background-color: #1e1e1e;
+.editor-container :deep(.cm-gutters) {
+  background-color: var(--surface-color);
+  border-right: 1px solid var(--border-color);
+  color: var(--text-secondary);
 }
 
-.dark-theme .editor-container :deep(.cm-gutters) {
-    background-color: #1e1e1e;
-    border-color: #333;
+.editor-container :deep(.cm-activeLineGutter) {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+}
+
+.editor-container :deep(.cm-selectionBackground) {
+  background-color: var(--primary-color);
+  opacity: 0.2;
+}
+
+.editor-container :deep(.cm-focused) {
+  outline: none;
+}
+
+.editor-container :deep(.cm-cursor) {
+  border-left-color: var(--primary-color);
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .editor-container :deep(.cm-editor) {
+    background-color: var(--background-color);
+  }
+
+  .editor-container :deep(.cm-gutters) {
+    background-color: var(--surface-color);
+    border-right-color: var(--border-color);
+  }
+
+  .editor-container :deep(.cm-selectionBackground) {
+    background-color: var(--primary-color);
+    opacity: 0.3;
+  }
+}
+
+/* 滚动条样式 */
+.editor-container :deep(.cm-scroller::-webkit-scrollbar) {
+  width: 8px;
+  height: 8px;
+}
+
+.editor-container :deep(.cm-scroller::-webkit-scrollbar-track) {
+  background: var(--surface-color);
+  border-radius: var(--radius-sm);
+}
+
+.editor-container :deep(.cm-scroller::-webkit-scrollbar-thumb) {
+  background: var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.editor-container :deep(.cm-scroller::-webkit-scrollbar-thumb:hover) {
+  background: var(--text-disabled);
 }
 </style>
