@@ -27,9 +27,9 @@ const passwordForm = ref({
 const progressData = ref([]);
 // 添加进度统计相关数据
 const progressStats = ref({
-  total: 0,
-  passed: 0,
-  submitted: 0
+    total: 0,
+    passed: 0,
+    submitted: 0
 });
 
 // 表单提交状态
@@ -73,19 +73,19 @@ onMounted(async () => {
 
 // 获取刷题进度
 const getProgressStatus = async () => {
-  try {
-    const progressResponse = await problemApi.getProblemStatus({ withCredentials: true });
-    progressData.value = progressResponse.data;
-    
-    // 计算统计信息
-    progressStats.value = {
-      total: progressData.value.length,
-      passed: progressData.value.filter(p => p.completion_status === '已完成').length,
-      submitted: progressData.value.filter(p => p.completion_status !== '未完成').length
-    };
-  } catch (error) {
-    console.error('获取进度失败:', error);
-  }
+    try {
+        const progressResponse = await problemApi.getProblemStatus({ withCredentials: true });
+        progressData.value = progressResponse.data;
+
+        // 计算统计信息
+        progressStats.value = {
+            total: progressData.value.length,
+            passed: progressData.value.filter(p => p.completion_status === '已完成').length,
+            submitted: progressData.value.filter(p => p.completion_status !== '未完成').length
+        };
+    } catch (error) {
+        console.error('获取进度失败:', error);
+    }
 };
 
 // 根据完成状态返回按钮的样式
@@ -109,9 +109,9 @@ const updateUsername = async () => {
 
     try {
         // 实际API调用
-        const response = await userApi.newUsername({
-            newUsername: usernameForm.value.newUsername
-        }, { withCredentials: true });
+        const response = await userApi.updateUsername(
+            usernameForm.value.newUsername
+            , { withCredentials: true });
 
         // 更新本地数据
         userData.value.username = usernameForm.value.newUsername;
@@ -146,10 +146,10 @@ const updatePassword = async () => {
 
     try {
         // 实际API调用
-        const response = await userApi.updatePassword({
-            currentPassword: passwordForm.value.currentPassword,
-            newPassword: passwordForm.value.newPassword
-        }, { withCredentials: true });
+        const response = await userApi.updatePassword(
+            passwordForm.value.currentPassword,
+            passwordForm.value.newPassword
+            , { withCredentials: true });
 
         // 清空表单
         passwordForm.value.currentPassword = '';
@@ -168,7 +168,7 @@ const updatePassword = async () => {
 
 // 跳转题目
 const goToProblem = (problemId) => {
-  router.push(`/problem/${problemId}`)
+    router.push(`/problem/${problemId}`)
 };
 </script>
 
@@ -190,41 +190,32 @@ const goToProblem = (problemId) => {
                 </div>
             </div>
 
-            <!-- 消息提示 -->
-            <div v-if="message" :class="['message', messageType, 'card']">
-                {{ message }}
-            </div>
-
             <!-- 统计信息 -->
             <div class="progress-section card">
-              <h2 class="text-primary">进度</h2>
-              <!-- 统计卡片 -->
-              <div class="stats-container">
-                <div class="stat-card">
-                  <div class="stat-value text-success">{{ progressStats.passed }}</div>
-                  <div class="stat-label text-secondary">已通过</div>
+                <h2 class="text-primary">进度</h2>
+                <!-- 统计卡片 -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value text-success">{{ progressStats.passed }}</div>
+                        <div class="stat-label text-secondary">已通过</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value text-info">{{ progressStats.submitted }}</div>
+                        <div class="stat-label text-secondary">已提交</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value text-primary">{{ progressStats.total }}</div>
+                        <div class="stat-label text-secondary">总题数</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                  <div class="stat-value text-info">{{ progressStats.submitted }}</div>
-                  <div class="stat-label text-secondary">已提交</div>
+                <!-- 问题按钮列表 -->
+                <div class="problem-buttons">
+                    <button v-for="problem in progressData" :key="problem.id"
+                        :class="['button', getButtonClass(problem.completion_status)]" @click="goToProblem(problem.id)"
+                        :title="`查看题目 ${problem.id}`">
+                        {{ problem.id }}
+                    </button>
                 </div>
-                <div class="stat-card">
-                  <div class="stat-value text-primary">{{ progressStats.total }}</div>
-                  <div class="stat-label text-secondary">总题数</div>
-                </div>
-              </div>
-              <!-- 问题按钮列表 -->
-              <div class="problem-buttons">
-                <button
-                  v-for="problem in progressData"
-                  :key="problem.id"
-                  :class="['button', getButtonClass(problem.completion_status)]"
-                  @click="goToProblem(problem.id)"
-                  :title="`查看题目 ${problem.id}`"
-                >
-                  {{ problem.id }}
-                </button>
-              </div>
             </div>
 
             <!-- 修改用户名 -->
@@ -233,12 +224,8 @@ const goToProblem = (problemId) => {
                 <form @submit.prevent="updateUsername" class="form">
                     <div class="form-group">
                         <label for="newUsername" class="text-secondary">新用户名</label>
-                        <input id="newUsername" 
-                               v-model="usernameForm.newUsername" 
-                               type="text" 
-                               class="input"
-                               placeholder="输入新用户名"
-                               required />
+                        <input id="newUsername" v-model="usernameForm.newUsername" type="text" class="input"
+                            placeholder="输入新用户名" required />
                     </div>
 
                     <button type="submit" class="button" :disabled="usernameSubmitting">
@@ -247,38 +234,29 @@ const goToProblem = (problemId) => {
                 </form>
             </div>
 
+            <div v-if="message" :class="['message', messageType, 'card']">
+                {{ message }}
+            </div>
             <!-- 修改密码 -->
             <div class="account-section card">
                 <h2 class="text-primary">修改密码</h2>
                 <form @submit.prevent="updatePassword" class="form">
                     <div class="form-group">
                         <label for="currentPassword" class="text-secondary">当前密码</label>
-                        <input id="currentPassword" 
-                               v-model="passwordForm.currentPassword" 
-                               type="password"
-                               class="input"
-                               placeholder="输入当前密码" 
-                               required />
+                        <input id="currentPassword" v-model="passwordForm.currentPassword" type="password" class="input"
+                            placeholder="输入当前密码" required />
                     </div>
 
                     <div class="form-group">
                         <label for="newPassword" class="text-secondary">新密码</label>
-                        <input id="newPassword" 
-                               v-model="passwordForm.newPassword" 
-                               type="password"
-                               class="input"
-                               placeholder="输入新密码"
-                               required />
+                        <input id="newPassword" v-model="passwordForm.newPassword" type="password" class="input"
+                            placeholder="输入新密码" required />
                     </div>
 
                     <div class="form-group">
                         <label for="confirmPassword" class="text-secondary">确认新密码</label>
-                        <input id="confirmPassword" 
-                               v-model="passwordForm.confirmPassword" 
-                               type="password"
-                               class="input"
-                               placeholder="再次输入新密码"
-                               required />
+                        <input id="confirmPassword" v-model="passwordForm.confirmPassword" type="password" class="input"
+                            placeholder="再次输入新密码" required />
                     </div>
 
                     <button type="submit" class="button" :disabled="passwordSubmitting">
@@ -329,61 +307,61 @@ h1 {
 }
 
 .button-success {
-  background-color: var(--success-color);
+    background-color: var(--success-color);
 }
 
 .button-error {
-  background-color: var(--error-color);
+    background-color: var(--error-color);
 }
 
 .button-warning {
-  background-color: var(--warning-color);
+    background-color: var(--warning-color);
 }
 
 .button-disabled {
-  background-color: var(--text-disabled);
-  cursor: not-allowed;
+    background-color: var(--text-disabled);
+    cursor: not-allowed;
 }
 
 /* 统计卡片样式 */
 .stats-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-md);
-  margin: var(--spacing-lg) 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin: var(--spacing-lg) 0;
 }
 
 .stat-card {
-  background: var(--background-color);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-md);
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+    background: var(--background-color);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-md);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: var(--spacing-xs);
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: var(--spacing-xs);
 }
 
 .problem-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-  margin-top: var(--spacing-lg);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-lg);
 }
 
 .problem-buttons button {
-  min-width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  transition: all var(--transition-fast);
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
 }
 
 .message {
@@ -412,11 +390,11 @@ h1 {
     .stats-container {
         grid-template-columns: 1fr;
     }
-    
+
     .stat-card {
         padding: var(--spacing-sm);
     }
-    
+
     .stat-value {
         font-size: 1.25rem;
     }
