@@ -169,28 +169,4 @@ onMounted(() => {
     font-size: 12px;
   }
 }
-
-/* 暗色主题支持 */
-@media (prefers-color-scheme: dark) {
-    .waveform-container {
-        background: #1a1a1a;
-    }
-
-    .no-waveform {
-        background: #2d2d2d;
-        color: #999;
-    }
-
-    :deep(.WaveDrom) {
-        background: #1a1a1a;
-    }
-
-    :deep(.WaveDrom text) {
-        fill: #d4d4d4;
-    }
-
-    :deep(.WaveDrom path) {
-        stroke: #666;
-    }
-}
 </style>

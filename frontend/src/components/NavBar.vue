@@ -91,9 +91,9 @@ const handleLogout = async () => {
 .navbar {
     display: flex;
     align-items: center;
-    background-color: #333;
-    color: white;
-    padding: 0 20px;
+    background-color: var(--navbar-bg);
+    color: var(--navbar-text);
+    padding: 0 var(--spacing-lg);
     height: 60px;
     justify-content: space-between;
 }
@@ -101,36 +101,38 @@ const handleLogout = async () => {
 .navbar-brand {
     font-size: 1.5rem;
     font-weight: bold;
-    margin-right: 30px;
+    margin-right: var(--spacing-xl);
+    color: var(--navbar-text);
 }
 
 .navbar-menu {
     display: flex;
-    gap: 20px;
+    gap: var(--spacing-lg);
     flex-grow: 1;
 }
 
 .navbar-item {
     cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-normal);
     position: relative;
+    color: var(--navbar-text);
 }
 
 .navbar-item:hover {
-    background-color: #444;
+    background-color: var(--navbar-hover);
     transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-sm);
 }
 
 .navbar-item.active {
-    background-color: #4CAF50;
+    background-color: var(--navbar-active);
     font-weight: bold;
 }
 
 .navbar-item.active:hover {
-    background-color: #45a049;
+    background-color: var(--navbar-active);
 }
 
 .navbar-item::after {
@@ -140,8 +142,8 @@ const handleLogout = async () => {
     left: 50%;
     width: 0;
     height: 2px;
-    background-color: #4CAF50;
-    transition: all 0.3s ease;
+    background-color: var(--navbar-text);
+    transition: all var(--transition-normal);
     transform: translateX(-50%);
 }
 
@@ -153,60 +155,63 @@ const handleLogout = async () => {
 .auth-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--spacing-sm);
     margin-left: auto;
 }
 
 .auth-button {
-    padding: 6px 12px;
-    border-radius: 4px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     border: none;
-    font-size: 14px;
-    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
 }
 
 .login {
     background-color: transparent;
-    color: white;
-    border: 1px solid white;
+    color: var(--navbar-text);
+    border: 1px solid var(--navbar-text);
 }
 
 .login:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--navbar-hover);
 }
 
 .register {
-    background-color: #4CAF50;
-    color: white;
+    background-color: var(--navbar-active);
+    color: var(--navbar-text);
 }
 
 .register:hover {
-    background-color: #45a049;
+    background-color: var(--navbar-hover);
 }
 
 /* 用户信息样式 */
 .user-info {
     position: relative;
-    padding: 6px 12px;
+    padding: var(--spacing-xs) var(--spacing-sm);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+    color: var(--navbar-text);
 }
 
 .user-info:hover {
-    background-color: #444;
+    background-color: var(--navbar-hover);
 }
 
 .dropdown-menu {
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    background-color: var(--background-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
     width: 120px;
     display: none;
-    z-index: 1000;
+    z-index: var(--z-dropdown);
+    border: 1px solid var(--border-color);
 }
 
 .user-info:hover .dropdown-menu {
@@ -214,12 +219,27 @@ const handleLogout = async () => {
 }
 
 .dropdown-item {
-    padding: 10px 15px;
-    color: #333;
-    transition: background-color 0.2s;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--text-primary);
+    transition: background-color var(--transition-fast);
 }
 
 .dropdown-item:hover {
-    background-color: #f5f5f5;
+    background-color: var(--surface-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 var(--spacing-md);
+    }
+    
+    .navbar-brand {
+        margin-right: var(--spacing-md);
+    }
+
+    .navbar-menu {
+        gap: var(--spacing-sm);
+    }
 }
 </style>

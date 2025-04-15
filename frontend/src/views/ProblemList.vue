@@ -36,20 +36,20 @@ onMounted(() => {
 
 const difficultyColor = (difficulty) => {
     switch (difficulty) {
-        case '简单': return 'green';
-        case '中等': return 'orange';
-        case '困难': return 'red';
-        default: return 'black';
+        case '简单': return 'var(--success-color)';
+        case '中等': return 'var(--warning-color)';
+        case '困难': return 'var(--error-color)';
+        default: return 'var(--text-primary)';
     }
 };
 
 const completedColor = (is_completed) => {
     switch (is_completed) {
-        case '未完成': return 'gray';
-        case '已完成': return 'green';
-        case   '失败': return 'red';
-        case '运行中': return 'gray';
-        default: return 'black';
+        case '未完成': return 'var(--text-disabled)';
+        case '已完成': return 'var(--success-color)';
+        case '失败': return 'var(--error-color)';
+        case '运行中': return 'var(--text-disabled)';
+        default: return 'var(--text-primary)';
     }
 };
 </script>

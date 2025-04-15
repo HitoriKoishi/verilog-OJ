@@ -48,13 +48,13 @@ const formattedLog = computed(() => {
 <style scoped>
 .log-viewer {
   width: 100%;
-  font-family: var(--font-family-code);
+  font-family: Consolas, 'Courier New', Monaco, monospace;
   font-size: 14px;
 }
 
 .log-content {
   background-color: var(--background-color);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: Consolas, 'Courier New', Monaco, monospace;
   color: var(--text-primary);
   padding: var(--spacing-md);
   border-radius: var(--radius-md);

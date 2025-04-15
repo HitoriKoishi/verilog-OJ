@@ -1,11 +1,27 @@
 <script setup>
 import Footer from './components/Footer.vue';
 import NavBar from './components/NavBar.vue';
+import ThemeToggle from './components/ThemeToggle.vue';
 import { ref, onMounted, provide } from 'vue';
 
 const isLoading = ref(true);
 const hasError = ref(false);
 const errorMessage = ref('');
+
+// 主题切换状态管理
+const isDarkMode = ref(window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+const toggleTheme = () => {
+    isDarkMode.value = !isDarkMode.value;
+    document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
+    localStorage.setItem('theme', isDarkMode.value ? 'dark' : 'light');
+};
+
+// 提供主题状态和切换方法给子组件
+provide('theme', {
+    isDarkMode,
+    toggleTheme
+});
 
 // 用户登录状态管理
 const isLoggedIn = ref(false);
@@ -36,6 +52,24 @@ provide('auth', {
 });
 
 onMounted(() => {
+    // 初始化主题
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        isDarkMode.value = savedTheme === 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+        document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
+    }
+
+    // 监听系统主题变化
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            isDarkMode.value = e.matches;
+            document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        }
+    });
+
     // 模拟页面加载完成
     setTimeout(() => {
         isLoading.value = false;
@@ -90,6 +124,7 @@ onMounted(() => {
             </div>
         </main>
         <Footer />
+        <ThemeToggle />
     </div>
 </template>
 

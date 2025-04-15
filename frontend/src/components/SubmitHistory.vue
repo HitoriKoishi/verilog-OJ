@@ -117,10 +117,11 @@ const handleSubmissionClick = (submission) => {
 .history-item {
   display: flex;
   align-items: center;
-  padding: var(--spacing-sm);
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .history-item:last-child {
