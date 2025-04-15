@@ -13,15 +13,17 @@ const props = defineProps({
 const waveformElement = ref(null);
 
 // 将 VCD 内容转换为 WaveDrom JSON 格式
-const convertVcdToWaveDrom = (vcdContent) => {
-  try {
-    const vcd = vcdParser.parse(vcdContent);
-    const waves = {
-      signal: [],
-      config: {
-        hscale: 2
-      }
-    };
+const convertVcdToWaveDrom = async (vcdContent) => {
+    try {
+        console.log('VCD 内容1:', vcdContent);
+        const vcd = await vcdParser.parse(vcdContent);
+        const waves = {
+            signal: [],
+            config: {
+                hscale: 2
+            }
+        };
+        console.log('VCD 内容2:', vcd);
 
         // 遍历 VCD 中的信号
         Object.keys(vcd.signals).forEach(signalName => {
@@ -53,11 +55,11 @@ const convertVcdToWaveDrom = (vcdContent) => {
 };
 
 // 渲染波形
-const renderWaveform = () => {
+const renderWaveform = async () => {
     if (!props.vcdContent || !waveformElement.value) return;
 
     try {
-        const waves = convertVcdToWaveDrom(props.vcdContent);
+        const waves = await convertVcdToWaveDrom(props.vcdContent);
         if (waves) {
             WaveDrom.RenderWaveForm(waveformElement.value, waves, {
                 skin: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default'
