@@ -63,10 +63,10 @@ const fetchProblemDetail = async () => {
 const toggleSections = async () => {
     // 先关闭描述部分
     descriptionExpanded.value = false;
-    
+
     // 等待一小段时间后打开日志部分，确保动画能够顺序执行
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     // 打开日志部分
     logExpanded.value = true;
 };
@@ -90,10 +90,10 @@ const submitSolution = async () => {
 
         currentSubmissionId.value = submitResponse.data.submission_id;
         message.success('代码提交成功，正在评测...');
-        
+
         // 使用新的动画控制函数
         await toggleSections();
-        
+
         setTimeout(() => {
             checkSubmissionResult(currentSubmissionId.value);
         }, 1000);
@@ -179,17 +179,17 @@ const loadDraft = async () => {
 
 // 更新编辑器内容的方法
 const updateEditorContent = (code) => {
-  if (editorRef.value) {
-    editorRef.value.updateContent(code);
-  }
+    if (editorRef.value) {
+        editorRef.value.updateContent(code);
+    }
 };
 
 // 清空编辑器内容
 const clearEditor = () => {
-  verilogCode.value = '';
-  if (editorRef.value) {
-    editorRef.value.clearContent();
-  }
+    verilogCode.value = '';
+    if (editorRef.value) {
+        editorRef.value.clearContent();
+    }
 };
 
 // 改进 onMounted 逻辑，在DOM渲染完成后再初始化编辑器
@@ -247,83 +247,72 @@ const logSectionStatus = ref('default');
 </script>
 
 <template>
-  <div class="problem-submit">
-    <div v-if="loading" class="loading">
-      加载中...
-    </div>
-
-    <div v-else-if="error" class="error">
-      <p>加载题目失败: {{ error }}</p>
-      <button @click="fetchProblemDetail">重试</button>
-    </div>
-
-    <div v-else-if="problem" class="problem-container">
-      <!-- 左侧面板：题目描述、日志和波形 -->
-      <div class="left-panel">
-        <!-- 描述部分 -->
-        <CollapsibleSection 
-          title="题目描述" 
-          v-model:isExpanded="descriptionExpanded"
-        >
-          <div class="problem-description">
-            <h1>{{ problem.title }}</h1>
-            <div class="difficulty"
-              :style="{ color: problem.difficulty === '简单' ? 'green' : (problem.difficulty === '中等' ? 'orange' : 'red') }">
-              难度: {{ problem.difficulty }}
-            </div>
-
-            <div class="tags-container" v-if="problem.tags && problem.tags.length">
-              <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
-                {{ tag }}
-              </span>
-            </div>
-
-            <MarkdownRenderer :content="problem.description" />
-          </div>
-        </CollapsibleSection>
-
-        <!-- 日志部分 -->
-        <CollapsibleSection 
-          title="运行日志" 
-          v-model:isExpanded="logExpanded"
-          :status="logSectionStatus"
-        >
-          <LogViewer :content="currentLog" />
-        </CollapsibleSection>
-
-        <!-- 波形部分 -->
-        <CollapsibleSection 
-          title="波形显示" 
-          v-model:isExpanded="waveformExpanded"
-        >
-          <WaveformViewer :vcdContent="currentWaveform" />
-        </CollapsibleSection>
-      </div>
-
-      <!-- 右侧面板：代码编辑器 -->
-      <div class="right-panel">
-        <div class="code-editor">
-          <h2>代码编辑器</h2>
-          <div class="editor-controls">
-            <button @click="loadDraft" class="control-btn">加载草稿</button>
-            <button @click="saveDraft" class="control-btn">保存草稿</button>
-            <button @click="clearEditor" class="control-btn clear-btn">清空</button>
-          </div>
-
-          <VerilogEditor
-            ref="editorRef"
-            v-model="verilogCode"
-            class="editor-container"
-          />
-
-          <div class="submit-section">
-            <span class="auto-save-info">代码会每分钟自动保存</span>
-            <button @click="submitSolution" class="submit-btn">提交解答</button>
-          </div>
+    <div class="problem-submit">
+        <div v-if="loading" class="loading">
+            加载中...
         </div>
-      </div>
+
+        <div v-else-if="error" class="error">
+            <p>加载题目失败: {{ error }}</p>
+            <button @click="fetchProblemDetail">重试</button>
+        </div>
+
+        <div v-else-if="problem" class="problem-container">
+            <!-- 左侧面板：题目描述、日志和波形 -->
+            <div class="left-panel">
+                <!-- 描述部分 -->
+                <!-- eslint-disable-next-line vue/no-v-model-argument -->
+                <CollapsibleSection title="题目描述" v-model:isExpanded="descriptionExpanded">
+                    <div class="problem-description">
+                        <h1>{{ problem.title }}</h1>
+                        <div class="difficulty"
+                            :style="{ color: problem.difficulty === '简单' ? 'green' : (problem.difficulty === '中等' ? 'orange' : 'red') }">
+                            难度: {{ problem.difficulty }}
+                        </div>
+
+                        <div class="tags-container" v-if="problem.tags && problem.tags.length">
+                            <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
+                                {{ tag }}
+                            </span>
+                        </div>
+
+                        <MarkdownRenderer :content="problem.description" />
+                    </div>
+                </CollapsibleSection>
+
+                <!-- 日志部分 -->
+                <!-- eslint-disable-next-line vue/no-v-model-argument -->
+                <CollapsibleSection title="运行日志" v-model:isExpanded="logExpanded" :status="logSectionStatus">
+                    <LogViewer :content="currentLog" />
+                </CollapsibleSection>
+
+                <!-- 波形部分 -->
+                <!-- eslint-disable-next-line vue/no-v-model-argument -->
+                <CollapsibleSection title="波形显示" v-model:isExpanded="waveformExpanded">
+                    <WaveformViewer :vcdContent="currentWaveform" />
+                </CollapsibleSection>
+            </div>
+
+            <!-- 右侧面板：代码编辑器 -->
+            <div class="right-panel">
+                <div class="code-editor">
+                    <h2>代码编辑器</h2>
+                    <div class="editor-controls">
+                        <button @click="loadDraft" class="control-btn">加载草稿</button>
+                        <button @click="saveDraft" class="control-btn">保存草稿</button>
+                        <button @click="clearEditor" class="control-btn clear-btn">清空</button>
+                    </div>
+
+                    <VerilogEditor ref="editorRef" v-model="verilogCode" class="editor-container" />
+
+                    <div class="submit-section">
+                        <span class="auto-save-info">代码会每分钟自动保存</span>
+                        <button @click="submitSolution" class="submit-btn">提交解答</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <style scoped>
@@ -335,8 +324,10 @@ const logSectionStatus = ref('default');
 
 .problem-container {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 两列布局，每列占 50% 宽度 */
-    gap: 20px; /* 列之间的间距 */
+    grid-template-columns: 1fr 1fr;
+    /* 两列布局，每列占 50% 宽度 */
+    gap: 20px;
+    /* 列之间的间距 */
     min-height: calc(100vh - 100px);
     width: 100%;
 }
@@ -355,10 +346,14 @@ const logSectionStatus = ref('default');
 .right-panel {
     display: flex;
     flex-direction: column;
-    position: sticky; /* 恢复sticky定位 */
-    top: 20px; /* 距离顶部距离 */
-    height: calc(100vh - 100px); /* 设置高度 */
-    min-width: 0; /* 防止内容溢出 */
+    position: sticky;
+    /* 恢复sticky定位 */
+    top: 20px;
+    /* 距离顶部距离 */
+    height: calc(100vh - 100px);
+    /* 设置高度 */
+    min-width: 0;
+    /* 防止内容溢出 */
 }
 
 .difficulty {
@@ -418,8 +413,8 @@ const logSectionStatus = ref('default');
 }
 
 .editor-container {
-  flex: 1;
-  min-height: 0;
+    flex: 1;
+    min-height: 0;
 }
 
 .submit-section {
@@ -462,7 +457,8 @@ const logSectionStatus = ref('default');
 
 @media (max-width: 1200px) {
     .problem-container {
-        grid-template-columns: 1fr; /* 在小屏幕上变为单列 */
+        grid-template-columns: 1fr;
+        /* 在小屏幕上变为单列 */
     }
 
     .right-panel {
@@ -471,7 +467,8 @@ const logSectionStatus = ref('default');
     }
 
     .editor-container {
-        height: 500px; /* 在小屏幕上固定高度 */
+        height: 500px;
+        /* 在小屏幕上固定高度 */
     }
 }
 
@@ -519,6 +516,7 @@ pre {
 
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
+
     .problem-description,
     .waveform-content {
         background-color: #1a1a1a;
