@@ -287,7 +287,6 @@ const getAiAnalysis = async () => {
             <!-- 左侧面板：题目描述、日志和波形 -->
             <div class="flex flex-col gap-lg">
                 <!-- 描述部分 -->
-<<<<<<< HEAD
                 <CollapsibleSection title="题目描述" v-model:isExpanded="descriptionExpanded">
                     <div class="card">
                         <div class="card-body">
@@ -300,16 +299,6 @@ const getAiAnalysis = async () => {
                                 }">
                                 难度: {{ problem.difficulty }}
                             </div>
-=======
-                <!-- eslint-disable-next-line vue/no-v-model-argument -->
-                <CollapsibleSection title="题目描述" v-model:isExpanded="descriptionExpanded" :isDarkMode="isDarkMode">
-                    <div class="problem-description">
-                        <h1>{{ problem.title }}</h1>
-                        <div class="difficulty"
-                            :style="{ color: problem.difficulty === '简单' ? 'green' : (problem.difficulty === '中等' ? 'orange' : 'red') }">
-                            难度: {{ problem.difficulty }}
-                        </div>
->>>>>>> 2a5da9caf82dcc3a991a1c5e1b460e24ae12ba08
 
                             <div v-if="problem.tags && problem.tags.length" class="flex flex-wrap gap-xs mb-md">
                                 <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
@@ -323,7 +312,6 @@ const getAiAnalysis = async () => {
                 </CollapsibleSection>
 
                 <!-- 日志部分 -->
-<<<<<<< HEAD
                 <CollapsibleSection title="运行日志" v-model:isExpanded="logExpanded" :status="logSectionStatus">
                     <div class="card-body">
                         <div v-if="currentSubmissionId && currentLog" class="mb-md">
@@ -331,14 +319,6 @@ const getAiAnalysis = async () => {
                                 class="button button-primary" 
                                 :class="{ 'loading': isAnalyzing }"
                                 :disabled="isAnalyzing">
-=======
-                <!-- eslint-disable-next-line vue/no-v-model-argument -->
-                <CollapsibleSection title="运行日志" v-model:isExpanded="logExpanded" :status="logSectionStatus"
-                    :isDarkMode="isDarkMode">
-                    <div>
-                        <div v-if="currentSubmissionId && currentLog" class="log-actions">
-                            <button @click="getAiAnalysis" class="ai-analyze-btn" :disabled="isAnalyzing">
->>>>>>> 2a5da9caf82dcc3a991a1c5e1b460e24ae12ba08
                                 {{ isAnalyzing ? '分析中...' : 'AI智能分析' }}
                             </button>
                         </div>
@@ -354,16 +334,10 @@ const getAiAnalysis = async () => {
                 </CollapsibleSection>
 
                 <!-- 波形部分 -->
-<<<<<<< HEAD
                 <CollapsibleSection title="波形显示" v-model:isExpanded="waveformExpanded">
                     <div class="card-body">
                         <WaveformViewer :vcdContent="currentWaveform" />
                     </div>
-=======
-                <!-- eslint-disable-next-line vue/no-v-model-argument -->
-                <CollapsibleSection title="波形显示" v-model:isExpanded="waveformExpanded" :isDarkMode="isDarkMode">
-                    <WaveformViewer :vcdContent="currentWaveform" />
->>>>>>> 2a5da9caf82dcc3a991a1c5e1b460e24ae12ba08
                 </CollapsibleSection>
             </div>
 
@@ -403,86 +377,9 @@ const getAiAnalysis = async () => {
 .loading-container {
     display: flex;
     flex-direction: column;
-<<<<<<< HEAD
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-xl);
-=======
-    gap: 20px;
-    /* 修改最大高度设置，让其根据内容自动调整 */
-    /* max-height: calc(100vh - 100px); */
-    /* overflow-y: auto; */
-}
-
-.right-panel {
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    /* 恢复sticky定位 */
-    top: 20px;
-    /* 距离顶部距离 */
-    height: calc(125vh - 125px);
-    /* 设置高度 */
-    min-width: 0;
-    /* 防止内容溢出 */
-}
-
-.difficulty {
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-.tags-container {
-    margin: 10px 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-.tag {
-    background-color: #e0f2f1;
-    color: #00796b;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    display: inline-block;
-}
-
-.code-editor {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    gap: 20px;
-}
-
-.editor-controls {
-    display: flex;
-    margin-bottom: 10px;
-    gap: 10px;
-}
-
-.control-btn {
-    padding: 6px 12px;
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
-
-.control-btn:hover {
-    background-color: #e0e0e0;
-}
-
-.clear-btn {
-    background-color: #ffeeee;
-}
-
-.clear-btn:hover {
-    background-color: #ffdddd;
->>>>>>> 2a5da9caf82dcc3a991a1c5e1b460e24ae12ba08
 }
 
 .editor-container {
