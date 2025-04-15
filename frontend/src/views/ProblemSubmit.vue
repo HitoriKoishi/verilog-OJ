@@ -400,8 +400,14 @@ const getAiAnalysis = async () => {
     display: flex;
     flex-direction: column;
     gap: 20px;
+<<<<<<< HEAD
     overflow-y: auto;
     min-width: 0;
+=======
+    /* 修改最大高度设置，让其根据内容自动调整 */
+    /* max-height: calc(100vh - 100px); */
+    /* overflow-y: auto; */
+>>>>>>> 818c113 (fix: 修复冲突)
 }
 
 .right-panel {
