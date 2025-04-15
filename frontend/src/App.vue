@@ -11,6 +11,10 @@ const errorMessage = ref('');
 const isLoggedIn = ref(false);
 const currentUser = ref(null);
 
+const reloadPage = () => {
+    window.location.reload();
+};
+
 const login = (user) => {
     isLoggedIn.value = true;
     currentUser.value = user;
@@ -56,28 +60,25 @@ onMounted(() => {
     }
 });
 
-const reloadPage = () => {
-    window.location.reload();
-};
 
 </script>
 
 <template>
-  <div class="app">
-    <NavBar />
-    <main class="main-content">
-      <!-- 加载状态 -->
-      <div v-if="isLoading" class="loading-container flex flex-col items-center">
-        <div class="loading-spinner"></div>
-        <p class="text-secondary">页面加载中...</p>
-      </div>
+    <div class="app">
+        <NavBar />
+        <main class="main-content">
+            <!-- 加载状态 -->
+            <div v-if="isLoading" class="loading-container flex flex-col items-center">
+                <div class="loading-spinner"></div>
+                <p class="text-secondary">页面加载中...</p>
+            </div>
 
-      <!-- 错误状态 -->
-      <div v-else-if="hasError" class="error-container card">
-        <h2 class="text-primary">加载出错</h2>
-        <p class="text-secondary">{{ errorMessage }}</p>
-        <button class="button" @click="window.location.reload()">重新加载</button>
-      </div>
+            <!-- 错误状态 -->
+            <div v-else-if="hasError" class="error-container card">
+                <h2 class="text-primary">加载出错</h2>
+                <p class="text-secondary">{{ errorMessage }}</p>
+                <button class="button" @click="reloadPage">重新加载</button>
+            </div>
 
             <!-- 正常内容（包含过渡） -->
             <div v-else class="content-wrapper">
@@ -100,54 +101,55 @@ const reloadPage = () => {
 }
 
 body {
-  font-family: var(--font-family-base);
-  line-height: 1.6;
-  color: var(--text-primary);
-  background-color: var(--surface-color);
-  overflow-x: hidden;
+    font-family: var(--font-family-base);
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--surface-color);
+    overflow-x: hidden;
 }
 
 .app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--surface-color);
-  overflow-x: hidden; /* 防止水平滚动 */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--surface-color);
+    overflow-x: hidden;
+    /* 防止水平滚动 */
 }
 
 .main-content {
-  flex: 1;
-  position: relative;
-  /* display: flex; */
-  flex-direction: column;
-  padding: var(--spacing-lg);
-  min-height: 100px;
-  width: 90%;
-  max-width: var(--container-xl);
-  margin: 0 auto;
+    flex: 1;
+    position: relative;
+    /* display: flex; */
+    flex-direction: column;
+    padding: var(--spacing-lg);
+    min-height: 100px;
+    width: 90%;
+    max-width: var(--container-xl);
+    margin: 0 auto;
 }
 
 .content-wrapper {
-  position: relative;
-  min-height: 400px;
+    position: relative;
+    min-height: 400px;
 }
 
 .loading-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: var(--z-fixed);
-  gap: var(--spacing-md);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: var(--z-fixed);
+    gap: var(--spacing-md);
 }
 
 .loading-spinner {
-  border: 4px solid var(--border-color);
-  border-radius: 50%;
-  border-top: 4px solid var(--primary-color);
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
+    border: 4px solid var(--border-color);
+    border-radius: 50%;
+    border-top: 4px solid var(--primary-color);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -161,62 +163,64 @@ body {
 }
 
 .error-container {
-  text-align: center;
-  max-width: 500px;
-  margin: 0 auto;
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
-h1, h2, h3 {
-  margin-bottom: var(--spacing-md);
+h1,
+h2,
+h3 {
+    margin-bottom: var(--spacing-md);
 }
 
 a {
-  text-decoration: none;
-  color: var(--primary-color);
-  transition: color var(--transition-fast);
+    text-decoration: none;
+    color: var(--primary-color);
+    transition: color var(--transition-fast);
 }
 
 a:hover {
-  color: var(--primary-hover);
+    color: var(--primary-hover);
 }
 
 /* 响应式布局 */
 @media screen and (max-width: 1200px) {
-  .main-content {
-    width: 95%;
-    padding: var(--spacing-md);
-  }
+    .main-content {
+        width: 95%;
+        padding: var(--spacing-md);
+    }
 }
 
 @media screen and (max-width: 768px) {
-  .main-content {
-    width: 100%;
-    padding: var(--spacing-sm);
-  }
+    .main-content {
+        width: 100%;
+        padding: var(--spacing-sm);
+    }
 }
 
 /* 路由过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: 
-    opacity var(--transition-normal),
-    transform var(--transition-normal);
+    transition:
+        opacity var(--transition-normal),
+        transform var(--transition-normal);
 }
 
 .fade-enter-from {
-  opacity: 0;
-  transform: translateY(var(--spacing-sm));
+    opacity: 0;
+    transform: translateY(var(--spacing-sm));
 }
 
 .fade-leave-to {
-  opacity: 0;
-  transform: translateY(calc(var(--spacing-sm) * -1));
+    opacity: 0;
+    transform: translateY(calc(var(--spacing-sm) * -1));
 }
 
 .route-content {
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  margin: 0 auto;
-  max-width: var(--container-xl);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    margin: 0 auto;
+    max-width: var(--container-xl);
 }
 </style>

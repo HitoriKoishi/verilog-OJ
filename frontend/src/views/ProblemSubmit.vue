@@ -434,10 +434,14 @@ const getAiAnalysis = async () => {
 .right-panel {
     display: flex;
     flex-direction: column;
-    position: sticky; /* 恢复sticky定位 */
-    top: 20px; /* 距离顶部距离 */
-    height: calc(125vh - 125px); /* 设置高度 */
-    min-width: 0; /* 防止内容溢出 */
+    position: sticky;
+    /* 恢复sticky定位 */
+    top: 20px;
+    /* 距离顶部距离 */
+    height: calc(125vh - 125px);
+    /* 设置高度 */
+    min-width: 0;
+    /* 防止内容溢出 */
 }
 
 .difficulty {
