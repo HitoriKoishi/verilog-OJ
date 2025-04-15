@@ -22,9 +22,12 @@
     "axios": "^1.8.4",
     "codemirror": "^6.0.1",
     "marked": "^15.0.8",
+    "vcd-parser": "^1.0.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
-    "vuex": "^4.1.0"
+    "vuex": "^4.1.0",
+    "wavedrom": "^3.5.0",
+    "wavedrom-editor": "^2.3.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",

@@ -66,12 +66,11 @@ const formattedLog = computed(() => {
 }
 
 .log-empty {
-  color: #666;
   text-align: center;
-  padding: 20px;
-  background-color: #f5f5f500;
+  padding: 40px;
+  color: #666;
+  background: #f5f5f500;
   border-radius: 6px;
-  margin: 0;
 }
 
 :deep(.log-error) {

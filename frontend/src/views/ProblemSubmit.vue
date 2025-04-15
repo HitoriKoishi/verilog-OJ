@@ -8,6 +8,7 @@ import CollapsibleSection from '../components/CollapsibleSection.vue';
 import MarkdownRenderer from '../components/MarkdownRenderer.vue';
 import VerilogEditor from '../components/VerilogEditor.vue';
 import LogViewer from '../components/LogViewer.vue';
+import WaveformViewer from '../components/WaveformViewer.vue';
 
 const route = useRoute();
 const problemId = route.params.id;
@@ -295,10 +296,7 @@ const logSectionStatus = ref('default');
           title="波形显示" 
           v-model:isExpanded="waveformExpanded"
         >
-          <div class="waveform-content">
-            <pre v-if="currentWaveform">{{ currentWaveform }}</pre>
-            <p v-else>暂无波形数据</p>
-          </div>
+          <WaveformViewer :vcdContent="currentWaveform" />
         </CollapsibleSection>
       </div>
 
