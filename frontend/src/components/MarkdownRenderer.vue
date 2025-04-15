@@ -3,49 +3,49 @@ import { computed } from 'vue';
 import { marked } from 'marked';
 
 const props = defineProps({
-  content: {
-    type: String,
-    required: true
-  },
-  removeFirstH1: {
-    type: Boolean,
-    default: true
-  }
+    content: {
+        type: String,
+        required: true
+    },
+    removeFirstH1: {
+        type: Boolean,
+        default: true
+    }
 });
 
 const renderedContent = computed(() => {
-  if (!props.content) return '<p>没有内容</p>';
+    if (!props.content) return '<p>没有内容</p>';
 
-  let processedContent = props.content;
-  
-  if (props.removeFirstH1) {
-    // 移除第一个一级标题
-    const lines = props.content.split('\n');
-    let firstH1Index = lines.findIndex(line => line.startsWith('# '));
-    
-    if (firstH1Index !== -1) {
-      processedContent = lines.slice(firstH1Index + 1).join('\n');
+    let processedContent = props.content;
+
+    if (props.removeFirstH1) {
+        // 移除第一个一级标题
+        const lines = props.content.split('\n');
+        let firstH1Index = lines.findIndex(line => line.startsWith('# '));
+
+        if (firstH1Index !== -1) {
+            processedContent = lines.slice(firstH1Index + 1).join('\n');
+        }
     }
-  }
 
-  // 设置 marked 选项
-  const renderer = new marked.Renderer();
-  marked.setOptions({
-    renderer: renderer,
-    gfm: true,
-    breaks: true,
-    sanitize: false,
-    smartLists: true,
-    smartypants: false,
-    xhtml: false
-  });
+    // 设置 marked 选项
+    const renderer = new marked.Renderer();
+    marked.setOptions({
+        renderer: renderer,
+        gfm: true,
+        breaks: true,
+        sanitize: false,
+        smartLists: true,
+        smartypants: false,
+        xhtml: false
+    });
 
-  return marked(processedContent);
+    return marked(processedContent);
 });
 </script>
 
 <template>
-  <div class="markdown-content" v-html="renderedContent"></div>
+    <div class="markdown-content" v-html="renderedContent"></div>
 </template>
 
 <style scoped>

@@ -12,49 +12,54 @@ const isLoggedIn = ref(false);
 const currentUser = ref(null);
 
 const login = (user) => {
-  isLoggedIn.value = true;
-  currentUser.value = user;
-  localStorage.setItem('user', JSON.stringify(user));
+    isLoggedIn.value = true;
+    currentUser.value = user;
+    localStorage.setItem('user', JSON.stringify(user));
 };
 
 const logout = () => {
-  isLoggedIn.value = false;
-  currentUser.value = null;
-  localStorage.removeItem('user');
+    isLoggedIn.value = false;
+    currentUser.value = null;
+    localStorage.removeItem('user');
 };
 
 // 提供登录状态和方法给子组件
 provide('auth', {
-  isLoggedIn,
-  currentUser,
-  login,
-  logout
+    isLoggedIn,
+    currentUser,
+    login,
+    logout
 });
 
 onMounted(() => {
-  // 模拟页面加载完成
-  setTimeout(() => {
-    isLoading.value = false;
-  }, 500);
-  
-  // 添加全局错误处理
-  window.addEventListener('error', (event) => {
-    hasError.value = true;
-    errorMessage.value = event.message || '页面加载出错';
-    console.error('页面错误:', event);
-  });
+    // 模拟页面加载完成
+    setTimeout(() => {
+        isLoading.value = false;
+    }, 500);
 
-  // 检查本地存储中的用户信息
-  const savedUser = localStorage.getItem('user');
-  if (savedUser) {
-    try {
-      currentUser.value = JSON.parse(savedUser);
-      isLoggedIn.value = true;
-    } catch (e) {
-      console.error('无法解析存储的用户信息', e);
+    // 添加全局错误处理
+    window.addEventListener('error', (event) => {
+        hasError.value = true;
+        errorMessage.value = event.message || '页面加载出错';
+        console.error('页面错误:', event);
+    });
+
+    // 检查本地存储中的用户信息
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+        try {
+            currentUser.value = JSON.parse(savedUser);
+            isLoggedIn.value = true;
+        } catch (e) {
+            console.error('无法解析存储的用户信息', e);
+        }
     }
-  }
 });
+
+const reloadPage = () => {
+    window.location.reload();
+};
+
 </script>
 
 <template>
@@ -74,27 +79,24 @@ onMounted(() => {
         <button class="button" @click="window.location.reload()">重新加载</button>
       </div>
 
-      <!-- 正常内容（包含过渡） -->
-      <div v-else class="content-wrapper">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component 
-              :is="Component" 
-              class="route-content"
-              :key="$route.path" />
-          </transition>
-        </router-view>
-      </div>
-    </main>
-    <Footer />
-  </div>
+            <!-- 正常内容（包含过渡） -->
+            <div v-else class="content-wrapper">
+                <router-view v-slot="{ Component }">
+                    <transition name="fade" mode="out-in">
+                        <component :is="Component" class="route-content" :key="$route.path" />
+                    </transition>
+                </router-view>
+            </div>
+        </main>
+        <Footer />
+    </div>
 </template>
 
 <style>
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -149,8 +151,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .error-container {
