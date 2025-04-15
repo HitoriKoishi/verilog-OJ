@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue';
 import WaveDrom from 'wavedrom';
 import * as vcdParser from 'vcd-parser';
+import message from '../utils/message';
 
 const props = defineProps({
     vcdContent: {
@@ -9,13 +10,17 @@ const props = defineProps({
         default: ''
     }
 });
-
 const waveformElement = ref(null);
 
 // 将 VCD 内容转换为 WaveDrom JSON 格式
 const convertVcdToWaveDrom = async (vcdContent) => {
     try {
         console.log('VCD 内容1:', vcdContent);
+        // 移除 $dumpoff 之后的内容，因为它表示波形记录结束
+        const dumpoffIndex = vcdContent.indexOf('$dumpoff');
+        if (dumpoffIndex !== -1) {
+            vcdContent = vcdContent.substring(0, dumpoffIndex);
+        }
         const vcd = await vcdParser.parse(vcdContent);
         const waves = {
             signal: [],
@@ -25,31 +30,34 @@ const convertVcdToWaveDrom = async (vcdContent) => {
         };
         console.log('VCD 内容2:', vcd);
 
-        // 遍历 VCD 中的信号
-        Object.keys(vcd.signals).forEach(signalName => {
-            const signal = vcd.signals[signalName];
-            const wave = {
-                name: signalName,
-                wave: '',
-                data: []
-            };
+        // 检查并遍历 VCD 中的信号
+        if (vcd.signal && Array.isArray(vcd.signal)) {
+            vcd.signal.forEach(signal => {
+                const wave = {
+                    name: signal.signalName,
+                    wave: '',
+                    data: []
+                };
 
-            // 转换信号变化为 WaveDrom 格式
-            signal.changes.forEach((change, index) => {
-                if (index === 0 || change.value !== signal.changes[index - 1].value) {
-                    wave.wave += change.value === '1' ? 'h' : 'l';
-                    wave.data.push(change.value);
-                } else {
-                    wave.wave += '.';
+                // 转换信号变化为 WaveDrom 格式
+                if (signal.wave) {
+                    signal.wave.forEach((value, index) => {
+                        if (index === 0 || value !== signal.wave[index - 1]) {
+                            wave.wave += value === '1' ? 'h' : value === '0' ? 'l' : 'x';
+                            wave.data.push(value);
+                        } else {
+                            wave.wave += '.';
+                        }
+                    });
                 }
-            });
 
-            waves.signal.push(wave);
-        });
+                waves.signal.push(wave);
+            });
+        }
 
         return waves;
     } catch (err) {
-        console.error('VCD 解析错误:', err);
+        message.error('VCD 解析错误:', err);
         return null;
     }
 };
@@ -60,13 +68,13 @@ const renderWaveform = async () => {
 
     try {
         const waves = await convertVcdToWaveDrom(props.vcdContent);
-        if (waves) {
-            WaveDrom.RenderWaveForm(waveformElement.value, waves, {
+        if (waves) {            WaveDrom.renderWaveElement(1, waves, {
+                parentElement: waveformElement.value,
                 skin: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default'
             });
         }
     } catch (err) {
-        console.error('波形渲染错误:', err);
+        message.error('波形渲染错误:', err);
     }
 };
 

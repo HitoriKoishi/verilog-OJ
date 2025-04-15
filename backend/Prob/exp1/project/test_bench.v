@@ -23,7 +23,6 @@ initial begin
     #25 refrence_in = 0;
     #25 refrence_in = 1;
     #25 refrence_in = 0;
-    #25 $dumpoff; //结束记录波形
     $display("\n=== Simulation Summary ===");
     if (ifmismatch) begin
         $display("** x TEST FAILED! x **");

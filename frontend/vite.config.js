@@ -3,7 +3,14 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [vue()],
+    plugins: [vue()],    define: {
+        'process.env': {},
+        'process.browser': true,
+        'process.nextTick': '((cb) => setTimeout(cb, 0))',
+        'global': 'globalThis',
+        'window.state': '{}',
+        'state': '{}',
+    },
     server: {
         proxy: {
             // 将所有API请求代理到Flask后端
