@@ -331,6 +331,7 @@ const getAiAnalysis = async () => {
             <!-- 左侧面板：题目描述、日志和波形 -->
             <div class="left-panel">
                 <!-- 描述部分 -->
+                <!-- eslint-disable-next-line vue/no-v-model-argument -->
                 <CollapsibleSection title="题目描述" v-model:isExpanded="descriptionExpanded" :isDarkMode="isDarkMode">
                     <div class="problem-description">
                         <h1>{{ problem.title }}</h1>
@@ -350,6 +351,7 @@ const getAiAnalysis = async () => {
                 </CollapsibleSection>
 
                 <!-- 日志部分 -->
+                <!-- eslint-disable-next-line vue/no-v-model-argument -->
                 <CollapsibleSection title="运行日志" v-model:isExpanded="logExpanded" :status="logSectionStatus"
                     :isDarkMode="isDarkMode">
                     <div>
@@ -368,6 +370,7 @@ const getAiAnalysis = async () => {
                 </CollapsibleSection>
 
                 <!-- 波形部分 -->
+                <!-- eslint-disable-next-line vue/no-v-model-argument -->
                 <CollapsibleSection title="波形显示" v-model:isExpanded="waveformExpanded" :isDarkMode="isDarkMode">
                     <WaveformViewer :vcdContent="currentWaveform" />
                 </CollapsibleSection>
