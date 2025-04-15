@@ -125,7 +125,7 @@ onMounted(() => {
             <div v-else class="content-wrapper">
                 <router-view v-slot="{ Component }">
                     <transition name="fade" mode="out-in">
-                        <component :is="Component" class="route-content" :key="$route.path" />
+                        <component :is="Component" :key="$route.path" />
                     </transition>
                 </router-view>
             </div>
@@ -147,7 +147,6 @@ body {
     line-height: 1.6;
     color: var(--text-primary);
     background-color: var(--surface-color);
-    overflow-x: hidden;
 }
 
 .app {
@@ -155,25 +154,14 @@ body {
     display: flex;
     flex-direction: column;
     background-color: var(--surface-color);
-    overflow-x: hidden;
-    /* 防止水平滚动 */
 }
 
 .main-content {
     flex: 1;
-    position: relative;
-    /* display: flex; */
-    flex-direction: column;
-    padding: var(--spacing-lg);
-    min-height: 100px;
     width: 90%;
     max-width: var(--container-xl);
     margin: 0 auto;
-}
-
-.content-wrapper {
-    position: relative;
-    min-height: 400px;
+    padding: var(--spacing-lg) 0;
 }
 
 .loading-container {
@@ -195,13 +183,8 @@ body {
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .error-container {
@@ -210,53 +193,28 @@ body {
     margin: 0 auto;
 }
 
-a {
-    text-decoration: none;
-    color: var(--primary-color);
-    transition: color var(--transition-fast);
+/* 路由过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity var(--transition-normal);
 }
 
-a:hover {
-    color: var(--primary-hover);
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 
 /* 响应式布局 */
 @media screen and (max-width: 1200px) {
     .main-content {
         width: 95%;
-        padding: var(--spacing-md);
     }
 }
 
 @media screen and (max-width: 768px) {
     .main-content {
         width: 100%;
-        padding: var(--spacing-sm);
+        padding: var(--spacing-lg) var(--spacing-sm);
     }
-}
-
-/* 路由过渡动画 */
-.fade-enter-active,
-.fade-leave-active {
-    transition:
-        opacity var(--transition-normal),
-        transform var(--transition-normal);
-}
-
-.fade-enter-from {
-    opacity: 0;
-    transform: translateY(var(--spacing-sm));
-}
-
-.fade-leave-to {
-    opacity: 0;
-    transform: translateY(calc(var(--spacing-sm) * -1));
-}
-
-.route-content {
-    padding: var(--spacing-lg);
-    border-radius: var(--radius-lg);
-    margin: 0 auto;
-    max-width: var(--container-xl);
 }
 </style>

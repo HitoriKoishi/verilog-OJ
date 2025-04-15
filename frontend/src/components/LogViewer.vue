@@ -48,14 +48,14 @@ const formattedLog = computed(() => {
 <style scoped>
 .log-viewer {
   width: 100%;
-  font-family: Consolas, 'Courier New', Monaco, monospace;
+  font-family: var(--font-family-mono);
   font-size: 14px;
 }
 
 .log-content {
   background-color: var(--background-color);
-  font-family: Consolas, 'Courier New', Monaco, monospace;
-  color: var(--text-primary);
+  font-family: var(--font-family-mono);
+  color: var(--log-normal-text);
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin: 0;
@@ -63,15 +63,14 @@ const formattedLog = computed(() => {
   word-wrap: break-word;
   max-height: 400px;
   overflow-y: auto;
+  font-size: 16px;
   border: 1px solid var(--border-color);
 }
 
 .log-empty {
   text-align: center;
-  padding: var(--spacing-lg);
-  background-color: var(--surface-color);
-  border-radius: var(--radius-md);
-  margin: 0;
+  padding: var(--spacing-xl);
+  font-family: var(--font-family-base);
 }
 
 :deep(.log-error) {

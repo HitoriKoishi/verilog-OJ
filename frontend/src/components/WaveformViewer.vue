@@ -92,9 +92,7 @@ onMounted(() => {
 <template>
     <div class="waveform-viewer">
         <div v-if="vcdContent" ref="waveformElement" class="waveform-container"></div>
-        <div v-else class="no-waveform">
-            暂无波形数据
-        </div>
+        <p v-else class="no-waveform text-secondary">暂无波形数据</p>
     </div>
 </template>
 
@@ -106,14 +104,12 @@ onMounted(() => {
 
 .waveform-container {
   padding: var(--spacing-lg);
-  background-color: var(--background-color);
   min-height: 200px;
 }
 
 .no-waveform {
   text-align: center;
   padding: var(--spacing-xl);
-  background-color: var(--surface-color);
 }
 
 /* 波形样式定制 */

@@ -1,13 +1,4 @@
-/* 基础淡入淡出动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity var(--transition-normal);
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+/* 基础淡入淡出动画已移至App.vue */
 
 /* 从下往上滑入 */
 .slide-up-enter-active,
