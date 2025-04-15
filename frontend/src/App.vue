@@ -23,9 +23,13 @@ provide('theme', {
     toggleTheme
 });
 
+const currentUser = ref({ username: '', email: '' });
 // 用户登录状态管理
 const isLoggedIn = ref(false);
-const currentUser = ref(null);
+
+const updateUserInfo = (newInfo) => {
+    currentUser.value = { ...currentUser.value, ...newInfo };
+};
 
 const reloadPage = () => {
     window.location.reload();
@@ -43,12 +47,15 @@ const logout = () => {
     localStorage.removeItem('user');
 };
 
+
+
 // 提供登录状态和方法给子组件
 provide('auth', {
     isLoggedIn,
     currentUser,
     login,
-    logout
+    logout,
+    updateUserInfo
 });
 
 onMounted(() => {

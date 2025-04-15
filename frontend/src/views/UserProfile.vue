@@ -1,8 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, inject } from 'vue';
 import { useRouter } from 'vue-router'
 import { problemApi, userApi } from '../api';
-import axios from 'axios'; // 添加axios导入
+
+
+
 const router = useRouter();
 
 // 用户数据
@@ -39,7 +41,10 @@ const passwordSubmitting = ref(false);
 // 提示消息
 const message = ref('');
 const messageType = ref('');
+const showMessage = ref(false);
 
+const auth = inject('auth', {});
+const updateUserInfo = auth.updateUserInfo;
 // 获取用户数据
 onMounted(async () => {
     try {
@@ -117,6 +122,20 @@ const updateUsername = async () => {
         userData.value.username = usernameForm.value.newUsername;
         usernameForm.value.newUsername = '';
 
+        if (updateUserInfo) {
+            updateUserInfo({ username: userData.value.username });
+            const savedUser = localStorage.getItem('user');
+            if (savedUser) {
+                try {
+                    const userObj = JSON.parse(savedUser);
+                    userObj.username = userData.value.username;
+                    localStorage.setItem('user', JSON.stringify(userObj));
+                } catch (e) {
+                    console.error('无法更新存储的用户信息', e);
+                }
+            }
+        }
+
         message.value = '用户名修改成功';
         messageType.value = 'success';
     } catch (error) {
@@ -170,6 +189,23 @@ const updatePassword = async () => {
 const goToProblem = (problemId) => {
     router.push(`/problem/${problemId}`)
 };
+
+watch(message, (newVal) => {
+    if (newVal) {
+        // 如果有消息，显示它
+        showMessage.value = true;
+
+        // 5秒后开始淡出
+        setTimeout(() => {
+            showMessage.value = false;
+
+            // 等待淡出动画完成后清空消息
+            setTimeout(() => {
+                message.value = '';
+            }, 500); // 与CSS过渡时间匹配
+        }, 2000);
+    }
+}, { immediate: true });
 </script>
 
 <template>
@@ -234,9 +270,11 @@ const goToProblem = (problemId) => {
                 </form>
             </div>
 
-            <div v-if="message" :class="['message', messageType, 'card']">
-                {{ message }}
-            </div>
+            <transition name="fade">
+                <div v-if="message && showMessage" :class="['message', messageType, 'card']">
+                    {{ message }}
+                </div>
+            </transition>
             <!-- 修改密码 -->
             <div class="account-section card">
                 <h2 class="text-primary">修改密码</h2>
@@ -380,6 +418,16 @@ h1 {
     background-color: color-mix(in srgb, var(--error-color) 10%, transparent);
     color: var(--error-color);
     border: 1px solid var(--error-color);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 
 @media (max-width: 768px) {
