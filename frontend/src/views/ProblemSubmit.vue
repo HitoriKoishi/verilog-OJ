@@ -519,9 +519,9 @@ pre {
 
     .problem-description,
     .waveform-content {
-        background-color: #1a1a1a;
-        border-color: #2d2d2d;
-        color: #e0e0e0;
+        background-color: #ffffff;
+        border-color: #e0e0e0;
+        color: #1e1e1e;
     }
 }
 </style>

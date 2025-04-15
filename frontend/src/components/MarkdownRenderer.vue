@@ -124,28 +124,4 @@ const renderedContent = computed(() => {
 .markdown-content :deep(th) {
     background-color: #f2f2f2;
 }
-
-/* 暗色主题支持 */
-@media (prefers-color-scheme: dark) {
-    .markdown-content {
-        color: #e0e0e0;
-    }
-
-    .markdown-content :deep(pre) {
-        background-color: #2d2d2d;
-    }
-
-    .markdown-content :deep(code) {
-        background-color: #2d2d2d;
-    }
-
-    .markdown-content :deep(th),
-    .markdown-content :deep(td) {
-        border-color: #444;
-    }
-
-    .markdown-content :deep(th) {
-        background-color: #2d2d2d;
-    }
-}
 </style>

@@ -27,9 +27,9 @@ const passwordForm = ref({
 const progressData = ref([]);
 // 添加进度统计相关数据
 const progressStats = ref({
-  total: 0,
-  passed: 0,
-  submitted: 0
+    total: 0,
+    passed: 0,
+    submitted: 0
 });
 
 // 表单提交状态
@@ -73,19 +73,19 @@ onMounted(async () => {
 
 // 获取刷题进度
 const getProgressStatus = async () => {
-  try {
-    const progressResponse = await problemApi.getProblemStatus({ withCredentials: true });
-    progressData.value = progressResponse.data;
-    
-    // 计算统计信息
-    progressStats.value = {
-      total: progressData.value.length,
-      passed: progressData.value.filter(p => p.completion_status === '已完成').length,
-      submitted: progressData.value.filter(p => p.completion_status !== '未完成').length
-    };
-  } catch (error) {
-    console.error('获取进度失败:', error);
-  }
+    try {
+        const progressResponse = await problemApi.getProblemStatus({ withCredentials: true });
+        progressData.value = progressResponse.data;
+
+        // 计算统计信息
+        progressStats.value = {
+            total: progressData.value.length,
+            passed: progressData.value.filter(p => p.completion_status === '已完成').length,
+            submitted: progressData.value.filter(p => p.completion_status !== '未完成').length
+        };
+    } catch (error) {
+        console.error('获取进度失败:', error);
+    }
 };
 
 // 根据完成状态返回按钮的样式
@@ -109,9 +109,10 @@ const updateUsername = async () => {
 
     try {
         // 实际API调用
-        const response = await userApi.newUsername({
-            newUsername: usernameForm.value.newUsername
-        }, { withCredentials: true });
+        console.log("发送数据:", { newUsername: usernameForm.value.newUsername });
+        const response = await userApi.updateUsername(
+            usernameForm.value.newUsername,
+            { withCredentials: true });
 
         // 更新本地数据
         userData.value.username = usernameForm.value.newUsername;
@@ -120,6 +121,8 @@ const updateUsername = async () => {
         message.value = '用户名修改成功';
         messageType.value = 'success';
     } catch (error) {
+        console.error('更新用户名失败:', error);
+        console.log('错误响应:', error.response);
         message.value = error.response?.data?.error || '修改失败，请稍后重试';
         messageType.value = 'error';
     } finally {
@@ -146,10 +149,9 @@ const updatePassword = async () => {
 
     try {
         // 实际API调用
-        const response = await userApi.updatePassword({
-            currentPassword: passwordForm.value.currentPassword,
-            newPassword: passwordForm.value.newPassword
-        }, { withCredentials: true });
+        const response = await userApi.updatePassword(
+            passwordForm.value.currentPassword,
+            passwordForm.value.newPassword, { withCredentials: true });
 
         // 清空表单
         passwordForm.value.currentPassword = '';
@@ -168,7 +170,7 @@ const updatePassword = async () => {
 
 // 跳转题目
 const goToProblem = (problemId) => {
-  router.push(`/problem/${problemId}`)
+    router.push(`/problem/${problemId}`)
 };
 </script>
 
@@ -191,40 +193,34 @@ const goToProblem = (problemId) => {
             </div>
 
             <!-- 消息提示 -->
-            <div v-if="message" :class="['message', messageType]">
-                {{ message }}
-            </div>
+
 
             <!-- 统计信息 -->
             <div class="progress-section">
-              <h2>进度</h2>
-              <!-- 添加统计卡片 -->
-              <div class="stats-container">
-                <div class="stat-card">
-                  <div class="stat-value">{{ progressStats.passed }}</div>
-                  <div class="stat-label">已通过</div>
+                <h2>进度</h2>
+                <!-- 添加统计卡片 -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ progressStats.passed }}</div>
+                        <div class="stat-label">已通过</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ progressStats.submitted }}</div>
+                        <div class="stat-label">已提交</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ progressStats.total }}</div>
+                        <div class="stat-label">总题数</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                  <div class="stat-value">{{ progressStats.submitted }}</div>
-                  <div class="stat-label">已提交</div>
+                <!-- 问题按钮 -->
+                <div class="problem-buttons">
+                    <button v-for="problem in progressData" :key="problem.id"
+                        :class="getButtonClass(problem.completion_status)" @click="goToProblem(problem.id)"
+                        :title="`查看题目 ${problem.id}`">
+                        {{ problem.id }}
+                    </button>
                 </div>
-                <div class="stat-card">
-                  <div class="stat-value">{{ progressStats.total }}</div>
-                  <div class="stat-label">总题数</div>
-                </div>
-              </div>
-              <!-- 问题按钮 -->
-              <div class="problem-buttons">
-                <button
-                  v-for="problem in progressData"
-                  :key="problem.id"
-                  :class="getButtonClass(problem.completion_status)"
-                  @click="goToProblem(problem.id)"
-                  :title="`查看题目 ${problem.id}`"
-                >
-                  {{ problem.id }}
-                </button>
-              </div>
             </div>
 
             <!-- 修改用户名 -->
@@ -242,7 +238,9 @@ const goToProblem = (problemId) => {
                     </button>
                 </form>
             </div>
-
+            <div v-if="message" :class="['message', messageType]">
+                {{ message }}
+            </div>
             <!-- 修改密码 -->
             <div class="account-section">
                 <h2>修改密码</h2>
@@ -336,84 +334,85 @@ input {
 }
 
 button {
-  background-color: #1eac2a;
-  min-width: 60px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: white;
+    background-color: #1eac2a;
+    min-width: 60px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: white;
 }
 
 /* 悬停效果 */
 button:hover {
-  background-color: #45a049;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background-color: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 button:active {
     background-color: #1eac2a;
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 禁用状态 */
 button:disabled {
-  background-color: #cccccc;
-  opacity: 0.7;
-  cursor: not-allowed;
-  filter: grayscale(0.3);
+    background-color: #cccccc;
+    opacity: 0.7;
+    cursor: not-allowed;
+    filter: grayscale(0.3);
 }
 
 .problem-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px; /* 添加按钮间距 */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    /* 添加按钮间距 */
 }
 
 /* 统计卡片样式 */
 .stats-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
 .stat-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #1eac2a;
-  margin-bottom: 8px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #1eac2a;
+    margin-bottom: 8px;
 }
 
 /* 状态颜色优化 */
 button.green {
-  background: #1eac2a;
+    background: #1eac2a;
 }
 
 button.red {
-  background: #d84130;
+    background: #d84130;
 }
 
 button.yellow {
-  background: #f39c12;
+    background: #f39c12;
 }
 
 button.gray {
-  background: #95a5a6;
+    background: #95a5a6;
 }
 
 .message {
@@ -448,15 +447,15 @@ button.gray {
     }
 
     .stats-container {
-      grid-template-columns: 1fr;
+        grid-template-columns: 1fr;
     }
-    
+
     .stat-card {
-      padding: 15px;
+        padding: 15px;
     }
-    
+
     .stat-value {
-      font-size: 20px;
+        font-size: 20px;
     }
 }
 </style>

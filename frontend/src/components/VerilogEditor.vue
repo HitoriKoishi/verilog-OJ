@@ -151,8 +151,8 @@ onUnmounted(() => {
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
     .editor-container {
-        border-color: #e0e0e0;
         background-color: #ffffff;
+        border-color: #ddd;
     }
 
     .editor-container :deep(.cm-gutters) {

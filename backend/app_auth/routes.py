@@ -99,7 +99,9 @@ def getUserProfile():
 @login_required
 def updateUsername():
     """更新用户名"""
-    new_username = request.get_json().get('newUsername')
+    print("接收到的请求数据:", request.get_json())
+    data = request.get_json()
+    new_username = data.get('newUsername') if data else None
     
     if not new_username:
         return jsonify({"error": "新用户名不能为空"}), 400
@@ -108,11 +110,14 @@ def updateUsername():
     if User.query.filter(User.username == new_username, User.id != current_user.id).first():
         return jsonify({"error": "该用户名已被使用"}), 409
     
-    user = User.query.get(current_user.id)
-    user.username = new_username
-    db.session.commit()
-    
-    return jsonify({"status": "success", "username": new_username})
+    try:
+        user = User.query.get(current_user.id)
+        user.username = new_username
+        db.session.commit()
+        return jsonify({"status": "success", "username": new_username}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "服务器内部错误"}), 500
 
 # ---------- 更新密码 ----------
 @user_bp.route('/update_password', methods=['POST'])

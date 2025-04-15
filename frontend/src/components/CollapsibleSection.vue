@@ -1,204 +1,231 @@
 <script setup>
 const props = defineProps({
-  title: {
-    type: String,
-    required: true
-  },
-  isExpanded: {
-    type: Boolean,
-    default: false
-  },
-  status: {
-    type: String,
-    default: 'default',  // 可选值: 'default', 'success', 'error'
-  }
+    title: {
+        type: String,
+        required: true
+    },
+    isExpanded: {
+        type: Boolean,
+        default: false
+    },
+    status: {
+        type: String,
+        default: 'default',  // 可选值: 'default', 'success', 'error'
+    }
 });
 
 const emit = defineEmits(['update:isExpanded']);
 
 const toggleExpand = () => {
-  emit('update:isExpanded', !props.isExpanded);
+    emit('update:isExpanded', !props.isExpanded);
 };
 
 // 动画处理函数
 const enter = (element) => {
-  const height = element.scrollHeight;
-  element.style.height = '0px';
-  // 触发重绘
-  element.offsetHeight;
-  element.style.height = height + 'px';
+    const height = element.scrollHeight;
+    element.style.height = '0px';
+    // 触发重绘
+    element.offsetHeight;
+    element.style.height = height + 'px';
 };
 
 const afterEnter = (element) => {
-  element.style.height = 'auto';
+    element.style.height = 'auto';
 };
 
 const leave = (element) => {
-  const height = element.scrollHeight;
-  element.style.height = height + 'px';
-  // 触发重绘
-  element.offsetHeight;
-  element.style.height = '0px';
+    const height = element.scrollHeight;
+    element.style.height = height + 'px';
+    // 触发重绘
+    element.offsetHeight;
+    element.style.height = '0px';
 };
 </script>
 
 <template>
-  <div class="section" :class="[`status-${status}`]">
-    <div class="section-header" @click="toggleExpand">
-      <h2>{{ title }}</h2>
-      <span class="expand-icon" :class="{ 'is-expanded': isExpanded }">▶</span>
-    </div>
-    <transition 
-      name="collapse"
-      @enter="enter"
-      @after-enter="afterEnter"
-      @leave="leave"
-    >
-      <div v-show="isExpanded" class="section-content">
-        <div class="section-inner">
-          <slot></slot>
+    <div class="section" :class="[`status-${status}`]">
+        <div class="section-header" @click="toggleExpand">
+            <h2>{{ title }}</h2>
+            <span class="expand-icon" :class="{ 'is-expanded': isExpanded }">▶</span>
         </div>
-      </div>
-    </transition>
-  </div>
+        <transition name="collapse" @enter="enter" @after-enter="afterEnter" @leave="leave">
+            <div v-show="isExpanded" class="section-content">
+                <div class="section-inner">
+                    <slot></slot>
+                </div>
+            </div>
+        </transition>
+    </div>
 </template>
 
 <style scoped>
 .section {
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.6s ease;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.6s ease;
 }
 
 /* 默认状态 */
 .section.status-default {
-  border-color: #e0e0e0;
+    border-color: #e0e0e0;
 }
 
 /* 成功状态 */
 .section.status-success {
-  border-color: #74e678;
-  box-shadow: #4caf50 0 0 3px;
-  animation: borderPulseSuccess 2s ease-out;
+    border-color: #74e678;
+    box-shadow: #4caf50 0 0 3px;
+    animation: borderPulseSuccess 2s ease-out;
 }
 
 /* 失败状态 */
 .section.status-error {
-  border-color: #fd695e;
-  box-shadow: #f44336 0 0 3px;
-  animation: borderPulseError 2s ease-out;
+    border-color: #fd695e;
+    box-shadow: #f44336 0 0 3px;
+    animation: borderPulseError 2s ease-out;
 }
 
 @keyframes borderPulseSuccess {
-  0% { border-color: #e0e0e0; }
-  50% { border-color: #4caf50; }
-  100% { border-color: #4caf50; }
+    0% {
+        border-color: #e0e0e0;
+    }
+
+    50% {
+        border-color: #4caf50;
+    }
+
+    100% {
+        border-color: #4caf50;
+    }
 }
 
 @keyframes borderPulseError {
-  0% { border-color: #e0e0e0; }
-  50% { border-color: #f44336; }
-  100% { border-color: #f44336; }
+    0% {
+        border-color: #e0e0e0;
+    }
+
+    50% {
+        border-color: #f44336;
+    }
+
+    100% {
+        border-color: #f44336;
+    }
 }
 
 .section-header {
-  padding: 12px 20px;
-  background-color: #ffffff;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  user-select: none;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.2s ease;
+    padding: 12px 20px;
+    background-color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
 }
 
 .section-header:hover {
-  background-color: #fafafa;
+    background-color: #fafafa;
 }
 
 .section-header h2 {
-  margin: 0;
-  font-size: 1.1em;
-  color: #333;
+    margin: 0;
+    font-size: 1.1em;
+    color: #333;
 }
 
 .expand-icon {
-  font-size: 16px;
-  color: #888;
-  transition: transform 0.3s ease;
+    font-size: 16px;
+    color: #888;
+    transition: transform 0.3s ease;
 }
 
 .expand-icon.is-expanded {
-  transform: rotate(90deg);
+    transform: rotate(90deg);
 }
 
 .section-content {
-  overflow: hidden;
-  transition: height 0.3s ease-in-out;
-  background-color: transparent;
+    overflow: hidden;
+    transition: height 0.3s ease-in-out;
+    background-color: transparent;
 }
 
 .section-inner {
-  padding: 20px;
+    padding: 20px;
 }
 
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
-  .section {
-    border-color: #2d2d2d;
-    background-color: #1a1a1a;
-  }
+    .section {
+        border-color: #e0e0e0;
+        background-color: #ffffff;
+    }
 
-  .section.status-default {
-    border-color: #2d2d2d;
-  }
-  
-  .section.status-success {
-    border-color: #43a047;
-  }
-  
-  .section.status-error {
-    border-color: #e53935;
-  }
+    .section.status-default {
+        border-color: #e0e0e0;
+    }
 
-  @keyframes borderPulseSuccess {
-    0% { border-color: #2d2d2d; }
-    50% { border-color: #43a047; }
-    100% { border-color: #43a047; }
-  }
+    .section.status-success {
+        border-color: #43a047;
+    }
 
-  @keyframes borderPulseError {
-    0% { border-color: #2d2d2d; }
-    50% { border-color: #e53935; }
-    100% { border-color: #e53935; }
-  }
+    .section.status-error {
+        border-color: #e53935;
+    }
 
-  .section-header {
-    background-color: #1a1a1a;
-    border-bottom-color: #2d2d2d;
-  }
+    @keyframes borderPulseSuccess {
+        0% {
+            border-color: #2d2d2d;
+        }
 
-  .section-header:hover {
-    background-color: #242424;
-  }
+        50% {
+            border-color: #43a047;
+        }
 
-  .section-header h2 {
-    color: #e0e0e0;
-  }
+        100% {
+            border-color: #43a047;
+        }
+    }
 
-  .expand-icon {
-    color: #666;
-  }
+    @keyframes borderPulseError {
+        0% {
+            border-color: #2d2d2d;
+        }
+
+        50% {
+            border-color: #e53935;
+        }
+
+        100% {
+            border-color: #e53935;
+        }
+    }
+
+    .section-header {
+        background-color: #ffffff;
+        border-bottom-color: #e0e0e0;
+    }
+
+    .section-header:hover {
+        background-color: #6cf;
+    }
+
+    .section-header h2 {
+        color: #1a1a1a;
+    }
+
+    .expand-icon {
+        color: #666;
+    }
 }
 
 @media (max-width: 900px) {
-  .section-inner {
-    padding: 15px;
-  }
+    .section-inner {
+        padding: 15px;
+    }
 }
 </style>
