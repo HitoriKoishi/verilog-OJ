@@ -348,9 +348,8 @@ const getAiAnalysis = async () => {
                         <LogViewer :content="currentLog" class="mb-md" />
                         <!-- AI分析结果显示 -->
                         <div v-if="showAiAnalysis && aiAnalysisResult" class="mt-lg pt-md border-t">
-                            <h3 class="text-lg mb-sm">AI分析结果</h3>
                             <div class="card card-info">
-                                <div class="card-body" v-html="marked(aiAnalysisResult)"></div>
+                                <MarkdownRenderer :content="aiAnalysisResult" class="text-base" />
                             </div>
                         </div>
                     </div>
@@ -365,7 +364,7 @@ const getAiAnalysis = async () => {
             </div>
 
             <!-- 右侧面板：代码编辑器 -->
-            <div class="flex flex-col gap-md sticky top-0">
+            <div class="flex flex-col gap-md">
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">代码编辑器</h2>

@@ -11,7 +11,6 @@ import './styles/forms.css'
 import './styles/cards.css'
 import './styles/animations.css'
 import './styles/loading.css'
-import './style.css'
 
 const app = createApp(App)
 app.use(router)
