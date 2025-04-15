@@ -1,6 +1,6 @@
 <script setup>
 // 移除原有的编辑器相关导入
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import message from '../utils/message';
 import { useRoute } from 'vue-router';
 import { problemApi, submissionApi, aiApi } from '../api';
@@ -19,6 +19,23 @@ const loading = ref(true);
 const error = ref(null);
 const verilogCode = ref('');
 const editorRef = ref(null);
+
+// 添加夜间模式状态
+const isDarkMode = ref(false);
+
+// 切换夜间模式
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value;
+  // 存储到localStorage，以便在页面刷新后保持状态
+  localStorage.setItem('verilog-oj-dark-mode', isDarkMode.value ? 'dark' : 'light');
+  
+  // 应用夜间模式到document body上，以便全局样式可以响应
+  if (isDarkMode.value) {
+    document.body.classList.add('dark-mode');
+  } else {
+    document.body.classList.remove('dark-mode');
+  }
+};
 
 // 获取单个题目的详细信息
 const fetchProblemDetail = async () => {
@@ -202,6 +219,13 @@ onMounted(async () => {
     console.log('组件挂载');
     await fetchProblemDetail();
     await loadDraft();
+
+    // 在组件挂载时读取localStorage中的夜间模式设置
+    const savedMode = localStorage.getItem('verilog-oj-dark-mode');
+    if (savedMode === 'dark') {
+        isDarkMode.value = true;
+        document.body.classList.add('dark-mode');
+    }
 });
 
 let autoSaveInterval;
@@ -286,7 +310,7 @@ const getAiAnalysis = async () => {
 </script>
 
 <template>
-  <div class="problem-submit">
+  <div class="problem-submit" :class="{ 'dark-theme': isDarkMode }">
     <div v-if="loading" class="loading">
       加载中...
     </div>
@@ -303,6 +327,7 @@ const getAiAnalysis = async () => {
         <CollapsibleSection 
           title="题目描述" 
           v-model:isExpanded="descriptionExpanded"
+          :isDarkMode="isDarkMode"
         >
           <div class="problem-description">
             <h1>{{ problem.title }}</h1>
@@ -326,6 +351,7 @@ const getAiAnalysis = async () => {
           title="运行日志" 
           v-model:isExpanded="logExpanded"
           :status="logSectionStatus"
+          :isDarkMode="isDarkMode"
         >
           <div>
             <div v-if="currentSubmissionId && currentLog" class="log-actions">
@@ -350,6 +376,7 @@ const getAiAnalysis = async () => {
         <CollapsibleSection 
           title="波形显示" 
           v-model:isExpanded="waveformExpanded"
+          :isDarkMode="isDarkMode"
         >
           <WaveformViewer :vcdContent="currentWaveform" />
         </CollapsibleSection>
@@ -369,6 +396,7 @@ const getAiAnalysis = async () => {
             ref="editorRef"
             v-model="verilogCode"
             class="editor-container"
+            :isDarkMode="isDarkMode"
           />
 
           <div class="submit-section">
@@ -377,6 +405,14 @@ const getAiAnalysis = async () => {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 夜间模式切换按钮 -->
+    <div class="theme-toggle">
+      <button @click="toggleDarkMode" class="theme-toggle-btn">
+        <span v-if="isDarkMode">☀️</span>
+        <span v-else>🌙</span>
+      </button>
     </div>
   </div>
 </template>
@@ -640,5 +676,119 @@ pre {
     padding: 2px 4px;
     border-radius: 3px;
     font-size: 0.9em;
+}
+
+/* 夜间模式切换按钮 */
+.theme-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--toggle-bg-color, #f0f0f0);
+  border: 2px solid var(--toggle-border-color, #ccc);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
+/* 夜间模式样式 */
+.dark-theme {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --border-color: #333;
+  --section-bg-color: #1e1e1e;
+  --button-bg-color: #2a2a2a;
+  --button-text-color: #e0e0e0;
+  --button-hover-color: #444;
+  --toggle-bg-color: #333;
+  --toggle-border-color: #666;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
+/* 默认主题（白天模式）变量 */
+.problem-submit {
+  --bg-color: #f8f8f8;
+  --text-color: #333;
+  --border-color: #ddd;
+  --section-bg-color: #fff;
+  --button-bg-color: #f0f0f0;
+  --button-text-color: #333;
+  --button-hover-color: #e0e0e0;
+  --toggle-bg-color: #f0f0f0;
+  --toggle-border-color: #ccc;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* 适应夜间模式的组件样式 */
+.dark-theme .problem-container {
+  background-color: var(--bg-color);
+}
+
+.dark-theme .left-panel,
+.dark-theme .right-panel {
+  background-color: var(--section-bg-color);
+  border-color: var(--border-color);
+}
+
+.dark-theme .problem-description,
+.dark-theme .log-content,
+.dark-theme .waveform-content {
+  background-color: var(--section-bg-color);
+  color: var(--text-color);
+}
+
+.dark-theme .control-btn,
+.dark-theme .submit-btn {
+  background-color: var(--button-bg-color);
+  color: var(--button-text-color);
+  border-color: var(--border-color);
+}
+
+.dark-theme .control-btn:hover,
+.dark-theme .submit-btn:hover {
+  background-color: var(--button-hover-color);
+}
+
+.dark-theme .tag {
+  background-color: #2d3748;
+  color: #a0aec0;
+}
+
+.dark-theme .ai-analysis-content {
+  background-color: #1a2233;
+  color: #e0e0e0;
+}
+
+.dark-theme .ai-analysis-content :deep(pre) {
+  background-color: #0f172a;
+}
+
+.dark-theme .ai-analysis-content :deep(code) {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+.dark-theme .ai-analyze-btn {
+  background-color: #1a365d;
+}
+
+.dark-theme .ai-analyze-btn:hover {
+  background-color: #2c5282;
 }
 </style>

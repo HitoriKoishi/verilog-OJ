@@ -11,6 +11,10 @@ const props = defineProps({
   status: {
     type: String,
     default: 'default',  // 可选值: 'default', 'success', 'error'
+  },
+  isDarkMode: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -43,7 +47,7 @@ const leave = (element) => {
 </script>
 
 <template>
-  <div class="section" :class="[`status-${status}`]">
+  <div class="section" :class="[`status-${status}`, { 'dark-theme': isDarkMode }]">
     <div class="section-header" @click="toggleExpand">
       <h2>{{ title }}</h2>
       <span class="expand-icon" :class="{ 'is-expanded': isExpanded }">▶</span>
@@ -147,53 +151,39 @@ const leave = (element) => {
   padding: 20px;
 }
 
-/* 暗色主题支持 */
-@media (prefers-color-scheme: dark) {
-  .section {
-    border-color: #2d2d2d;
-    background-color: #1a1a1a;
-  }
+/* 暗色主题样式 */
+.dark-theme {
+  border-color: #2d2d2d;
+  background-color: #1a1a1a;
+}
 
-  .section.status-default {
-    border-color: #2d2d2d;
-  }
-  
-  .section.status-success {
-    border-color: #43a047;
-  }
-  
-  .section.status-error {
-    border-color: #e53935;
-  }
+.dark-theme.status-default {
+  border-color: #2d2d2d;
+}
 
-  @keyframes borderPulseSuccess {
-    0% { border-color: #2d2d2d; }
-    50% { border-color: #43a047; }
-    100% { border-color: #43a047; }
-  }
+.dark-theme.status-success {
+  border-color: #43a047;
+}
 
-  @keyframes borderPulseError {
-    0% { border-color: #2d2d2d; }
-    50% { border-color: #e53935; }
-    100% { border-color: #e53935; }
-  }
+.dark-theme.status-error {
+  border-color: #e53935;
+}
 
-  .section-header {
-    background-color: #1a1a1a;
-    border-bottom-color: #2d2d2d;
-  }
+.dark-theme .section-header {
+  background-color: #1a1a1a;
+  border-bottom-color: #2d2d2d;
+}
 
-  .section-header:hover {
-    background-color: #242424;
-  }
+.dark-theme .section-header:hover {
+  background-color: #242424;
+}
 
-  .section-header h2 {
-    color: #e0e0e0;
-  }
+.dark-theme .section-header h2 {
+  color: #e0e0e0;
+}
 
-  .expand-icon {
-    color: #666;
-  }
+.dark-theme .expand-icon {
+  color: #666;
 }
 
 @media (max-width: 900px) {
