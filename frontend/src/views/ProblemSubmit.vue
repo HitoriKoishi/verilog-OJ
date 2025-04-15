@@ -25,16 +25,16 @@ const isDarkMode = ref(false);
 
 // 切换夜间模式
 const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value;
-  // 存储到localStorage，以便在页面刷新后保持状态
-  localStorage.setItem('verilog-oj-dark-mode', isDarkMode.value ? 'dark' : 'light');
-  
-  // 应用夜间模式到document body上，以便全局样式可以响应
-  if (isDarkMode.value) {
-    document.body.classList.add('dark-mode');
-  } else {
-    document.body.classList.remove('dark-mode');
-  }
+    isDarkMode.value = !isDarkMode.value;
+    // 存储到localStorage，以便在页面刷新后保持状态
+    localStorage.setItem('verilog-oj-dark-mode', isDarkMode.value ? 'dark' : 'light');
+
+    // 应用夜间模式到document body上，以便全局样式可以响应
+    if (isDarkMode.value) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
 };
 
 // 获取单个题目的详细信息
@@ -81,10 +81,10 @@ const fetchProblemDetail = async () => {
 const toggleSections = async () => {
     // 先关闭描述部分
     descriptionExpanded.value = false;
-    
+
     // 等待一小段时间后打开日志部分，确保动画能够顺序执行
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     // 打开日志部分
     logExpanded.value = true;
 };
@@ -103,7 +103,7 @@ const submitSolution = async () => {
         // 清空AI分析结果
         aiAnalysisResult.value = '';
         showAiAnalysis.value = false;
-        
+
         const submitResponse = await problemApi.submitSolution(problemId, verilogCode.value);
 
         if (!submitResponse.data || !submitResponse.data.submission_id) {
@@ -112,10 +112,10 @@ const submitSolution = async () => {
 
         currentSubmissionId.value = submitResponse.data.submission_id;
         message.success('代码提交成功，正在评测...');
-        
+
         // 使用新的动画控制函数
         await toggleSections();
-        
+
         setTimeout(() => {
             checkSubmissionResult(currentSubmissionId.value);
         }, 1000);
@@ -201,17 +201,17 @@ const loadDraft = async () => {
 
 // 更新编辑器内容的方法
 const updateEditorContent = (code) => {
-  if (editorRef.value) {
-    editorRef.value.updateContent(code);
-  }
+    if (editorRef.value) {
+        editorRef.value.updateContent(code);
+    }
 };
 
 // 清空编辑器内容
 const clearEditor = () => {
-  verilogCode.value = '';
-  if (editorRef.value) {
-    editorRef.value.clearContent();
-  }
+    verilogCode.value = '';
+    if (editorRef.value) {
+        editorRef.value.clearContent();
+    }
 };
 
 // 改进 onMounted 逻辑，在DOM渲染完成后再初始化编辑器
@@ -285,13 +285,13 @@ const getAiAnalysis = async () => {
         message.warning('请先提交代码');
         return;
     }
-    
+
     try {
         isAnalyzing.value = true;
         message.info('正在请求AI分析，请稍候...');
-        
+
         const response = await aiApi.getAnalysis(currentSubmissionId.value);
-        
+
         if (response.data && response.data.analysis) {
             aiAnalysisResult.value = response.data.analysis;
             showAiAnalysis.value = true;
@@ -310,111 +310,91 @@ const getAiAnalysis = async () => {
 </script>
 
 <template>
-  <div class="problem-submit" :class="{ 'dark-theme': isDarkMode }">
-    <div v-if="loading" class="loading">
-      加载中...
-    </div>
-
-    <div v-else-if="error" class="error">
-      <p>加载题目失败: {{ error }}</p>
-      <button @click="fetchProblemDetail">重试</button>
-    </div>
-
-    <div v-else-if="problem" class="problem-container">
-      <!-- 左侧面板：题目描述、日志和波形 -->
-      <div class="left-panel">
-        <!-- 描述部分 -->
-        <CollapsibleSection 
-          title="题目描述" 
-          v-model:isExpanded="descriptionExpanded"
-          :isDarkMode="isDarkMode"
-        >
-          <div class="problem-description">
-            <h1>{{ problem.title }}</h1>
-            <div class="difficulty"
-              :style="{ color: problem.difficulty === '简单' ? 'green' : (problem.difficulty === '中等' ? 'orange' : 'red') }">
-              难度: {{ problem.difficulty }}
-            </div>
-
-            <div class="tags-container" v-if="problem.tags && problem.tags.length">
-              <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
-                {{ tag }}
-              </span>
-            </div>
-
-            <MarkdownRenderer :content="problem.description" />
-          </div>
-        </CollapsibleSection>
-
-        <!-- 日志部分 -->
-        <CollapsibleSection 
-          title="运行日志" 
-          v-model:isExpanded="logExpanded"
-          :status="logSectionStatus"
-          :isDarkMode="isDarkMode"
-        >
-          <div>
-            <div v-if="currentSubmissionId && currentLog" class="log-actions">
-              <button 
-                @click="getAiAnalysis" 
-                class="ai-analyze-btn"
-                :disabled="isAnalyzing"
-              >
-                {{ isAnalyzing ? '分析中...' : 'AI智能分析' }}
-              </button>
-            </div>
-            <LogViewer :content="currentLog" />
-            <!-- AI分析结果显示 -->
-            <div v-if="showAiAnalysis && aiAnalysisResult" class="ai-analysis-section">
-              <h3>AI分析结果</h3>
-              <div class="ai-analysis-content" v-html="marked(aiAnalysisResult)"></div>
-            </div>
-          </div>
-        </CollapsibleSection>
-
-        <!-- 波形部分 -->
-        <CollapsibleSection 
-          title="波形显示" 
-          v-model:isExpanded="waveformExpanded"
-          :isDarkMode="isDarkMode"
-        >
-          <WaveformViewer :vcdContent="currentWaveform" />
-        </CollapsibleSection>
-      </div>
-
-      <!-- 右侧面板：代码编辑器 -->
-      <div class="right-panel">
-        <div class="code-editor">
-          <h2>代码编辑器</h2>
-          <div class="editor-controls">
-            <button @click="loadDraft" class="control-btn">加载草稿</button>
-            <button @click="saveDraft" class="control-btn">保存草稿</button>
-            <button @click="clearEditor" class="control-btn clear-btn">清空</button>
-          </div>
-
-          <VerilogEditor
-            ref="editorRef"
-            v-model="verilogCode"
-            class="editor-container"
-            :isDarkMode="isDarkMode"
-          />
-
-          <div class="submit-section">
-            <span class="auto-save-info">代码会每分钟自动保存</span>
-            <button @click="submitSolution" class="submit-btn">提交解答</button>
-          </div>
+    <div class="problem-submit" :class="{ 'dark-theme': isDarkMode }">
+        <div v-if="loading" class="loading">
+            加载中...
         </div>
-      </div>
-    </div>
 
-    <!-- 夜间模式切换按钮 -->
-    <div class="theme-toggle">
-      <button @click="toggleDarkMode" class="theme-toggle-btn">
-        <span v-if="isDarkMode">☀️</span>
-        <span v-else>🌙</span>
-      </button>
+        <div v-else-if="error" class="error">
+            <p>加载题目失败: {{ error }}</p>
+            <button @click="fetchProblemDetail">重试</button>
+        </div>
+
+        <div v-else-if="problem" class="problem-container">
+            <!-- 左侧面板：题目描述、日志和波形 -->
+            <div class="left-panel">
+                <!-- 描述部分 -->
+                <CollapsibleSection title="题目描述" v-model:isExpanded="descriptionExpanded" :isDarkMode="isDarkMode">
+                    <div class="problem-description">
+                        <h1>{{ problem.title }}</h1>
+                        <div class="difficulty"
+                            :style="{ color: problem.difficulty === '简单' ? 'green' : (problem.difficulty === '中等' ? 'orange' : 'red') }">
+                            难度: {{ problem.difficulty }}
+                        </div>
+
+                        <div class="tags-container" v-if="problem.tags && problem.tags.length">
+                            <span v-for="(tag, index) in problem.tags" :key="index" class="tag">
+                                {{ tag }}
+                            </span>
+                        </div>
+
+                        <MarkdownRenderer :content="problem.description" />
+                    </div>
+                </CollapsibleSection>
+
+                <!-- 日志部分 -->
+                <CollapsibleSection title="运行日志" v-model:isExpanded="logExpanded" :status="logSectionStatus"
+                    :isDarkMode="isDarkMode">
+                    <div>
+                        <div v-if="currentSubmissionId && currentLog" class="log-actions">
+                            <button @click="getAiAnalysis" class="ai-analyze-btn" :disabled="isAnalyzing">
+                                {{ isAnalyzing ? '分析中...' : 'AI智能分析' }}
+                            </button>
+                        </div>
+                        <LogViewer :content="currentLog" />
+                        <!-- AI分析结果显示 -->
+                        <div v-if="showAiAnalysis && aiAnalysisResult" class="ai-analysis-section">
+                            <h3>AI分析结果</h3>
+                            <div class="ai-analysis-content" v-html="marked(aiAnalysisResult)"></div>
+                        </div>
+                    </div>
+                </CollapsibleSection>
+
+                <!-- 波形部分 -->
+                <CollapsibleSection title="波形显示" v-model:isExpanded="waveformExpanded" :isDarkMode="isDarkMode">
+                    <WaveformViewer :vcdContent="currentWaveform" />
+                </CollapsibleSection>
+            </div>
+
+            <!-- 右侧面板：代码编辑器 -->
+            <div class="right-panel">
+                <div class="code-editor">
+                    <h2>代码编辑器</h2>
+                    <div class="editor-controls">
+                        <button @click="loadDraft" class="control-btn">加载草稿</button>
+                        <button @click="saveDraft" class="control-btn">保存草稿</button>
+                        <button @click="clearEditor" class="control-btn clear-btn">清空</button>
+                    </div>
+
+                    <VerilogEditor ref="editorRef" v-model="verilogCode" class="editor-container"
+                        :isDarkMode="isDarkMode" />
+
+                    <div class="submit-section">
+                        <span class="auto-save-info">代码会每分钟自动保存</span>
+                        <button @click="submitSolution" class="submit-btn">提交解答</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 夜间模式切换按钮 -->
+        <div class="theme-toggle">
+            <button @click="toggleDarkMode" class="theme-toggle-btn">
+                <span v-if="isDarkMode">☀️</span>
+                <span v-else>🌙</span>
+            </button>
+        </div>
     </div>
-  </div>
 </template>
 
 <style scoped>
@@ -507,8 +487,8 @@ const getAiAnalysis = async () => {
 }
 
 .editor-container {
-  flex: 1;
-  min-height: 0;
+    flex: 1;
+    min-height: 0;
 }
 
 .submit-section {
@@ -551,7 +531,8 @@ const getAiAnalysis = async () => {
 
 @media (max-width: 1200px) {
     .problem-container {
-        grid-template-columns: 1fr; /* 在小屏幕上变为单列 */
+        grid-template-columns: 1fr;
+        /* 在小屏幕上变为单列 */
     }
 
     .right-panel {
@@ -560,7 +541,8 @@ const getAiAnalysis = async () => {
     }
 
     .editor-container {
-        height: 500px; /* 在小屏幕上固定高度 */
+        height: 500px;
+        /* 在小屏幕上固定高度 */
     }
 }
 
@@ -608,6 +590,7 @@ pre {
 
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
+
     .problem-description,
     .waveform-content {
         background-color: #1a1a1a;
@@ -680,115 +663,115 @@ pre {
 
 /* 夜间模式切换按钮 */
 .theme-toggle {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
 }
 
 .theme-toggle-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--toggle-bg-color, #f0f0f0);
-  border: 2px solid var(--toggle-border-color, #ccc);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--toggle-bg-color, #f0f0f0);
+    border: 2px solid var(--toggle-border-color, #ccc);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
 .theme-toggle-btn:hover {
-  transform: scale(1.1);
+    transform: scale(1.1);
 }
 
 /* 夜间模式样式 */
 .dark-theme {
-  --bg-color: #121212;
-  --text-color: #e0e0e0;
-  --border-color: #333;
-  --section-bg-color: #1e1e1e;
-  --button-bg-color: #2a2a2a;
-  --button-text-color: #e0e0e0;
-  --button-hover-color: #444;
-  --toggle-bg-color: #333;
-  --toggle-border-color: #666;
-  color: var(--text-color);
-  background-color: var(--bg-color);
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --border-color: #333;
+    --section-bg-color: #1e1e1e;
+    --button-bg-color: #2a2a2a;
+    --button-text-color: #e0e0e0;
+    --button-hover-color: #444;
+    --toggle-bg-color: #333;
+    --toggle-border-color: #666;
+    color: var(--text-color);
+    background-color: var(--bg-color);
 }
 
 /* 默认主题（白天模式）变量 */
 .problem-submit {
-  --bg-color: #f8f8f8;
-  --text-color: #333;
-  --border-color: #ddd;
-  --section-bg-color: #fff;
-  --button-bg-color: #f0f0f0;
-  --button-text-color: #333;
-  --button-hover-color: #e0e0e0;
-  --toggle-bg-color: #f0f0f0;
-  --toggle-border-color: #ccc;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+    --bg-color: #f8f8f8;
+    --text-color: #333;
+    --border-color: #ddd;
+    --section-bg-color: #fff;
+    --button-bg-color: #f0f0f0;
+    --button-text-color: #333;
+    --button-hover-color: #e0e0e0;
+    --toggle-bg-color: #f0f0f0;
+    --toggle-border-color: #ccc;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 /* 适应夜间模式的组件样式 */
 .dark-theme .problem-container {
-  background-color: var(--bg-color);
+    background-color: var(--bg-color);
 }
 
 .dark-theme .left-panel,
 .dark-theme .right-panel {
-  background-color: var(--section-bg-color);
-  border-color: var(--border-color);
+    background-color: var(--section-bg-color);
+    border-color: var(--border-color);
 }
 
 .dark-theme .problem-description,
 .dark-theme .log-content,
 .dark-theme .waveform-content {
-  background-color: var(--section-bg-color);
-  color: var(--text-color);
+    background-color: var(--section-bg-color);
+    color: var(--text-color);
 }
 
 .dark-theme .control-btn,
 .dark-theme .submit-btn {
-  background-color: var(--button-bg-color);
-  color: var(--button-text-color);
-  border-color: var(--border-color);
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    border-color: var(--border-color);
 }
 
 .dark-theme .control-btn:hover,
 .dark-theme .submit-btn:hover {
-  background-color: var(--button-hover-color);
+    background-color: var(--button-hover-color);
 }
 
 .dark-theme .tag {
-  background-color: #2d3748;
-  color: #a0aec0;
+    background-color: #2d3748;
+    color: #a0aec0;
 }
 
 .dark-theme .ai-analysis-content {
-  background-color: #1a2233;
-  color: #e0e0e0;
+    background-color: #1a2233;
+    color: #e0e0e0;
 }
 
 .dark-theme .ai-analysis-content :deep(pre) {
-  background-color: #0f172a;
+    background-color: #0f172a;
 }
 
 .dark-theme .ai-analysis-content :deep(code) {
-  background-color: #1e293b;
-  color: #e2e8f0;
+    background-color: #1e293b;
+    color: #e2e8f0;
 }
 
 .dark-theme .ai-analyze-btn {
-  background-color: #1a365d;
+    background-color: #1a365d;
 }
 
 .dark-theme .ai-analyze-btn:hover {
-  background-color: #2c5282;
+    background-color: #2c5282;
 }
 </style>
