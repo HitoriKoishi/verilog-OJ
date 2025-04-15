@@ -7,6 +7,7 @@ import {
 
 import ProblemList from '../views/ProblemList.vue';
 import ProblemSubmit from '../views/ProblemSubmit.vue';
+import About from '../views/About.vue';
 
 const routes = [
     {
@@ -30,8 +31,13 @@ const routes = [
         name: 'UserProfile',
         component: UserProfile,
         meta: {
-            requiresAuth: true // 标记该路由需要登录权限
+            requiresAuth: true
         }
+    },
+    {
+        path: '/about',
+        name: 'About',
+        component: About
     }
 ];
 

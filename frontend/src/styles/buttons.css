@@ -30,6 +30,9 @@
 
 .button-primary:active {
   transform: translateY(0);
+  background-color: var(--primary-hover);
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 次要按钮 */
