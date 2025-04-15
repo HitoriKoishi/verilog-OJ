@@ -265,6 +265,7 @@ const handleHistorySelect = async (submissionId) => {
 const isAnalyzing = ref(false);
 const aiAnalysisResult = ref('');
 const showAiAnalysis = ref(false);
+const isAnalysisEntering = ref(false);
 
 // 获取AI分析
 const getAiAnalysis = async () => {
@@ -275,14 +276,31 @@ const getAiAnalysis = async () => {
 
     try {
         isAnalyzing.value = true;
+        showAiAnalysis.value = false;
         message.info('正在请求AI分析，请稍候...');
 
         const response = await aiApi.getAnalysis(currentSubmissionId.value);
 
         if (response.data && response.data.analysis) {
+            // 先隐藏旧的分析结果
+            await new Promise(resolve => {
+                if (showAiAnalysis.value) {
+                    showAiAnalysis.value = false;
+                    setTimeout(resolve, 300); // 等待淡出动画完成
+                } else {
+                    resolve();
+                }
+            });
+
             aiAnalysisResult.value = response.data.analysis;
+            isAnalysisEntering.value = true;
             showAiAnalysis.value = true;
-            message.success('AI分析完成');
+            
+            // 触发进入动画
+            setTimeout(() => {
+                isAnalysisEntering.value = false;
+                message.success('AI分析完成');
+            }, 50);
         } else {
             throw new Error('分析结果为空');
         }
@@ -290,6 +308,7 @@ const getAiAnalysis = async () => {
         console.error('获取AI分析失败:', err);
         message.error('获取AI分析失败: ' + (err.response?.data?.error || err.message || '未知错误'));
         aiAnalysisResult.value = '获取分析失败: ' + (err.response?.data?.error || err.message || '未知错误');
+        showAiAnalysis.value = false;
     } finally {
         isAnalyzing.value = false;
     }
@@ -337,21 +356,35 @@ const getAiAnalysis = async () => {
                 <!-- 日志部分 -->
                 <CollapsibleSection title="运行日志" v-model:isExpanded="logExpanded" :status="logSectionStatus">
                     <div class="card-body">
-                        <div v-if="currentSubmissionId && currentLog" class="mb-md">
-                            <button @click="getAiAnalysis" 
-                                class="button button-primary" 
-                                :class="{ 'loading': isAnalyzing }"
-                                :disabled="isAnalyzing">
-                                {{ isAnalyzing ? '分析中...' : 'AI智能分析' }}
-                            </button>
-                        </div>
-                        <LogViewer :content="currentLog" class="mb-md" />
-                        <!-- AI分析结果显示 -->
-                        <div v-if="showAiAnalysis && aiAnalysisResult" class="mt-lg pt-md border-t">
-                            <div class="card card-info">
-                                <MarkdownRenderer :content="aiAnalysisResult" class="text-base" />
+                        <div class="log-header">
+                            <div class="status-info">
+                                <span class="status-badge" :class="logSectionStatus" v-if="currentSubmissionId && currentLog">
+                                    {{ logSectionStatus === 'success' ? '测试通过' : logSectionStatus === 'error' ? '测试失败' : '等待测试' }}
+                                </span>
+                                <button @click="getAiAnalysis" 
+                                    class="button button-sm status-badge button-info" 
+                                    :class="{ 'is-analyzing': isAnalyzing }"
+                                    :disabled="isAnalyzing">
+                                    {{ isAnalyzing ? '分析中' : 'AI分析' }}
+                                </button>
                             </div>
                         </div>
+                        
+                        <LogViewer :content="currentLog" class="mb-md" />
+                        
+                        <!-- AI分析结果显示 -->
+                        <transition 
+                            name="slide-fade"
+                            @enter="el => el.style.height = el.scrollHeight + 'px'"
+                            @leave="el => el.style.height = '0'">
+                            <div v-if="showAiAnalysis && aiAnalysisResult" 
+                                class="ai-analysis-container mt-lg pt-md border-t"
+                                :class="{ 'is-entering': isAnalysisEntering }">
+                                <div class="card card-info">
+                                    <MarkdownRenderer :content="aiAnalysisResult" class="text-base" />
+                                </div>
+                            </div>
+                        </transition>
                     </div>
                 </CollapsibleSection>
 
@@ -464,4 +497,132 @@ const getAiAnalysis = async () => {
         flex: 1;
     }
 }
+
+/* AI分析按钮样式 */
+.ai-analyze-btn {
+    position: relative;
+    margin: 0;
+}
+
+.ai-analyze-btn.is-analyzing {
+    padding-right: 36px;
+}
+
+/* AI分析结果容器动画 */
+.ai-analysis-container {
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ai-analysis-container.is-entering {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+    transition: all var(--transition-normal);
+    max-height: 2000px; /* 设置一个合适的最大高度 */
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+    max-height: 0;
+}
+
+/* 确保卡片内容有合适的间距 */
+.card-info {
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    background-color: color-mix(in srgb, var(--info-color) 5%, var(--background-color));
+    border: 1px solid color-mix(in srgb, var(--info-color) 30%, var(--border-color));
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.status-badge {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.success {
+    background-color: color-mix(in srgb, var(--success-color) 10%, transparent);
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
+}
+
+.status-badge.error {
+    background-color: color-mix(in srgb, var(--error-color) 10%, transparent);
+    color: var(--error-color);
+    border: 1px solid var(--error-color);
+}
+
+.status-badge.button-info {
+    position: relative;
+    color: var(--info-color);
+    background-color: color-mix(in srgb, var(--info-color) 10%, transparent);
+    border: 1px solid var(--info-color);
+    transition: all var(--transition-fast);
+}
+
+.status-badge.button-info:hover {
+    background-color: color-mix(in srgb, var(--info-color) 15%, transparent);
+}
+
+.status-badge.button-info.is-analyzing {
+    border-color: transparent;
+}
+
+.status-badge.button-info.is-analyzing::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+        90deg,
+        var(--info-color) 0%,
+        transparent 50%,
+        var(--info-color) 100%
+    );
+    background-size: 200% 100%;
+    mask: 
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    animation: flow-border 2s linear infinite;
+}
+
+@keyframes flow-border {
+    from {
+        background-position: 100% 0;
+    }
+    to {
+        background-position: -100% 0;
+    }
+}
+
 </style>

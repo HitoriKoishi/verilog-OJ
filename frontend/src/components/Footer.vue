@@ -1,7 +1,4 @@
 <script setup>
-import { ref, onMounted, provide } from 'vue';
-const website = ref({ website_footer: '© 2025 在线判题系统' }); // 默认值，可根据需要更改
-const version = ref('1.0.0'); // 默认版本号
 </script>
 
 <template>
@@ -20,7 +17,9 @@ const version = ref('1.0.0'); // 默认版本号
 }
 
 .copyright {
-  font-size: 0.9rem;
+  font-size: 1.0em;
+  color: var(--text-secondary);
+  font-family: var(--font-family-mono);
 }
 
 @media (max-width: 768px) {
