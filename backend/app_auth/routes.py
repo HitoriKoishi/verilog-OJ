@@ -15,10 +15,10 @@ def loginUser():
     username = request.get_json().get('username')
     password = request.get_json().get('password')
     if not username or not password:
-        return jsonify({"status": "error", "msg": "需要用户名和密码"}), 400
+        return jsonify({"status": "error", "message": "需要用户名和密码"}), 400
     user = User.query.filter_by(username=username).first()
     if not user or not user.check_password(password):
-        return jsonify({"status": "error", "msg": "用户名或密码错误"}), 401
+        return jsonify({"status": "error", "message": "用户名或密码错误"}), 401
     login_user(user)
     return jsonify({
         "status": "success",
