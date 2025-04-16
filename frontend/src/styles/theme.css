@@ -259,7 +259,7 @@
 
 /* Firefox滚动条样式 */
 .card-body > * {
-  scrollbar-width: thin;
+  scrollbar-width: none;
   scrollbar-color: var(--border-color) var(--surface-color);
 }
 

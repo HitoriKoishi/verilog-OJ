@@ -308,6 +308,7 @@ watch(message, (newVal) => {
 
 <style scoped>
 .user-profile {
+    max-width: 1000px;
     padding: var(--spacing-lg);
 }
 

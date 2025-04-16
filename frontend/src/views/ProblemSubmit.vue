@@ -226,7 +226,7 @@ const fetchLogAndWaveform = async (submissionId) => {
         const waveformResponse = await submissionApi.getSubmissionWaveform(submissionId);
         if (waveformResponse.status === 200) {
             currentWaveform.value = waveformResponse.data.waveform_content;
-            console.log('波形数据:', waveformResponse.data.waveform_content);
+            // console.log('波形数据:', waveformResponse.data.waveform_content);
         }
     } catch (err) {
         console.error('获取日志或波形失败:', err);

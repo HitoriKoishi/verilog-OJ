@@ -49,13 +49,13 @@ const convertVcdToWaveDrom = async (vcdContent) => {
         if (dumpoffIndex !== -1) {
             vcdContent = vcdContent.substring(0, dumpoffIndex);
         }
-        console.log('VCD 内容:', vcdContent);
+        // console.log('VCD 内容:', vcdContent);
         const vcd = await vcdParser.parse(vcdContent, { compress: true });
-        console.log('解析后的 VCD 数据:', vcd);
+        // console.log('解析后的 VCD 数据:', vcd);
         if (!vcd.signal?.length) {
             throw new Error('无效的 VCD 数据格式');
         }
-        console.log('解析后的 VCD 数据:', vcd);
+        // console.log('解析后的 VCD 数据:', vcd);
         // 计算整个波形的时间总长度
         let maxTime = 0;
         vcd.signal.forEach(signal => {
@@ -66,7 +66,7 @@ const convertVcdToWaveDrom = async (vcdContent) => {
                 });
             }
         });
-        console.log('最大时间:', maxTime);
+        // console.log('最大时间:', maxTime);
         const signals = vcd.signal.map(signal => {
             if (!signal?.signalName || !signal?.wave) return null;
             // 关键修改点：通过位宽判断信号维度
@@ -74,7 +74,7 @@ const convertVcdToWaveDrom = async (vcdContent) => {
             const wave = { name: signal.signalName, wave: '', data: [] };
             let lastTime = -1;
             let maxSignalTime = 0;
-            console.log('信号名称:', signal.signalName, '波形数据:', signal.wave);
+            // console.log('信号名称:', signal.signalName, '波形数据:', signal.wave);
             signal.wave.forEach(([time, value]) => {
                 const timeNum = parseInt(time);
                 maxSignalTime = Math.max(maxSignalTime, timeNum);
@@ -84,15 +84,15 @@ const convertVcdToWaveDrom = async (vcdContent) => {
                     wave.wave += '.'.repeat(Math.max(0, timeDiff - 1)); // 防止负数
                 }
                 // 波形字符处理
-                console.log('当前时间:', timeNum, '信号值:', value);
+                // console.log('当前时间:', timeNum, '信号值:', value);
                 const waveChar = convertToWaveChar(value, isMultiBit);
-                console.log('波形字符:', waveChar);
+                // console.log('波形字符:', waveChar);
                 wave.wave += waveChar;
                 // 多维信号值转换
                 if (isMultiBit) {
-                    console.log('多维信号值转换:', value);
+                    // console.log('多维信号值转换:', value);
                     wave.data.push(binToUnsignedDec(value));
-                    console.log('转换后的值:', wave.data);
+                    // console.log('转换后的值:', wave.data);
                 }
                 lastTime = timeNum;
             });
