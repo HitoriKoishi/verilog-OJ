@@ -208,6 +208,7 @@
 @media (max-width: 768px) {
   .button {
     padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.6rem;
   }
   
   .button-lg {

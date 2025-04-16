@@ -264,7 +264,7 @@
 ## 获取Prob列表
 
 ### **URL**
-`GET /problem`
+`GET /problem/all`
 
 ### **描述**
 获取问题列表

@@ -16,7 +16,7 @@ const routes = [
         component: Home
     },
     {
-        path: '/problem',
+        path: '/problem/all',
         name: 'ProblemList',
         component: ProblemList
     },

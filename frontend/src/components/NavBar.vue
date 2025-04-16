@@ -8,7 +8,7 @@ const router = useRouter();
 
 const navItems = [
     { name: '首页', path: '/' },
-    { name: '题目列表', path: '/problem' },
+    { name: '题目列表', path: '/problem/all' },
     { name: '关于我们', path: '/about' },
 ];
 
@@ -231,14 +231,17 @@ const handleLogout = async () => {
 /* 响应式设计 */
 @media (max-width: 768px) {
     .navbar {
+        font-size: 0.75rem;
         padding: 0 var(--spacing-md);
     }
     
     .navbar-brand {
+        font-size: 0.8rem;
         margin-right: var(--spacing-md);
     }
 
     .navbar-menu {
+        font-size: 0.75rem;
         gap: var(--spacing-sm);
     }
 }

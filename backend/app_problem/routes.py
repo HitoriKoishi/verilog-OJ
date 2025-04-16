@@ -103,7 +103,7 @@ def submitSolution(id):
 
 
 # ---------- 获取Prob列表 ----------
-@problem_bp.route('/', methods=['GET'])
+@problem_bp.route('/all', methods=['GET'])
 def getProblems():
     """获取问题列表，返回ID、标题、难度、标签以及用户是否完成解答（仅登录用户可见）"""
     user_id = current_user.id if current_user.is_authenticated else None

@@ -29,6 +29,7 @@ h3 { font-size: 1.5rem; }  /* 24px */
 h4 { font-size: 1.25rem; } /* 20px */
 h5 { font-size: 1.125rem; }/* 18px */
 h6 { font-size: 1rem; }    /* 16px */
+th {font-size: 16px; }
 
 /* 文本工具类 */
 .text-xs { font-size: 0.75rem; }
@@ -162,14 +163,15 @@ blockquote {
 
 /* 响应式排版 */
 @media (max-width: 768px) {
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.75rem; }
-  h3 { font-size: 1.5rem; }
-  h4 { font-size: 1.25rem; }
-  h5 { font-size: 1.125rem; }
-  h6 { font-size: 1rem; }
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.125rem; }
+  h5 { font-size: 1rem; }
+  h6 { font-size: 0.875rem; }
   
   body {
-    font-size: 14px;
+    font-size: 10px;
   }
+  th {font-size: 8px; }
 }

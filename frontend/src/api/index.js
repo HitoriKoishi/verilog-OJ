@@ -12,7 +12,7 @@ const apiClient = axios.create({
 export const problemApi = {
     // 获取题目列表
     getProblems() {
-        return apiClient.get('/problem', {
+        return apiClient.get('/problem/all', {
             headers: {
                 'Accept': 'application/json'
             }
