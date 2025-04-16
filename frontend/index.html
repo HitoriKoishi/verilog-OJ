@@ -7,20 +7,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Verilog OnlineJudge</title>
     <!-- 添加 WaveDrom 相关脚本 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js"
+        type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/wavedrom.min.js" type="text/javascript"></script>
     <script>
         // 在页面加载完成后初始化 WaveDrom
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             if (typeof WaveDrom !== 'undefined') {
                 WaveDrom.skin = WaveSkin.default;
             }
         });
+        if (typeof process === 'undefined') {
+            window.process = {};
+        }
+        if (typeof process.nextTick === 'undefined') {
+            window.process.nextTick = function (callback) {
+                // You can use queueMicrotask for closer behavior to Node's nextTick,
+                // but setTimeout is a safer fallback for broader compatibility.
+                setTimeout(callback, 0);
+                // Or: queueMicrotask(callback);
+            };
+        }
     </script>
     <!-- 添加NotoSansSC字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100;300;400;500;700;900&display=swap"
+        rel="stylesheet">
     <style>
         .loading-container {
             display: flex;
