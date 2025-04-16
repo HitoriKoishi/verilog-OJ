@@ -226,9 +226,11 @@ const fetchLogAndWaveform = async (submissionId) => {
         const waveformResponse = await submissionApi.getSubmissionWaveform(submissionId);
         if (waveformResponse.status === 200) {
             currentWaveform.value = waveformResponse.data.waveform_content;
+            console.log('波形数据:', waveformResponse.data.waveform_content);
         }
     } catch (err) {
         console.error('获取日志或波形失败:', err);
+        currentWaveform.value = '';
         message.error(err.response?.data?.error || '获取日志或波形失败');
     }
 };
@@ -316,7 +318,7 @@ const getAiAnalysis = async () => {
 </script>
 
 <template>
-    <div class="problem-submit container">
+    <div class="problem-submit">
         <div v-if="loading" class="loading-container">
             <div class="loading-spinner"></div>
             <span class="loading-text">加载中</span>
@@ -327,9 +329,9 @@ const getAiAnalysis = async () => {
             <button class="button button-primary" @click="fetchProblemDetail">重试</button>
         </div>
 
-        <div v-else-if="problem" class="grid grid-cols-2">
+        <div v-else-if="problem" class="problem-content">
             <!-- 左侧面板：题目描述、日志和波形 -->
-            <div class="flex flex-col gap-lg">
+            <div class="left-panel">
                 <!-- 描述部分 -->
                 <CollapsibleSection title="题目描述" v-model:isExpanded="descriptionExpanded">
                     <div class="card-body">
@@ -390,15 +392,13 @@ const getAiAnalysis = async () => {
 
                 <!-- 波形部分 -->
                 <CollapsibleSection title="波形显示" v-model:isExpanded="waveformExpanded">
-                    <div class="card-body">
-                        <WaveformViewer :vcdContent="currentWaveform" />
-                    </div>
+                    <WaveformViewer :vcdContent="currentWaveform" />
                 </CollapsibleSection>
             </div>
 
             <!-- 右侧面板：代码编辑器 -->
-            <div class="flex flex-col gap-md">
-                <div class="card">
+            <div class="right-panel">
+                <div class="card editor-card">
                     <div class="card-header">
                         <h2 class="card-title">代码编辑器</h2>
                         <div class="button-group">
@@ -428,6 +428,29 @@ const getAiAnalysis = async () => {
 <style scoped>
 .problem-submit {
     padding: var(--spacing-lg);
+    max-width: 100vw;
+    min-height: calc(100vh - 60px); /* 减去导航栏高度 */
+}
+
+.problem-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 左右两栏布局 */
+    gap: var(--spacing-lg);
+    height: 100%;
+}
+
+.left-panel {
+    min-width: 0; /* 防止flex子项溢出 */
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.right-panel {
+    min-width: 0; /* 防止flex子项溢出 */
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
 }
 
 .loading-container {
@@ -438,11 +461,18 @@ const getAiAnalysis = async () => {
     padding: var(--spacing-xl);
 }
 
+.editor-card {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
 .editor-container {
     height: calc(100vh - 300px);
     min-height: 400px;
     border-radius: 0;
     border: none;
+    overflow: hidden; /* 确保编辑器不会溢出 */
 }
 
 .tag {
@@ -455,21 +485,15 @@ const getAiAnalysis = async () => {
     border: 1px solid var(--border-color);
 }
 
-.sticky {
-    position: sticky;
-    top: var(--spacing-lg);
-    height: calc(100vh - var(--spacing-lg) * 2);
-}
-
 /* 响应式调整 */
 @media (max-width: 1200px) {
-    .grid-cols-2 {
-        grid-template-columns: 1fr;
+    .problem-content {
+        grid-template-columns: 1fr; /* 在小屏幕上变为单列 */
     }
 
-    .sticky {
-        position: static;
-        height: auto;
+    .left-panel,
+    .right-panel {
+        width: 100%;
     }
 
     .editor-container {

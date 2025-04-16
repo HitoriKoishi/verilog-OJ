@@ -6,6 +6,17 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Verilog OnlineJudge</title>
+    <!-- 添加 WaveDrom 相关脚本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/wavedrom.min.js" type="text/javascript"></script>
+    <script>
+        // 在页面加载完成后初始化 WaveDrom
+        window.addEventListener('load', function() {
+            if (typeof WaveDrom !== 'undefined') {
+                WaveDrom.skin = WaveSkin.default;
+            }
+        });
+    </script>
     <!-- 添加NotoSansSC字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,9 +57,9 @@
             color: #333;
         }
     </style>
-    <!-- 添加错误处理 -->
+    <!-- 添加错误处理和 WaveDrom 初始化 -->
     <script>
-        // 设置超时检测请稍候...</div>
+        // 设置超时检测
         setTimeout(function () {
             if (document.querySelector('.loading-container')) {
                 console.warn('应用加载超时');

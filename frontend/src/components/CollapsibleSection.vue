@@ -171,4 +171,12 @@ const leave = (element) => {
     padding: var(--spacing-sm);
   }
 }
+
+.content-wrapper {
+  overflow: visible; /* 允许内容溢出 */
+}
+
+.card-body {
+  overflow: visible; /* 允许内容溢出 */
+}
 </style>

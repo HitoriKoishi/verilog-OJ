@@ -20,12 +20,13 @@ module test_bench();
     // 波形生成
     initial begin
         $dumpfile("waveform.vcd");
-        $dumpvars(0, test_bench);
+        $dumpvars(0, test_bench.clk, test_bench.rstn, test_bench.your_out, test_bench.ref_out);
     end
     
     // 测试激励
     initial begin
         // 初始化
+        #30 $dumpon; //开始记录波形
         rstn = 0;  // 复位有效
         #20;
         
@@ -52,7 +53,6 @@ module test_bench();
         $display("Test 5: Async reset test");
         #3 rstn = 0;  // 在时钟周期中间复位
         #2 has_mismatch = 0;
-
         $display("\n=== Simulation Summary ===");
         if (test_failed) begin
             $display("** x TEST FAILED! x **");
@@ -62,7 +62,7 @@ module test_bench();
         end
         $display("Simulation time: %0t ps", $time);
         $display("========================");
-        $finish();
+        $stop();
     end
     
     // 错误检测

@@ -221,6 +221,48 @@
   border: 1px solid var(--border-color);
 }
 
+/* 自定义滚动条 - 只在悬停时显示 */
+.card-body {
+  overflow: visible;
+}
+
+.card-body > * {
+  overflow: auto;
+}
+
+/* 卡片内容滚动条样式 */
+.card-body > *::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.card-body > *::-webkit-scrollbar-track {
+  background: var(--surface-color);
+  border-radius: var(--radius-sm);
+}
+
+.card-body > *::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border-color) 90%, var(--text-disabled));
+  border: 3px solid var(--surface-color);
+  border-radius: var(--radius-md);
+  min-width: 40px;
+}
+
+.card-body > *::-webkit-scrollbar-thumb:hover {
+  background: var(--text-disabled);
+}
+
+.card-body > *::-webkit-scrollbar-corner {
+  background: var(--surface-color);
+}
+
+/* Firefox滚动条样式 */
+.card-body > * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--surface-color);
+}
+
 .button {
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-sm);
