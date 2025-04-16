@@ -5,7 +5,7 @@
     <div class="content">
       <section class="card mb-lg">
         <h2 class="section-title text-primary">项目介绍</h2>
-        <p class="text-secondary">Verilog OJ 是一个专注于Verilog硬件描述语言学习和在线评测的平台。本项目旨在为数字电路与计算机组成原理课程的学习者提供一个实践平台，帮助学生更好地理解和掌握Verilog编程。</p>
+        <p class="text-secondary">Veri-OJ 是一个专注于Verilog硬件描述语言学习和在线评测的平台。本项目旨在为数字电路与计算机组成原理课程的学习者提供一个实践平台，帮助学生更好地理解和掌握Verilog编程。</p>
       </section>
 
       <section class="card mb-lg">

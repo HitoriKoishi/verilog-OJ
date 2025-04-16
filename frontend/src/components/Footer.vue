@@ -3,7 +3,7 @@
 
 <template>
   <div class="footer-bottom">
-    <p class="copyright text-secondary">© {{ new Date().getFullYear() }} Verilog OJ. All rights reserved.</p>
+    <p class="copyright text-secondary">© {{ new Date().getFullYear() }} Veri-OJ. All rights reserved.</p>
   </div>
 </template>
 

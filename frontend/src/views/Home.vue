@@ -4,7 +4,7 @@
 
 <template>
   <div class="home container">
-    <h1 class="title text-primary">欢迎使用 Verilog OJ</h1>
+    <h1 class="title text-primary">欢迎使用 Veri-OJ</h1>
     <p class="description text-secondary">这是一个用于 Verilog 编程练习和学习的在线评测系统。</p>
     
     <div class="features flex gap-md">

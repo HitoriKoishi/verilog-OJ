@@ -1,6 +1,6 @@
 # DeepSeek AI 分析模块
 
-本模块为Verilog OJ系统提供基于DeepSeek LLM的代码分析功能，帮助学生更好地理解代码错误并提供修改建议。
+本模块为Veri-OJ系统提供基于DeepSeek LLM的代码分析功能，帮助学生更好地理解代码错误并提供修改建议。
 
 ## 功能说明
 

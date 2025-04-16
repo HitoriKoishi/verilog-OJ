@@ -57,7 +57,7 @@ const handleLogout = async () => {
 <template>
     <div>
         <nav class="navbar">
-            <div class="navbar-brand">Verilog OJ</div>
+            <div class="navbar-brand">Veri-OJ</div>
             <div class="navbar-menu">
                 <div v-for="item in navItems" :key="item.name" class="navbar-item"
                     :class="{ 'active': currentRoute === item.path }" @click="navigateTo(item.path)">

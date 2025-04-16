@@ -80,7 +80,7 @@ def sim_run_verilog(submission_id: int) -> SimulationResult:
         save_dir.mkdir(parents=True, exist_ok=True)
         try:
             # 调用 run_simulation 函数执行仿真
-            error_code = run_simulation(temp_dir_path, timeout_sec=60)
+            error_code = run_simulation(temp_dir_path, timeout_sec=6)
             result.error_code = error_code
             # 处理生成的文件
             src_log = temp_dir_path / "simulation.log"
@@ -130,6 +130,7 @@ def run_simulation(base_dir: Path, timeout_sec: int = 6) -> ErrorCode:
                 [IVERILOG, "-o", "sim_exec", "-s", tb_module, "-f", "sim_file_list.f"],
                 stdout=log,
                 stderr=subprocess.STDOUT,
+                timeout=timeout_sec,
                 check=True,
                 shell=True,
                 cwd=base_dir
