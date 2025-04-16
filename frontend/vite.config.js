@@ -11,7 +11,6 @@ export default defineConfig(({ mode }) => {
         define: {
             'process.env': {},
             'process.browser': true,
-            'process.nextTick': '((cb) => { return setTimeout(cb, 0); })',
             'global': 'globalThis',
             'window.state': '{}',
             'state': '{}',
