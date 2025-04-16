@@ -16,17 +16,17 @@ const isWaveDromReady = ref(false);
 
 // 独立初始化 WaveDrom 加载检查
 const initWaveDrom = () => {
-  if (typeof WaveDrom !== 'undefined') {
-    isWaveDromReady.value = true;
-    return;
-  }
-  setTimeout(initWaveDrom, 100); // 持续检查直到加载完成
+    if (typeof WaveDrom !== 'undefined') {
+        isWaveDromReady.value = true;
+        return;
+    }
+    setTimeout(initWaveDrom, 100); // 持续检查直到加载完成
 };
 
 // 波形字符转换（根据信号位宽决定显示方式）
 const convertToWaveChar = (value, isMultiBit) => {
     // 多维信号始终标记为数据段
-    if (isMultiBit) return '='; 
+    if (isMultiBit) return '=';
     // 单维信号处理逻辑
     if (value === '1') return '1';
     if (value === '0') return '0';
@@ -41,10 +41,9 @@ const binToUnsignedDec = (binStr) => {
 };
 
 // 将 VCD 内容转换为 WaveDrom JSON 格式
-// 将 VCD 内容转换为 WaveDrom JSON 格式
 const convertVcdToWaveDrom = async (vcdContent) => {
     if (!vcdContent) return null;
-    
+
     try {
         const dumpoffIndex = vcdContent.indexOf('$dumpoff');
         if (dumpoffIndex !== -1) {
@@ -69,44 +68,44 @@ const convertVcdToWaveDrom = async (vcdContent) => {
         });
         console.log('最大时间:', maxTime);
         const signals = vcd.signal.map(signal => {
-        if (!signal?.signalName || !signal?.wave) return null;
-        // 关键修改点：通过位宽判断信号维度
-        const isMultiBit = signal.size > 1; // 假设 vcd-parser 提供 size 属性
-        const wave = { name: signal.signalName, wave: '', data: [] };
-        let lastTime = -1;
-        let maxSignalTime = 0;
-        console.log('信号名称:', signal.signalName, '波形数据:', signal.wave);
-        signal.wave.forEach(([time, value]) => {
-            const timeNum = parseInt(time);
-            maxSignalTime = Math.max(maxSignalTime, timeNum);
-            // 时间间隔处理
-            if (lastTime !== -1) {
-                const timeDiff = Math.ceil((timeNum - lastTime) / 5000);
-                wave.wave += '.'.repeat(Math.max(0, timeDiff - 1)); // 防止负数
+            if (!signal?.signalName || !signal?.wave) return null;
+            // 关键修改点：通过位宽判断信号维度
+            const isMultiBit = signal.size > 1; // 假设 vcd-parser 提供 size 属性
+            const wave = { name: signal.signalName, wave: '', data: [] };
+            let lastTime = -1;
+            let maxSignalTime = 0;
+            console.log('信号名称:', signal.signalName, '波形数据:', signal.wave);
+            signal.wave.forEach(([time, value]) => {
+                const timeNum = parseInt(time);
+                maxSignalTime = Math.max(maxSignalTime, timeNum);
+                // 时间间隔处理
+                if (lastTime !== -1) {
+                    const timeDiff = Math.ceil((timeNum - lastTime) / 5000);
+                    wave.wave += '.'.repeat(Math.max(0, timeDiff - 1)); // 防止负数
+                }
+                // 波形字符处理
+                console.log('当前时间:', timeNum, '信号值:', value);
+                const waveChar = convertToWaveChar(value, isMultiBit);
+                console.log('波形字符:', waveChar);
+                wave.wave += waveChar;
+                // 多维信号值转换
+                if (isMultiBit) {
+                    console.log('多维信号值转换:', value);
+                    wave.data.push(binToUnsignedDec(value));
+                    console.log('转换后的值:', wave.data);
+                }
+                lastTime = timeNum;
+            });
+            // 关键修复：强制填充到全局最大时间
+            if (lastTime < maxTime) {
+                const timeDiff = Math.ceil((maxTime - lastTime) / 5000); // 使用全局 maxTime
+                wave.wave += '.'.repeat(timeDiff);
             }
-            // 波形字符处理
-            console.log('当前时间:', timeNum, '信号值:', value);
-            const waveChar = convertToWaveChar(value, isMultiBit);
-            console.log('波形字符:', waveChar);
-            wave.wave += waveChar;
-            // 多维信号值转换
-            if (isMultiBit) {
-                console.log('多维信号值转换:', value);
-                wave.data.push(binToUnsignedDec(value));
-                console.log('转换后的值:', wave.data);
-            }
-            lastTime = timeNum;
-        });
-        // 关键修复：强制填充到全局最大时间
-        if (lastTime < maxTime) {
-            const timeDiff = Math.ceil((maxTime - lastTime) / 5000); // 使用全局 maxTime
-            wave.wave += '.'.repeat(timeDiff);
-        }
-        return wave;
+            return wave;
         }).filter(Boolean);
         return {
             signal: signals,
-            config: { 
+            config: {
                 hscale: 1,
                 displayWidth: '100%'
             }
@@ -120,51 +119,50 @@ const convertVcdToWaveDrom = async (vcdContent) => {
 
 // 修改渲染函数
 const renderWaveform = async () => {
-  if (!props.vcdContent) return;
-  
-  try {
-    // 等待 WaveDrom 和 DOM 元素就绪
-    if (typeof WaveDrom === 'undefined' || !waveformElement.value) {
-      setTimeout(renderWaveform, 100); // 延迟重试
-      return;
-    }
+    if (!props.vcdContent) return;
 
-    // 清空前再次确认元素存在
-    if (waveformElement.value) {
-      waveformElement.value.innerHTML = '';
-    }
-    
-    // 转换数据
-    const waveData = await convertVcdToWaveDrom(props.vcdContent);
-    if (!waveData) return;
+    try {
+        // 等待 WaveDrom 和 DOM 元素就绪
+        if (typeof WaveDrom === 'undefined' || !waveformElement.value) {
+            setTimeout(renderWaveform, 100); // 延迟重试
+            return;
+        }
 
-    // 创建并插入渲染元素
-    const waveScript = document.createElement('script');
-    waveScript.type = 'WaveDrom';
-    waveScript.text = JSON.stringify(waveData);
-    waveformElement.value.appendChild(waveScript);
-    
-    // 强制渲染
-    WaveDrom.ProcessAll();
-  } catch (err) {
-    console.error('渲染失败:', err);
-  }
+        // 清空前再次确认元素存在
+        if (waveformElement.value) {
+            waveformElement.value.innerHTML = '';
+        }
+
+        // 转换数据
+        const waveData = await convertVcdToWaveDrom(props.vcdContent);
+        if (!waveData) return;
+
+        // 创建并插入渲染元素
+        const waveScript = document.createElement('script');
+        waveScript.type = 'WaveDrom';
+        waveScript.text = JSON.stringify(waveData);
+        waveformElement.value.appendChild(waveScript);
+
+        // 强制渲染
+        WaveDrom.ProcessAll();
+    } catch (err) {
+        console.error('渲染失败:', err);
+    }
 };
 
-// 使用 nextTick 确保 DOM 更新
-import { nextTick } from 'vue';
-
-watch(() => props.vcdContent, async (newVal) => {
-  if (newVal) {
-    await nextTick(); // 等待 DOM 更新
-    renderWaveform();
-  }
+watch(() => props.vcdContent, (newVal) => {
+    if (newVal) {
+        // 使用 setTimeout 替代 nextTick
+        setTimeout(() => {
+            renderWaveform();
+        }, 0);
+    }
 });
 
 // 在组件挂载时启动初始化
 onMounted(() => {
-  initWaveDrom();
-  if (props.vcdContent) renderWaveform();
+    initWaveDrom();
+    if (props.vcdContent) renderWaveform();
 });
 </script>
 
