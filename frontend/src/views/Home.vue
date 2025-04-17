@@ -194,7 +194,6 @@ const navigateToProblems = (tag) => {
   flex: 1;
   min-width: 300px;
   margin: var(--spacing-sm);
-  transition: transform var(--transition-normal);
 }
 
 .feature:hover {
@@ -238,7 +237,6 @@ const navigateToProblems = (tag) => {
 
 .card-hover {
   cursor: pointer;
-  transition: all var(--transition-normal);
 }
 
 .card-hover:hover {

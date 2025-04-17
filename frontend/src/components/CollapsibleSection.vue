@@ -11,10 +11,6 @@ const props = defineProps({
   status: {
     type: String,
     default: 'default',  // 可选值: 'default', 'success', 'error'
-  },
-  isDarkMode: {
-    type: Boolean,
-    default: false
   }
 });
 
@@ -47,7 +43,7 @@ const leave = (element) => {
 </script>
 
 <template>
-  <div class="section" :class="[`status-${status}`, { 'dark-theme': isDarkMode }]">
+  <div class="section" :class="[`status-${status}`]">
     <div class="section-header" @click="toggleExpand">
       <h2 class="text-primary">{{ title }}</h2>
       <span class="expand-icon" :class="{ 'is-expanded': isExpanded }">▶</span>

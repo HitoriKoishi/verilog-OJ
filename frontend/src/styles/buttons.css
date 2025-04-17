@@ -215,15 +215,3 @@
     padding: var(--spacing-sm) var(--spacing-md);
   }
 }
-
-/* 暗色主题适配 */
-@media (prefers-color-scheme: dark) {
-  .button-secondary {
-    background-color: var(--surface-color);
-    border-color: var(--border-color);
-  }
-  
-  .button-secondary:hover {
-    background-color: color-mix(in srgb, var(--surface-color) 80%, white);
-  }
-}

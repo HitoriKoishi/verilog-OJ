@@ -173,23 +173,6 @@ onUnmounted(() => {
   border-left-color: var(--primary-color);
 }
 
-/* 暗色主题支持 */
-@media (prefers-color-scheme: dark) {
-  .editor-container :deep(.cm-editor) {
-    background-color: var(--background-color);
-  }
-
-  .editor-container :deep(.cm-gutters) {
-    background-color: var(--surface-color);
-    border-right-color: var(--border-color);
-  }
-
-  .editor-container :deep(.cm-selectionBackground) {
-    background-color: var(--primary-color);
-    opacity: 0.3;
-  }
-}
-
 /* 滚动条样式 */
 .editor-container :deep(.cm-scroller::-webkit-scrollbar) {
   width: 8px;

@@ -142,20 +142,3 @@
     padding: var(--spacing-sm);
   }
 }
-
-/* 暗色主题适配 */
-@media (prefers-color-scheme: dark) {
-  .card {
-    background-color: var(--background-color);
-    border-color: var(--border-color);
-  }
-
-  .card-loading::after {
-    background: linear-gradient(
-      90deg,
-      transparent,
-      color-mix(in srgb, var(--surface-color) 30%, transparent),
-      transparent
-    );
-  }
-}
