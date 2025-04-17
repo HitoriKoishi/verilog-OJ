@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { problemApi } from '../api';
+import { problemState } from '../store/problemState';
 
 const router = useRouter();
 
@@ -11,7 +12,14 @@ const error = ref(null);
 const selectedTags = ref([]);
 const allTags = ref([]);
 
+// 初始化选中的标签
+const initializeSelectedTags = () => {
+    selectedTags.value = [...problemState.selectedTags.value];
+};
+
 const navigateToProblem = (id) => {
+    problemState.setSelectedTags([...selectedTags.value]);
+    problemState.setCurrentProblemList([...filteredProblems.value]);
     router.push(`/problem/${id}`);
 };
 
@@ -56,10 +64,16 @@ const toggleTag = (tag) => {
     } else {
         selectedTags.value.splice(index, 1);
     }
+    // 更新状态管理中的标签
+    problemState.setSelectedTags([...selectedTags.value]);
+    problemState.setCurrentProblemList([...filteredProblems.value]);
 };
 
 onMounted(() => {
-    fetchProblems();
+    fetchProblems().then(() => {
+        initializeSelectedTags();
+        problemState.setCurrentProblemList([...filteredProblems.value]);
+    });
 });
 
 const difficultyColor = (difficulty) => {
@@ -94,8 +108,10 @@ const getItemKey = (problem) => {
             <div class="tags-filter">
                 <h3>标签筛选：</h3>
                 <div class="tags-container">
-                    <button v-for="tag in allTags" :key="tag" @click="toggleTag(tag)"
-                        :class="['tag-button', { active: selectedTags.includes(tag) }]">
+                    <button v-for="tag in allTags" 
+                            :key="tag" 
+                            @click="toggleTag(tag)"
+                            :class="['tag-button', { active: selectedTags.includes(tag) }]">
                         {{ tag }}
                     </button>
                 </div>
@@ -381,7 +397,15 @@ th {
         gap: var(--spacing-xxs);
     }
 
-    /* 移动端调整列宽 */
+    /* 在手机宽度下隐藏标签列 */
+    .problem-table th:nth-child(3),
+    .problem-table td:nth-child(3),
+    .problem-table th:nth-child(6),
+    .problem-table td:nth-child(6) {
+        display: none;
+    }
+
+    /* 调整其他列的宽度 */
     .problem-table th:nth-child(1),
     .problem-table td:nth-child(1) {
         width: 40px;
@@ -389,12 +413,7 @@ th {
 
     .problem-table th:nth-child(2),
     .problem-table td:nth-child(2) {
-        width: 30%;
-    }
-
-    .problem-table th:nth-child(3),
-    .problem-table td:nth-child(3) {
-        width: 20%;
+        width: 40%;
     }
 
     .problem-table th:nth-child(4),

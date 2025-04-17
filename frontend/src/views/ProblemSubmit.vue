@@ -3,16 +3,17 @@
 import SubmitHistory from '../components/SubmitHistory.vue';
 import { ref, onMounted, onUnmounted } from 'vue';
 import message from '../utils/message';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { problemApi, submissionApi, aiApi } from '../api';
 import CollapsibleSection from '../components/CollapsibleSection.vue';
 import MarkdownRenderer from '../components/MarkdownRenderer.vue';
 import VerilogEditor from '../components/VerilogEditor.vue';
 import LogViewer from '../components/LogViewer.vue';
 import WaveformViewer from '../components/WaveformViewer.vue';
-import { marked } from 'marked';
+import { problemState } from '../store/problemState';
 
 const route = useRoute();
+const router = useRouter();
 const problemId = route.params.id;
 
 const problem = ref(null);
@@ -21,6 +22,11 @@ const error = ref(null);
 const verilogCode = ref('');
 const editorRef = ref(null);
 const historyRef = ref(null);
+
+// 添加下一题相关的状态
+const showNextButton = ref(false);
+const nextProblemId = ref(null);
+const hasPreviousSuccess = ref(false);
 
 // 获取单个题目的详细信息
 const fetchProblemDetail = async () => {
@@ -66,6 +72,38 @@ const toggleSections = async () => {
     await new Promise(resolve => setTimeout(resolve, 300));
     logExpanded.value = true;
     waveformExpanded.value = true;
+};
+
+// 检查是否有下一题
+const checkNextProblem = async () => {
+    // 确保有完整的题目列表
+    if (problemState.allProblems.value.length === 0) {
+        await problemState.initializeProblems();
+    }
+    const nextId = problemState.getNextProblemId(Number(problemId));
+    nextProblemId.value = nextId;
+};
+
+// 检查是否有成功提交记录
+const checkPreviousSubmissions = async () => {
+    try {
+        const response = await problemApi.getProblemSubmitHistory(problemId);
+        if (response.data && Array.isArray(response.data)) {
+            hasPreviousSuccess.value = response.data.some(submission => submission.status === 'success');
+            if (hasPreviousSuccess.value) {
+                showNextButton.value = true;
+            }
+        }
+    } catch (err) {
+        console.error('获取提交历史失败:', err);
+    }
+};
+
+// 跳转到下一题
+const goToNextProblem = () => {
+    if (nextProblemId.value) {
+        router.push(`/problem/${nextProblemId.value}`);
+    }
 };
 
 // 提交解答
@@ -124,6 +162,9 @@ const checkSubmissionResult = async (submissionId) => {
         if (submissionData.status === 'success') {
             logSectionStatus.value = 'success';
             message.success('提交成功！您的代码已通过测试');
+            showNextButton.value = true;
+            hasPreviousSuccess.value = true;
+            checkNextProblem();
         } else {
             logSectionStatus.value = 'error';
             message.error(`提交失败: ${submissionData.error_code}`);
@@ -192,10 +233,12 @@ const clearEditor = () => {
     }
 };
 
-onMounted(async () => {
+onMounted(() => {
     console.log('组件挂载');
-    await fetchProblemDetail();
-    await loadDraft();
+    fetchProblemDetail();
+    loadDraft();
+    checkNextProblem();
+    checkPreviousSubmissions();
 });
 
 let autoSaveInterval;
@@ -240,27 +283,34 @@ const logSectionStatus = ref('default');
 
 // 处理历史记录选择
 const handleHistorySelect = async (submissionId) => {
-  try {
-    // 打开日志和波形面板
-    toggleSections();
-    
-    // 获取并显示日志和波形
-    await fetchLogAndWaveform(submissionId);
-    
-    // 设置当前提交ID
-    currentSubmissionId.value = submissionId;
-    
-    // 获取提交状态并更新日志状态
-    const resultResponse = await submissionApi.getSubmission(submissionId);
-    const submissionData = resultResponse.data;
-    
-    // 更新日志状态颜色
-    logSectionStatus.value = submissionData.status === 'success' ? 'success' : 'error';
-    
-  } catch (err) {
-    console.error('获取历史提交详情失败:', err);
-    message.error('获取历史提交详情失败: ' + (err.response?.data?.error || err.message || '未知错误'));
-  }
+    try {
+        // 打开日志和波形面板
+        toggleSections();
+        
+        // 获取并显示日志和波形
+        await fetchLogAndWaveform(submissionId);
+        
+        // 设置当前提交ID
+        currentSubmissionId.value = submissionId;
+        
+        // 获取提交状态并更新日志状态
+        const resultResponse = await submissionApi.getSubmission(submissionId);
+        const submissionData = resultResponse.data;
+        
+        // 更新日志状态颜色
+        logSectionStatus.value = submissionData.status === 'success' ? 'success' : 'error';
+        
+        // 如果是成功的提交，显示下一题按钮
+        if (submissionData.status === 'success') {
+            showNextButton.value = true;
+            hasPreviousSuccess.value = true;
+            checkNextProblem();
+        }
+        
+    } catch (err) {
+        console.error('获取历史提交详情失败:', err);
+        message.error('获取历史提交详情失败: ' + (err.response?.data?.error || err.message || '未知错误'));
+    }
 };
 
 // 添加AI分析相关的状态
@@ -415,7 +465,16 @@ const getAiAnalysis = async () => {
                     <div class="card-footer">
                         <div class="flex justify-between items-center">
                             <span class="text-secondary text-sm italic">代码会每分钟自动保存</span>
-                            <button class="button button-primary" @click="submitSolution">提交解答</button>
+                            <div class="flex gap-md">
+                                <button class="button button-primary" @click="submitSolution">提交解答</button>
+                                <transition name="fade">
+                                    <button v-if="(showNextButton || hasPreviousSuccess) && nextProblemId" 
+                                            @click="goToNextProblem"
+                                            class="button button-success">
+                                        下一题 >>
+                                    </button>
+                                </transition>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -433,13 +492,13 @@ const getAiAnalysis = async () => {
 }
 
 .problem-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* 左右两栏布局 */
+    display: flex; /* 改用 flex 布局 */
     gap: var(--spacing-lg);
-    height: 100%;
+    align-items: flex-start; /* 让两边面板从顶部对齐 */
 }
 
 .left-panel {
+    flex: 1; /* 占用剩余空间 */
     min-width: 0; /* 防止flex子项溢出 */
     display: flex;
     flex-direction: column;
@@ -447,6 +506,7 @@ const getAiAnalysis = async () => {
 }
 
 .right-panel {
+    flex: 1; /* 占用剩余空间 */
     min-width: 0; /* 防止flex子项溢出 */
     display: flex;
     flex-direction: column;
@@ -488,7 +548,7 @@ const getAiAnalysis = async () => {
 /* 响应式调整 */
 @media (max-width: 1200px) {
     .problem-content {
-        grid-template-columns: 1fr; /* 在小屏幕上变为单列 */
+        flex-direction: column; /* 在小屏幕上改为垂直布局 */
     }
 
     .left-panel,
@@ -647,6 +707,32 @@ const getAiAnalysis = async () => {
     to {
         background-position: -100% 0;
     }
+}
+
+/* 添加淡入淡出动画样式 */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/* 按钮组样式 */
+.button-group {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.button-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.button-success:hover {
+    background-color: color-mix(in srgb, var(--success-color) 80%, black);
 }
 
 </style>
