@@ -63,6 +63,10 @@ const handleLogout = async () => {
                     :class="{ 'active': currentRoute === item.path }" @click="navigateTo(item.path)">
                     {{ item.name }}
                 </div>
+                <div v-if="isLoggedIn && currentUser?.is_admin" class="navbar-item"
+                    :class="{ 'active': currentRoute === '/admin' }" @click="navigateTo('/admin')">
+                    管理员面板
+                </div>
             </div>
 
             <div class="auth-container">

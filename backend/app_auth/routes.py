@@ -15,17 +15,18 @@ def loginUser():
     username = request.get_json().get('username')
     password = request.get_json().get('password')
     if not username or not password:
-        return jsonify({"status": "error", "message": "需要用户名和密码"}), 400
+        return jsonify({"status": "error", "message": "需要用户名和密码"})
     user = User.query.filter_by(username=username).first()
     if not user or not user.check_password(password):
-        return jsonify({"status": "error", "message": "用户名或密码错误"}), 401
+        return jsonify({"status": "error", "message": "用户名或密码错误"})
     login_user(user)
     return jsonify({
         "status": "success",
         "user": {
             "id": user.id,
             "username": user.username,
-            "email": user.email
+            "email": user.email,
+            "is_admin": user.is_admin
         }
     })
 
@@ -45,7 +46,8 @@ def checkAuth():
             "is_login": True,
             "user": {
                 "id": current_user.id,
-                "username": current_user.username
+                "username": current_user.username,
+                "is_admin": current_user.is_admin
             }
         })
     return jsonify({"is_login": False})
@@ -65,7 +67,7 @@ def registerUser():
     if email and User.query.filter_by(email=email).first():
         return jsonify({"error": "邮箱已被注册"}), 409
     # 创建用户
-    new_user = User(username=username, email=email)
+    new_user = User(username=username, email=email, is_admin=False)
     new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
@@ -75,7 +77,8 @@ def registerUser():
         "user": {
             "id": new_user.id,
             "username": new_user.username,
-            "email": new_user.email
+            "email": new_user.email,
+            "is_admin": new_user.is_admin
         }
     })
 
@@ -91,7 +94,8 @@ def getUserProfile():
     return jsonify({
         "id": user.id,
         "username": user.username,
-        "email": user.email
+        "email": user.email,
+        "is_admin": user.is_admin
     })
 
 # ---------- 更新用户名 ----------
@@ -112,7 +116,11 @@ def updateUsername():
     user.username = new_username
     db.session.commit()
     
-    return jsonify({"status": "success", "username": new_username})
+    return jsonify({
+        "status": "success", 
+        "username": new_username,
+        "is_admin": user.is_admin
+    })
 
 # ---------- 更新密码 ----------
 @user_bp.route('/update_password', methods=['POST'])

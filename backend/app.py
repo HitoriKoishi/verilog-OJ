@@ -12,7 +12,7 @@ import atexit
 
 
 def load_config(app):
-    CORS(app, resources={r"/*": {"origins": "http://localhost:1234", "supports_credentials": True}})
+    CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://localhost:1234"], "supports_credentials": True}})
     app.secret_key = 'verilog-oj-secret-key'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'  # 使用 SQLite 数据库
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -33,11 +33,11 @@ def loaduser(user_id):
 from app_auth.routes import user_bp
 from app_problem.routes import problem_bp
 from app_submit.routes import submit_bp
-from app_ai.routes import ai_bp  # 导入AI分析模块蓝图
+from app_admin.routes import admin_bp  # 导入管理员蓝图
 app.register_blueprint(user_bp, url_prefix='/user')
 app.register_blueprint(problem_bp, url_prefix='/problem')
 app.register_blueprint(submit_bp, url_prefix='/submission')
-app.register_blueprint(ai_bp, url_prefix='/ai')  # 注册AI分析模块蓝图
+app.register_blueprint(admin_bp, url_prefix='/admin')  # 注册管理员蓝图
 
 # 启动后台线程并传递 app 实例
 simulation_thread = threading.Thread(target=simulation_worker, args=(app,), daemon=True)
@@ -61,7 +61,7 @@ def updateProblems():
         # 读取文档文件
         current_ids.add(exp_id)
         default_difficulty = '简单'
-        default_tags = '默认TAG'
+        default_tags = '组合逻辑'
         doc_dir = exp_dir / "doc"
         doc_path = doc_dir / "doc.md"
         temp_code_path = doc_dir / "temp_module.v"

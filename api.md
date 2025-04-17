@@ -651,5 +651,152 @@
   500
   ```
 
+## 管理员API
+
+### 获取所有用户
+
+#### **URL**
+`GET /admin/user`
+
+#### **描述**
+获取所有用户信息（需要管理员权限）
+
+#### **参数**
+- 无
+
+#### **响应**
+```json
+[
+    {
+        "id": 1,
+        "username": "admin",
+        "email": "admin@example.com",
+        "is_admin": true
+    },
+    {
+        "id": 2,
+        "username": "user",
+        "email": "user@example.com",
+        "is_admin": false
+    }
+]
+```
+
+### 更新用户信息
+
+#### **URL**
+`PUT /admin/user/<int:user_id>`
+
+#### **描述**
+更新指定用户的信息（需要管理员权限）
+
+#### **参数**
+- **Content-Type**: `application/json`
+- **Body**:
+  ```json
+  {
+    "username": "string",  // 可选
+    "email": "string",     // 可选
+    "is_admin": boolean,   // 可选
+    "password": "string"   // 可选
+  }
+  ```
+
+#### **响应**
+```json
+{
+    "status": "success"
+}
+```
+
+### 删除用户
+
+#### **URL**
+`DELETE /admin/user/<int:user_id>`
+
+#### **描述**
+删除指定用户（需要管理员权限）
+
+#### **参数**
+- 无
+
+#### **响应**
+```json
+{
+    "status": "success"
+}
+```
+
+### 获取所有题目
+
+#### **URL**
+`GET /admin/problem`
+
+#### **描述**
+获取所有题目的详细信息（需要管理员权限）
+
+#### **参数**
+- 无
+
+#### **响应**
+```json
+[
+    {
+        "id": 1,
+        "title": "string",
+        "difficulty": "string",
+        "tags": "string",
+        "description": "string",
+        "code_temp": "string"
+    }
+]
+```
+
+### 更新题目信息
+
+#### **URL**
+`PUT /admin/problem/<int:problem_id>`
+
+#### **描述**
+更新指定题目的信息（需要管理员权限）
+
+#### **参数**
+- **Content-Type**: `application/json`
+- **Body**:
+  ```json
+  {
+    "title": "string",       // 可选
+    "difficulty": "string",  // 可选
+    "tags": "string",       // 可选
+    "description": "string", // 可选
+    "code_temp": "string"   // 可选
+  }
+  ```
+
+#### **响应**
+```json
+{
+    "status": "success"
+}
+```
+
+### 删除题目
+
+#### **URL**
+`DELETE /admin/problem/<int:problem_id>`
+
+#### **描述**
+删除指定题目（需要管理员权限）
+
+#### **参数**
+- 无
+
+#### **响应**
+```json
+{
+    "status": "success"
+}
+```
+
 
 

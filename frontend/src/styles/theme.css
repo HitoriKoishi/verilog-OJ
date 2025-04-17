@@ -43,9 +43,9 @@
   --font-family-mono: Consolas, 'Courier New', Monaco, monospace;
 
   /* 动画时间 */
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.4s ease;
+  --transition-fast: 0.3s ease;
+  --transition-normal: 0.4s ease;
+  --transition-slow: 0.5s ease;
 
   /* 容器尺寸 */
   --container-sm: 640px;
