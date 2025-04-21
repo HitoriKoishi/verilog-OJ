@@ -9,6 +9,7 @@ const router = useRouter();
 const navItems = [
     { name: '首页', path: '/' },
     { name: '题目列表', path: '/problem/all' },
+    { name: '学习路径', path: '/learning-path' },
     { name: '关于我们', path: '/about' },
 ];
 

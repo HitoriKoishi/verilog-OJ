@@ -61,12 +61,15 @@ class SimulationResult:
 
 
 class Problem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)            # id为exp文件夹后面的数字
-    title = db.Column(db.String(100))                       # tile为exp/doc/doc.md的第一个一级标题
-    description = db.Column(db.Text)                        # description为exp/doc/doc.md
-    code_temp = db.Column(db.Text)                          # 代码模板
-    difficulty = db.Column(db.String(20), default='简单')   # 难度字段
-    tags = db.Column(db.String(200))                        # 标签字段
+    id = db.Column(db.Integer, primary_key=True)            # 题目ID
+    folder_path = db.Column(db.String(200), nullable=False) # 题目文件夹路径（相对于PROB_DIR）
+    title = db.Column(db.String(100))                       # 标题
+    description = db.Column(db.Text)                        # 题目描述
+    code_temp = db.Column(db.Text)                         # 代码模板
+    difficulty = db.Column(db.String(20), default='简单')   # 难度
+    tags = db.Column(db.String(200))                       # 标签
+    pre_problems = db.Column(db.String(200))              # 前置题目ID列表，用逗号分隔
+    next_problems = db.Column(db.String(200))              # 后置题目ID列表，用逗号分隔
 
 class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)# 32位短submitID
@@ -88,3 +91,11 @@ def login_required(func):
             return jsonify({"error": "用户未登录"}), 401
         return func(*args, **kwargs)
     return wrapper
+
+def admin_required(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            return jsonify({"error": "需要管理员权限"}), 403
+        return func(*args, **kwargs)
+    return decorated_function

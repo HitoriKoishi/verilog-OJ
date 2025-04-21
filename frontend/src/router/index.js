@@ -9,6 +9,7 @@ import ProblemList from '../views/ProblemList.vue';
 import ProblemSubmit from '../views/ProblemSubmit.vue';
 import About from '../views/About.vue';
 import AdminPanel from '../views/AdminPanel.vue';
+import LearningPath from '../views/LearningPath.vue';
 
 const routes = [
     {
@@ -45,6 +46,11 @@ const routes = [
         name: 'AdminPanel',
         component: AdminPanel,
         meta: { requiresAdmin: true }
+    },
+    {
+        path: '/learning-path',
+        name: 'LearningPath',
+        component: LearningPath
     }
 ];
 

@@ -14,6 +14,11 @@ const problems = ref([]);
 const loading = ref(false);
 const error = ref(null);
 
+// 处理前置题目字符串转换
+const problemsToString = (problems) => {
+    return Array.isArray(problems) ? problems.join(',') : problems || '';
+};
+
 const fetchUsers = async () => {
     loading.value = true;
     try {
@@ -30,7 +35,10 @@ const fetchProblems = async () => {
     loading.value = true;
     try {
         const response = await adminApi.getProblems();
-        problems.value = response.data;
+        problems.value = response.data.map(problem => ({
+            ...problem,
+            pre_problems: problemsToString(problem.pre_problems)
+        }));
     } catch (err) {
         message.error(err.response?.data?.message || err.message || '获取题目列表失败');
     } finally {
@@ -69,7 +77,12 @@ const deleteUser = async (userId, username) => {
 
 const updateProblem = async (problem) => {
     try {
-        await adminApi.updateProblem(problem.id, problem);
+        // 确保前置题目是字符串格式
+        const problemToUpdate = {
+            ...problem,
+            pre_problems: problemsToString(problem.pre_problems)
+        };
+        await adminApi.updateProblem(problem.id, problemToUpdate);
         await fetchProblems();
         message.success('题目信息更新成功');
     } catch (err) {
@@ -182,8 +195,11 @@ onMounted(async () => {
                         <tr>
                             <th>ID</th>
                             <th>标题</th>
+                            <th>文件夹路径</th>
                             <th>难度</th>
                             <th>标签</th>
+                            <th>前置题目</th>
+                            <th>后置题目</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -192,6 +208,9 @@ onMounted(async () => {
                             <td>{{ problem.id }}</td>
                             <td>
                                 <input v-model="problem.title" @change="updateProblem(problem)" />
+                            </td>
+                            <td>
+                                <input v-model="problem.folder_path" @change="updateProblem(problem)" />
                             </td>
                             <td>
                                 <select v-model="problem.difficulty" @change="updateProblem(problem)">
@@ -204,6 +223,18 @@ onMounted(async () => {
                                 <input v-model="problem.tags" @change="updateProblem(problem)" />
                             </td>
                             <td>
+                                <input v-model="problem.pre_problems" @change="updateProblem(problem)" />
+                            </td>
+                            <td>
+                                <input v-model="problem.next_problems" @change="updateProblem(problem)" />
+                            </td>
+                            <td>
+                                <button 
+                                    class="edit-button"
+                                    @click="router.push(`/problem/${problem.id}`)"
+                                >
+                                    查看
+                                </button>
                                 <button 
                                     class="delete-button"
                                     @click="deleteProblem(problem.id, problem.title)"
@@ -263,6 +294,10 @@ onMounted(async () => {
     font-weight: 500;
 }
 
+.admin-table td {
+    vertical-align: middle;
+}
+
 .admin-table input,
 .admin-table select {
     width: 100%;
@@ -271,6 +306,7 @@ onMounted(async () => {
     border-radius: var(--radius-sm);
     background: var(--background-color);
     color: var(--text-primary);
+    font-size: 0.9em;
 }
 
 .delete-button {
@@ -286,6 +322,26 @@ onMounted(async () => {
     background: color-mix(in srgb, var(--error-color) 80%, black);
 }
 
+.edit-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-right: var(--spacing-xs);
+}
+
+.edit-button:hover {
+    background: color-mix(in srgb, var(--primary-color) 80%, black);
+}
+
+/* 使操作按钮并排显示 */
+.admin-table td:last-child {
+    white-space: nowrap;
+    width: 1%;
+}
+
 .loading,
 .error {
     text-align: center;
@@ -298,12 +354,13 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
     .admin-table {
-        font-size: 0.9em;
+        display: block;
+        overflow-x: auto;
     }
-
-    .admin-table th,
-    .admin-table td {
-        padding: var(--spacing-xs);
+    
+    .admin-table input,
+    .admin-table select {
+        min-width: 100px;
     }
 }
 </style> 

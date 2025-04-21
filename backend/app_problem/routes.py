@@ -105,7 +105,7 @@ def submitSolution(id):
 # ---------- 获取Prob列表 ----------
 @problem_bp.route('/all', methods=['GET'])
 def getProblems():
-    """获取问题列表，返回ID、标题、难度、标签以及用户是否完成解答（仅登录用户可见）"""
+    """获取问题列表，返回ID、标题、难度、标签、前置题目、后置题目以及用户是否完成解答（仅登录用户可见）"""
     user_id = current_user.id if current_user.is_authenticated else None
     problems = Problem.query.all()
     # 构建响应数据结构
@@ -115,14 +115,19 @@ def getProblems():
         stats = get_problem_statistics(p.id)
         # 检查用户是否完成解答，仅在用户登录时检查
         is_completed = get_completion_status(user_id, p.id) if user_id else None
+        # 处理前置和后置题目
+        pre_problems = process_problem_ids(p.pre_problems)
+        next_problems = process_problem_ids(p.next_problems)
         problems_list.append({
             "id": p.id,
             "title": p.title,
             "difficulty": p.difficulty,
-            "tags": p.tags.split(',') if p.tags else [],
-            "submitted_users_count": stats["submitted_users_count"],  # 提交用户数
-            "passed_users_count": stats["passed_users_count"],        # 通过用户数
-            **({"is_completed": is_completed} if user_id else {})  # 动态添加字段
+            "tags": process_tags(p.tags),
+            "pre_problems": pre_problems,  # 注意：普通用户接口中的 pre_problems 是整数数组
+            "next_problems": next_problems,  # 注意：普通用户接口中的 next_problems 是整数数组
+            "submitted_users_count": stats["submitted_users_count"],
+            "passed_users_count": stats["passed_users_count"],
+            **({"is_completed": is_completed} if user_id else {})
         })
     return jsonify(problems_list)
 
@@ -130,41 +135,47 @@ def getProblems():
 # ---------- 获取单个Prob详情 ----------
 @problem_bp.route('/<int:id>', methods=['GET'])
 def getProblem(id):
-    """获取单个问题详情，返回ID、标题、文档、难度、标签、代码模板以及用户是否完成解答（仅登录用户可见）"""
+    """获取单个问题详情"""
     user_id = current_user.id if current_user.is_authenticated else None
     problem = Problem.query.get(id)
     if not problem:
         return jsonify({"error": "Problem not found"}), 404
+        
     # 获取文档内容
     doc_content = problem.description
+    
     # 替换相对路径为绝对路径
     def replace_relative_paths(match):
-        captured_path = match.group(2)  # 获取括号内捕获的完整路径
-        # 提取路径中的文件名部分
+        captured_path = match.group(2)
         relative_path = os.path.basename(captured_path)
         
-        # 只处理没有完整URL的相对路径 (现在relative_path应该是纯文件名)
         if not relative_path.startswith(('http://', 'https://', '/')):
-            # 使用提取的文件名构建URL
-            absolute_url = url_for('problem.serve_prob_static', filename=f'exp{id}/doc/{relative_path}', _external=True)
-            # print(f"[Problem ID: {id}] 修正后生成图片URL: {absolute_url} (原始捕获: {captured_path}, 提取文件名: {relative_path})")
+            absolute_url = url_for('problem.serve_prob_static', 
+                                 prob_path=f'{problem.folder_path}/doc/{relative_path}', 
+                                 _external=True)
             return f'![{match.group(1)}]({absolute_url})'
-        # print(f"[Problem ID: {id}] 保持原始URL/路径: {captured_path}")
         return match.group(0)
     
-    # 修正正则表达式，使用 r'!\\[(.*?)\\]\\((.*?)\\)' 来匹配 ![alt](path)
     doc_content = re.sub(r'!\[(.*?)\]\((.*?)\)', replace_relative_paths, doc_content)
-    # 检查用户是否完成解答，仅在用户登录时检查
+    
+    # 处理前置和后置题目
+    pre_problems = process_problem_ids(problem.pre_problems)
+    next_problems = process_problem_ids(problem.next_problems)
+    
+    # 检查用户是否完成解答
     is_completed = get_completion_status(user_id, id) if user_id else None
+    
     # 构建响应数据
     response_data = {
         "id": problem.id,
         "title": problem.title,
         "document": doc_content,
         "difficulty": problem.difficulty,
-        "tags": problem.tags.split(',') if problem.tags else [],
+        "tags": process_tags(problem.tags),
+        "pre_problems": pre_problems,  # 注意：普通用户接口中的 pre_problems 是整数数组
+        "next_problems": next_problems,  # 注意：普通用户接口中的 next_problems 是整数数组
         "code_template": problem.code_temp,
-        **({"is_completed": is_completed} if user_id else {})  # 动态添加字段
+        **({"is_completed": is_completed} if user_id else {})
     }
     return jsonify(response_data)
 
@@ -263,30 +274,31 @@ def get_problem_statistics(problem_id):
         "passed_users_count": passed_users_count
     }
 
+def process_tags(tags_str):
+    """处理标签字符串，支持中英文逗号，并删除空格"""
+    if not tags_str:
+        return []
+    # 同时处理中英文逗号，并移除空格
+    tags = [tag.strip() for tag in tags_str.replace('，', ',').split(',')]
+    # 过滤掉空字符串
+    return [tag for tag in tags if tag]
 
-@problem_bp.route('/static/Prob/<path:filename>')
-def serve_prob_static(filename):
-    """提供 Prob 文件夹中的静态资源"""
-    # print(f"请求静态资源：{filename}")
-    # 构建完整路径
-    full_path = os.path.join('Prob', filename)
+def process_problem_ids(id_str):
+    """处理题目ID字符串，支持中英文逗号，并删除空格"""
+    if not id_str:
+        return []
+    # 同时处理中英文逗号，并移除空格
+    ids = [int(x.strip()) for x in id_str.replace('，', ',').split(',')]
+    # 过滤掉空值
+    return [x for x in ids if str(x).strip()]
+
+@problem_bp.route('/static/Prob/<path:prob_path>')
+def serve_prob_static(prob_path):
+    """提供题目文件夹中的静态资源"""
+    full_path = os.path.join('Prob', prob_path)
     if os.path.exists(full_path):
-        return send_from_directory('Prob', filename)
+        return send_from_directory('Prob', prob_path)
     
-    # 如果文件不存在，尝试在同一目录下查找其他图片文件
-    dir_path = os.path.dirname(full_path)
-    if os.path.exists(dir_path):
-        # 如果是example.png请求，查看目录中是否有其他图片
-        if 'example.png' in filename:
-            for img_ext in ['.png', '.jpg', '.jpeg', '.gif']:
-                # 尝试pic1.png等常见名称
-                for img_name in ['pic1', 'pic']:
-                    alt_name = filename.replace('example.png', f'{img_name}{img_ext}')
-                    alt_path = os.path.join('Prob', alt_name)
-                    if os.path.exists(alt_path):
-                        # print(f"找到替代文件：{alt_name}")
-                        return send_from_directory('Prob', alt_name)
-    
-    # 如果没有找到任何替代文件，返回404
-    print(f"文件未找到，返回 404: {full_path}") # 添加日志
+    # 如果文件不存在，返回404
+    print(f"文件未找到，返回 404: {full_path}")
     abort(404)

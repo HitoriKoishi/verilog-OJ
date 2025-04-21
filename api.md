@@ -279,6 +279,8 @@
     "title": "string",
     "difficulty": "string",
     "tags": ["string","string",...],
+    "pre_problems": [1, 2, ...],  // 注意：普通用户接口中的 pre_problems 是整数数组
+    "next_problems": [1, 2, ...],  // 注意：普通用户接口中的 pre_problems 是整数数组
     "submitted_users_count": 20,
     "passed_users_count": 15,
     **({"is_completed": "未完成"/"已完成"/"失败"/"运行中"} if user_login else {})
@@ -308,6 +310,8 @@
     "document": "md格式文档",
     "difficulty": "string",
     "tags": ["string","string",...],
+    "pre_problems": [1, 2, ...],  // 注意：普通用户接口中的 pre_problems 是整数数组
+    "next_problems": [1, 2, ...],  // 注意：普通用户接口中的 pre_problems 是整数数组
     "code_template": "string",
     **({"is_completed": "未完成"/"已完成"/"失败"/"运行中"} if user_login else {})
   }
@@ -744,8 +748,11 @@
     {
         "id": 1,
         "title": "string",
+        "folder_path": "string",  // 题目文件夹路径
         "difficulty": "string",
         "tags": "string",
+        "pre_problems": "string",  // 注意：管理员接口中的 pre_problems 是逗号分隔的字符串
+        "next_problems": "string",  // 注意：管理员接口中的 pre_problems 是逗号分隔的字符串
         "description": "string",
         "code_temp": "string"
     }
@@ -766,8 +773,11 @@
   ```json
   {
     "title": "string",       // 可选
+    "folder_path": "string", // 可选，题目文件夹路径
     "difficulty": "string",  // 可选
     "tags": "string",       // 可选
+    "pre_problems": "string", // 可选，前置题目ID列表，逗号分隔
+    "next_problems": "string",  // 注意：管理员接口中的 pre_problems 是逗号分隔的字符串
     "description": "string", // 可选
     "code_temp": "string"   // 可选
   }
@@ -798,5 +808,162 @@
 }
 ```
 
+## 学习路径API
 
+### 获取所有学习路径
 
+#### **URL**
+`GET //all`
+
+#### **描述**
+获取所有可用的学习路径
+
+#### **参数**
+- 无
+
+#### **响应**
+```json
+[
+  {
+    "id": 1,
+    "name": "Verilog基础入门",
+    "description": "从零开始学习Verilog HDL语言基础",
+    "start_problem_id": 1
+  },
+  {
+    "id": 2,
+    "name": "数字电路设计进阶",
+    "description": "学习更复杂的数字电路设计技巧",
+    "start_problem_id": 5
+  }
+]
+```
+
+### 获取单个学习路径详情
+
+#### **URL**
+`GET //<int:path_id>`
+
+#### **描述**
+获取指定ID的学习路径详情
+
+#### **参数**
+- 无
+
+#### **响应**
+- 成功
+  ```json
+  {
+    "id": 1,
+    "name": "Verilog基础入门",
+    "description": "从零开始学习Verilog HDL语言基础",
+    "start_problem_id": 1
+  }
+  ```
+
+- 失败
+  ```json
+  {
+    "error": "学习路径不存在"
+  }
+  404
+  ```
+
+### 获取学习路径的完整题目链条
+
+#### **URL**
+`GET //<int:path_id>/chain`
+
+#### **描述**
+获取学习路径的完整题目链条，从起始题目开始，根据题目的"后置"关系构建
+
+#### **参数**
+- 无
+
+#### **响应**
+- 成功
+  ```json
+  {
+    "path_id": 1,
+    "path_name": "Verilog基础入门",
+    "path_description": "从零开始学习Verilog HDL语言基础",
+    "problems_chain": [
+      {
+        "id": 1,
+        "title": "Verilog基本语法",
+        "difficulty": "简单",
+        "tags": ["基础", "语法"]
+      },
+      {
+        "id": 2,
+        "title": "组合逻辑电路",
+        "difficulty": "简单",
+        "tags": ["组合逻辑"]
+      },
+      {
+        "id": 3,
+        "title": "时序逻辑电路",
+        "difficulty": "中等",
+        "tags": ["时序逻辑"]
+      }
+    ]
+  }
+  ```
+
+- 失败
+  ```json
+  {
+    "error": "学习路径不存在"
+  }
+  404
+  ```
+
+### 添加新的学习路径（仅管理员）
+
+#### **URL**
+`POST //add`
+
+#### **描述**
+添加新的学习路径（需要管理员权限）
+
+#### **参数**
+- **Content-Type**: `application/json`
+- **Body**:
+  ```json
+  {
+    "name": "string",              // 学习路径名称
+    "description": "string",       // 学习路径描述
+    "start_problem_id": number     // 起始题目ID
+  }
+  ```
+
+#### **响应**
+- 成功
+  ```json
+  {
+    "status": "success",
+    "path_id": 3
+  }
+  ```
+
+- 失败
+  ```json
+  {
+    "error": "权限不足"
+  }
+  403
+  ```
+  
+  ```json
+  {
+    "error": "缺少必要参数"
+  }
+  400
+  ```
+  
+  ```json
+  {
+    "error": "起始题目不存在"
+  }
+  404
+  ```

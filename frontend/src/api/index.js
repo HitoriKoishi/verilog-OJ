@@ -158,10 +158,26 @@ export const adminApi = {
     }
 };
 
+export const learningPathApi = {
+    // 获取所有学习路径
+    getPaths() {
+        return apiClient.get('/learningPath/all');
+    },
+    // 获取单个学习路径信息
+    getPath(pathId) {
+        return apiClient.get(`/learningPath/${pathId}`);
+    },
+    // 获取学习路径的题目链
+    getPathChain(pathId) {
+        return apiClient.get(`/learningPath/${pathId}/chain`);
+    }
+};
+
 export default {
     problem: problemApi,
     user: userApi,
     submission: submissionApi,
     ai: aiApi,
-    admin: adminApi
+    admin: adminApi,
+    learningPath: learningPathApi
 };

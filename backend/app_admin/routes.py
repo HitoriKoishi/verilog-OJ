@@ -1,19 +1,10 @@
 from flask import Blueprint, request, jsonify
-from flask_login import current_user
 from flask_cors import CORS
-from models import User, Problem, db, login_required
-from functools import wraps
+from flask_login import current_user
+from models import User, Problem, db, login_required, admin_required
 
 admin_bp = Blueprint('admin', __name__)
 CORS(admin_bp, resources={r"/*": {"origins": "http://localhost:5173", "supports_credentials": True}})
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin:
-            return jsonify({"error": "需要管理员权限"}), 403
-        return f(*args, **kwargs)
-    return decorated_function
 
 # 获取所有用户
 @admin_bp.route('/user', methods=['GET'])
@@ -133,8 +124,11 @@ def get_problems():
     return jsonify([{
         'id': problem.id,
         'title': problem.title,
+        'folder_path': problem.folder_path,
         'difficulty': problem.difficulty,
         'tags': problem.tags,
+        'pre_problems': problem.pre_problems,
+        'next_problems': problem.next_problems,
         'description': problem.description,
         'code_temp': problem.code_temp
     } for problem in problems])
@@ -149,10 +143,16 @@ def update_problem(problem_id):
     
     if 'title' in data:
         problem.title = data['title']
+    if 'folder_path' in data:
+        problem.folder_path = data['folder_path']
     if 'difficulty' in data:
         problem.difficulty = data['difficulty']
     if 'tags' in data:
         problem.tags = data['tags']
+    if 'pre_problems' in data:
+        problem.pre_problems = data['pre_problems']
+    if 'next_problems' in data:
+        problem.next_problems = data['next_problems']
     if 'description' in data:
         problem.description = data['description']
     if 'code_temp' in data:

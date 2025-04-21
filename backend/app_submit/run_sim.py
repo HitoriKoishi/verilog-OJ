@@ -10,6 +10,7 @@ from datetime import datetime
 from models import BASE_DIR, PROB_DIR, IVERILOG, VVP
 from queue import Queue
 from exts import db
+from models import Problem
 
 # 创建任务队列
 simulation_queue = Queue()
@@ -60,16 +61,22 @@ def sim_run_verilog(submission_id: int) -> SimulationResult:
     if not submission:
         result.error_code = ErrorCode.ERROR_UNKNOWN
         return result
-    # 获取 problem_id 和对应的 project 目录
-    problem_id = submission.problem_id
-    project_dir = PROB_DIR / f"exp{problem_id}" / "project"
+        
+    # 获取题目信息和项目目录
+    problem = Problem.query.get(submission.problem_id)
+    if not problem:
+        result.error_code = ErrorCode.ERROR_UNKNOWN
+        return result
+        
+    project_dir = PROB_DIR / problem.folder_path / "project"
     if not project_dir.exists():
         result.error_code = ErrorCode.ERROR_UNKNOWN
         return result
+        
     # 创建临时文件夹
     with tempfile.TemporaryDirectory(dir=BASE_DIR) as temp_dir:
         temp_dir_path = Path(BASE_DIR/temp_dir)
-        # 将 problem_id 对应的 project 文件夹内容复制到临时文件夹
+        # 将项目文件夹内容复制到临时文件夹
         shutil.copytree(project_dir, temp_dir_path, dirs_exist_ok=True)
         # 创建 user_module.v 文件，将用户代码写入
         user_module_path = temp_dir_path / "user_module.v"
@@ -98,7 +105,6 @@ def sim_run_verilog(submission_id: int) -> SimulationResult:
             result.error_code = ErrorCode.ERROR_UNKNOWN
             result.log_path = ""
             result.waveform_path = ""
-    # 临时文件夹会在 with 语句结束时自动删除
     return result
 
 def run_simulation(base_dir: Path, timeout_sec: int = 6) -> ErrorCode:
